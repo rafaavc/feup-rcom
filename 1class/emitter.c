@@ -5,6 +5,9 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -68,19 +71,11 @@ int main(int argc, char** argv){
 
     printf("New termios structure set\n");
 
-    /*
-    int i;
-    for (i = 0; i < 255; i++) {
-      buf[i] = 'a';
-    }
-
-    /*testing*/
-    //buf[25] = '\n';
-
-    char buf[255];
+    //writes to the serial port
+    char *buf = NULL;
     size_t n;
     ssize_t string_size;
-    string_size = getline(&buf,n,stdin);
+    string_size = getline(&buf,&n,stdin);
 
     buf[string_size-1]='\0';
 
@@ -92,6 +87,8 @@ int main(int argc, char** argv){
       o indicado no gui�o 
     */
 
+
+    //reads the message sent back  by serial
     char msg[255];
     char reading;
     n=0;

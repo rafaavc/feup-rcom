@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -15,10 +17,8 @@
 volatile int STOP=FALSE;
 
 int main(int argc, char** argv){
-    int fd;
+    int fd, sum=0, speed=0;
     struct termios oldtio,newtio;
-    
-    int i, sum = 0, speed = 0;
     
     if ( (argc < 2) || 
   	     ((strcmp("/dev/ttyS0", argv[1])!=0) && 
@@ -78,7 +78,7 @@ int main(int argc, char** argv){
     while(1){
         res = read(fd,&reading,1);
 
-        msg[n++]=reading;
+        buf[string_size++]=reading;
 
         if(reading =='\0') break;
     }
