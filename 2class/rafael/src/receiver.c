@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -19,9 +20,9 @@ volatile int STOP=FALSE;
 int main(int argc, char** argv){
     int fd, sum=0, speed=0;
     struct termios oldtio,newtio;
-    
-    if ( (argc < 2) || 
-  	     ((strcmp("/dev/ttyS0", argv[1])!=0) && 
+
+    if ( (argc < 2) ||
+  	     ((strcmp("/dev/ttyS0", argv[1])!=0) &&
   	      (strcmp("/dev/ttyS1", argv[1])!=0) )) {
       printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
       exit(1);
@@ -55,8 +56,8 @@ int main(int argc, char** argv){
 
 
 
-  /* 
-    VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a 
+  /*
+    VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
     leitura do(s) pr�ximo(s) caracter(es)
   */
 
@@ -83,17 +84,17 @@ int main(int argc, char** argv){
         if(reading =='\0') break;
     }
 
-    printf("Read: %s with %d bytes from the serial port\n", buf, string_size);
+    printf("Read: %s with %ld bytes from the serial port\n", buf, string_size);
 
     //resends the message back to the emitter by serial port
-    res = write(fd,buf,string_size);   
+    res = write(fd,buf,string_size);
 
     printf("%d bytes written\n", res);
- 
 
-  /* 
-    O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar 
-    o indicado no gui�o 
+
+  /*
+    O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar
+    o indicado no gui�o
   */
 
 
