@@ -1,5 +1,10 @@
 #include <stdint.h>
 
+enum type {
+    RECEIVER,
+    EMITTER
+} typeEnum;
+
 struct ProtocolSU {
     uint8_t flag, addressField, controllField, blockCheckCharacter;
 };
@@ -14,3 +19,4 @@ struct ProtocolI {
 /**
  *
  */
+struct ProtocolI getProtocolI(enum type endType, char * data);
