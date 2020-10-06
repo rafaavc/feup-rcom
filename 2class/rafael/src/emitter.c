@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 
 #define BAUDRATE B38400
@@ -20,7 +21,7 @@ volatile int STOP=FALSE;
 int main(int argc, char** argv){
     int fd, res,sum = 0 , speed = 0;
     struct termios oldtio,newtio;
-    
+
 
     if ( (argc < 2) || ((strcmp("/dev/ttyS0", argv[1])!=0) && (strcmp("/dev/ttyS1", argv[1])!=0) )) {
       printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
@@ -55,8 +56,8 @@ int main(int argc, char** argv){
 
 
 
-    /* 
-      VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a 
+    /*
+      VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
       leitura do(s) pr�ximo(s) caracter(es)
     */
 
@@ -79,12 +80,12 @@ int main(int argc, char** argv){
 
     buf[string_size-1]='\0';
 
-    res = write(fd,buf,string_size*sizeof(buf[0]));   
+    res = write(fd,buf,string_size*sizeof(buf[0]));
     printf("%d bytes written\n", res);
 
-    /* 
-      O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar 
-      o indicado no gui�o 
+    /*
+      O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar
+      o indicado no gui�o
     */
 
 
@@ -99,7 +100,7 @@ int main(int argc, char** argv){
       if(reading=='\0') break;
     }
 
-    printf("Returned message:%s with %d bytes\n", msg, n);
+    printf("Returned message: %s with %ld bytes\n", msg, n);
 
     sleep(1);
     if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
