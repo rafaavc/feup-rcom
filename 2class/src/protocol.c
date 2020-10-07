@@ -1,5 +1,7 @@
 #include "protocol.h"
 
+unsigned logicConnectionFlag = TRUE;
+
 void checkCmdArgs(int argc, char ** argv) {
     char * ports[2] = {
         #ifndef SOCAT 
@@ -62,5 +64,48 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     return fd;
 }
 
+size_t writeToSP(int fd, char* message, size_t messageSize) {
+    message[messageSize]='\0';
 
+    return write(fd, message, (messageSize+1)*sizeof(message[0]));
+}
+
+
+char * readFromSP(int fd, ssize_t * stringSize) {
+    char *buf = malloc(700*sizeof(char)), reading;
+
+    //reads from the serial port
+    int counter = 0;
+    while(TRUE) {
+        read(fd, &reading, 1);
+        buf[counter] = reading;
+        if (logicConnectionFlag) break;
+        if(reading =='\0') break;
+
+        counter++;
+    }
+    (*stringSize) = counter+1;
+    return buf;
+}
+
+char *  constructSupervisionMessage(char addr, char ctrl){
+    char* msg = malloc(sizeof(char)*SUPERVISION_MESSAGE_SIZE);
+
+    msg[0] = MSG_FLAG;
+    msg[1] = addr;
+    msg[2] = ctrl;
+    msg[3] = MSG_FLAG ^ addr ^ ctrl;
+    msg[4]= MSG_FLAG;
+
+    return msg;
+}
+
+void closeSP(int fd, struct termios *oldtio) {
+    if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
+      perror("tcsetattr");
+      exit(-1);
+    }
+
+    close(fd);
+}
 

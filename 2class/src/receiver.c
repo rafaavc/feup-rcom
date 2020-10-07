@@ -2,49 +2,52 @@
 
 volatile int STOP=FALSE;
 
+extern int logicConnectionFlag;
+
 int main(int argc, char** argv){
     int fd, sum=0, speed=0;
     struct termios oldtio;
 
+    logicConnectionFlag = FALSE;
+
     checkCmdArgs(argc, argv);
 
+
     fd = openConfigureSP(argv[1], &oldtio);
+    
 
-    char buf[700], reading;
-    int res;
-    ssize_t string_size;
+    unsigned valid = FALSE, counter = 0;
+    char* ret;
+    char* buf = NULL;
+    ssize_t res, size;
+    buf = constructSupervisionMessage(ADDR_SENT_RCV, CTRL_UA);
 
-    //reads from the serial port
-    while(1){
-        res = read(fd,&reading,1);
+    //ligar alarme  
+    //tries to read the message back from the serialPort
+    ret = readFromSP(fd, &size);
 
-        buf[string_size++]=reading;
-
-        if(reading =='\0') break;
+    //verificar se recebeu e se é valida, caso nao reeenvia set enquanto nao for valida um maximo de 3 vezes
+    if(size != (SUPERVISION_MESSAGE_SIZE + 1)){
+        printf("Can't set connection1\n");
     }
+     if(ret[2]!= CTRL_SET){
+        printf("Can't set connection2\n");
+    }
+    // another condition for BCC
+    //writes to the serial port, trying to connect
+    res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
+    
+    //verifies if it was written correctly
+    if(res != (SUPERVISION_MESSAGE_SIZE + 1)){
+        return -1;
+    }   
 
-    printf("Read: %s with %ld bytes from the serial port\n", buf, string_size);
-
-    //resends the message back to the emitter by serial port
-    res = write(fd,buf,string_size);
-
-    printf("%d bytes written\n", res);
-
-
-    /*
-        O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar
-        o indicado no gui�o
-    */
-
-
+    printf("Connected successfully\n");
+    
     sleep(1);
-    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-      perror("tcsetattr");
-      exit(-1);
-    }
 
+    closeSP(fd, &oldtio);
 
-    close(fd);
     return 0;
 }
 /*

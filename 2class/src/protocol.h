@@ -6,7 +6,10 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <signal.h>
 #include "defines.h"
+
 
 /*enum type {
     RECEIVER,
@@ -38,3 +41,14 @@ void checkCmdArgs(int argc, char** argv);
  */
 int openConfigureSP(char* port, struct termios *oldtio);
 
+
+/**
+ * Writes the serial port
+ */
+size_t writeToSP(int fd, char * message, size_t messageSize);
+
+char * readFromSP(int fd, ssize_t * stringSize);
+
+char *  constructSupervisionMessage(char  addr, char ctrl);
+
+void closeSP(int fd, struct termios *oldtio);
