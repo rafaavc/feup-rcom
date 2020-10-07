@@ -9,13 +9,17 @@
 #define ADDR_SENT_EM    0x03 /*Commands sent by emitter and answers sent by receiver*/
 #define ADDR_SENT_RCV   0x01 /*Commands sent by receiver and answers sent by emitter*/
 
+#define SOCAT
+
+#define BAUDRATE B38400
+#define MODEMDEVICE "/dev/ttyS1"
+#define _POSIX_SOURCE 1 /* POSIX compliant source */
+#define FALSE 0
+#define TRUE 1
 
 
 
 #define SUPERVISION_MESSAGE_SIZE 5
-
-
-
 #define TIME_OUT    3
 
 
