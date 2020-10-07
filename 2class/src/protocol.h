@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-enum type {
+/*enum type {
     RECEIVER,
     EMITTER
 } typeEnum;
@@ -16,7 +16,4 @@ struct ProtocolI {
 };
 
 
-/**
- *
- */
-struct ProtocolI getProtocolI(enum type endType, char * data);
+struct ProtocolI getProtocolI(enum type endType, char * data);*/
