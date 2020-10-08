@@ -7,6 +7,7 @@ extern unsigned logicConnectionFlag;
 
 void alarmHandler(int signo) {
     logicConnectionFlag = TRUE;
+    //printf("handler\n");
 }
 
 int main(int argc, char** argv){
@@ -14,7 +15,6 @@ int main(int argc, char** argv){
     struct termios oldtio;
 
     checkCmdArgs(argc, argv);
-    printf("Before configure\n");
     fd = openConfigureSP(argv[1], &oldtio);
 
     //writes to the serial port
@@ -35,7 +35,7 @@ int main(int argc, char** argv){
     //write it
     while(!valid && counter < 3) {
         //turns the alarm on
-        if(logicConnectionFlag){
+        if(logicConnectionFlag) {
             alarm(TIME_OUT);              
             logicConnectionFlag = FALSE;
 
@@ -43,30 +43,30 @@ int main(int argc, char** argv){
             res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
             
             //verifies if it was written correctly
-            if(res != (SUPERVISION_MESSAGE_SIZE+1)){
+            if (res != (SUPERVISION_MESSAGE_SIZE+1)) {
                 printf("Wrong message size\n");
             }
-
-            // TODO: RECHECK READS IF NO REPLY
             
             //tries to read the message back from the serialPort
             ret = readFromSP(fd, &size);
+
+            //printf("just read from SP %s\n", ret);
+
             //verificar se recebeu e se é valida, caso nao reeenvia set enquanto nao for valida um maximo de 3 vezes
-            if(size != (SUPERVISION_MESSAGE_SIZE + 1)){
+            if (size != (SUPERVISION_MESSAGE_SIZE + 1)) {
                 valid = FALSE;
-            }
-            else if(ret[2] != (char)CTRL_UA){
+            } else if(ret[2] != (char)CTRL_UA) {
                 valid = FALSE;
             }
             //another condition for BCC
-            else{
+            else {
                 valid = TRUE;
             }
             counter++;
         }
     } 
-
-    printf("Ligação lógica estabelecida!");
+    if (valid)
+        printf("Ligação lógica estabelecida!\n");
 
     sleep(1);
     

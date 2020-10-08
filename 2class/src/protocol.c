@@ -42,8 +42,9 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     /* set input mode (non-canonical, no echo,...) */
     newtio.c_lflag = 0;
 
-    newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = 5;   /* blocking read until 5 chars received */
+    // t = TIME * 0.1 s
+    newtio.c_cc[VTIME]    = 20;   // if read only blocks for 2 seconds, or until a character is received
+    newtio.c_cc[VMIN]     = 0;   
 
 
 
@@ -59,7 +60,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
         exit(-1);
     }
 
-    printf("New termios structure set\n");
+    //printf("New termios structure set\n");
 
     return fd;
 }
@@ -70,16 +71,22 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
-
 char * readFromSP(int fd, ssize_t * stringSize) {
     char *buf = malloc(700*sizeof(char)), reading;
+
 
     //reads from the serial port
     int counter = 0;
     while(TRUE) {
-        read(fd, &reading, 1);
+        //printf("starting read\n");
+        int readRet = read(fd, &reading, 1);
+
+        if (logicConnectionFlag) break; // if the alarm interrupts
+
+        if (readRet <= 0) continue; // if read was not successful
+
+        // if read is successful
         buf[counter] = reading;
-        if (logicConnectionFlag) break;
         if(reading =='\0') break;
 
         counter++;

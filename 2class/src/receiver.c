@@ -26,6 +26,8 @@ int main(int argc, char** argv){
     //tries to read the message back from the serialPort
     ret = readFromSP(fd, &size);
 
+    //printf("just read from SP\n");
+
     //verificar se recebeu e se é valida, caso nao reeenvia set enquanto nao for valida um maximo de 3 vezes
     if(size != (SUPERVISION_MESSAGE_SIZE + 1)){
         printf("Can't set connection1\n");
@@ -40,9 +42,9 @@ int main(int argc, char** argv){
     //verifies if it was written correctly
     if(res != (SUPERVISION_MESSAGE_SIZE + 1)){
         return -1;
-    }   
-
-    printf("Connected successfully\n");
+    } else {   
+        printf("Connected successfully!\n");
+    }
     
     sleep(1);
 
