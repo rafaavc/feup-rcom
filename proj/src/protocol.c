@@ -16,7 +16,7 @@ void checkCmdArgs(int argc, char ** argv) {
     };
     if ( (argc < 2) || ((strcmp(ports[0], argv[1])!=0) && (strcmp(ports[1], argv[1])!=0) )) {
         printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -29,11 +29,11 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     struct termios newtio; 
 
     fd = open(port, O_RDWR | O_NOCTTY );
-    if (fd < 0) { perror(port); exit(-1); }
+    if (fd < 0) { perror(port); exit(EXIT_FAILURE); }
 
     if (tcgetattr(fd, oldtio) == -1) { /* save current port settings */
         perror("tcgetattr");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     bzero(&newtio, sizeof(newtio));
@@ -58,7 +58,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 
     if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
         perror("tcsetattr");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     printf("New termios structure set\n");
@@ -115,7 +115,7 @@ char *  constructSupervisionMessage(char addr, char ctrl){
 void closeSP(int fd, struct termios *oldtio) {
     if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
       perror("tcsetattr");
-      exit(-1);
+      exit(EXIT_FAILURE);
     }
 
     close(fd);

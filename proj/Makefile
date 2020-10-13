@@ -1,7 +1,7 @@
 CC=gcc
 _DEPS = protocol.h
-_EmitterOBJ = emitter.o protocol.o
-_ReceiverOBJ = receiver.o protocol.o
+_EmitterOBJ = emitter.o protocol.o emitterFuncs.o
+_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o
 OBJDIR = obj
 SRCDIR = src
 EmitterName = emitter
