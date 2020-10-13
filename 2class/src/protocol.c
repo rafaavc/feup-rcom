@@ -1,6 +1,8 @@
 #include "protocol.h"
 
 unsigned logicConnectionFlag = TRUE;
+enum stateMachine state;
+volatile int STOP=FALSE;
 
 void checkCmdArgs(int argc, char ** argv) {
     char * ports[2] = {
@@ -71,24 +73,27 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
-char * readFromSP(int fd, ssize_t * stringSize) {
+char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char *buf = malloc(700*sizeof(char)), reading;
 
 
     //reads from the serial port
     int counter = 0;
-    while(TRUE) {
+    while(STOP == FALSE) {
         //printf("starting read\n");
         int readRet = read(fd, &reading, 1);
 
-        if (logicConnectionFlag) break; // if the alarm interrupts
+        if (logicConnectionFlag) STOP=TRUE; // if the alarm interrupts
 
         if (readRet <= 0) continue; // if read was not successful
 
         // if read is successful
+        checkState(&state, buf,reading, emitter);
         buf[counter] = reading;
-        if(reading =='\0') break;
-
+        if(state == DONE || logicConnectionFlag){
+            STOP = TRUE;
+        } 
+        
         counter++;
     }
     (*stringSize) = counter+1;
@@ -114,5 +119,92 @@ void closeSP(int fd, struct termios *oldtio) {
     }
 
     close(fd);
+}
+
+
+
+void checkState(enum stateMachine *state, char *buf, char byte, int emitter){// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+    //checkar melhor o bcc
+    
+    switch (*state){
+    case Start:
+        if(byte == MSG_FLAG){
+            *state = FLAG_RCV;
+        }
+        break;
+    
+    case FLAG_RCV:
+        if(emitter == 1){
+            if(byte == ADDR_SENT_RCV){
+            *state = A_RCV;
+            }
+            else if(byte != MSG_FLAG){
+                *state = Start;
+            }
+            break;
+        }
+        else if (emitter == 0){
+            if(byte == ADDR_SENT_EM){
+            *state = A_RCV;
+            }
+            else if(byte != MSG_FLAG){
+                *state = Start;
+            }
+            break;
+
+        }
+        break;
+        
+    case A_RCV:
+        if(emitter == 1){
+            if(byte == CTRL_UA){
+                *state = C_RCV;
+            }
+            else if (byte == MSG_FLAG){
+                *state = FLAG_RCV;
+            }
+            else{
+                *state = Start;
+            }
+
+        }
+        else if (emitter == 0){
+            if(byte == CTRL_SET){
+                *state = C_RCV;
+            }
+            else if (byte == MSG_FLAG){
+                *state = FLAG_RCV;
+            }
+            else{
+                *state = Start;
+            }
+        }
+        break;
+    case C_RCV:
+        if(byte == BCC(buf[1], buf[2])){
+            *state = BCC_OK;
+        }
+        else if(byte == MSG_FLAG){
+            *state = FLAG_RCV;
+        }
+        else{
+            *state = Start;
+        }
+        break;
+    case BCC_OK:
+        if(byte == MSG_FLAG){
+            *state = DONE;
+        }
+        else{
+            *state = Start;
+        }
+        break;
+    case DONE:
+        break;
+    default:
+        break;
+    }
+
+
 }
 

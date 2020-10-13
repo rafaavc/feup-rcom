@@ -47,8 +47,10 @@ int openConfigureSP(char* port, struct termios *oldtio);
  */
 size_t writeToSP(int fd, char * message, size_t messageSize);
 
-char * readFromSP(int fd, ssize_t * stringSize);
+char * readFromSP(int fd, ssize_t * stringSize, int emitter);
 
 char *  constructSupervisionMessage(char  addr, char ctrl);
 
 void closeSP(int fd, struct termios *oldtio);
+
+void checkState(enum stateMachine *state, char *bcc, char byte, int emitter);

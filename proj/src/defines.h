@@ -13,6 +13,9 @@
 
 #define CTRL_SET        0x03
 #define CTRL_UA         0x07 
+#define DISC            0x0B
+#define RR              0x03
+#define REJ             0x01
 
 #define BCC(a,c) (a^c)
 

@@ -25,28 +25,15 @@ int main(int argc, char** argv){
 
     //tries to read the message back from the serialPort
 
-    printf("TO DO: Change this to read byte a byte\n");
-    ret = readFromSP(fd, &size);
+    ret = readFromSP(fd, &size,0);
 
-
-    //verificar se recebeu e se é valida, caso nao reeenvia set enquanto nao for valida um maximo de 3 vezes
-    if(size != (SUPERVISION_MESSAGE_SIZE + 1)){
-        printf("size : %d \n",size);
-        printf("Can't set connection1\n");
-    }
-     if(ret[2]!= CTRL_SET){
-        printf("Can't set connection2\n");
-    }
-    // another condition for BCC
     //writes to the serial port, trying to connect
     res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
     
     //verifies if it was written correctly
-    if(res != (SUPERVISION_MESSAGE_SIZE + 1)){
-        return -1;
-    } else {   
-        printf("Connected successfully!\n");
-    }
+ 
+    printf("Connected successfully!\n");
+    
     
     sleep(1);
 
