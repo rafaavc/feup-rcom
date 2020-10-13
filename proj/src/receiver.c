@@ -22,14 +22,16 @@ int main(int argc, char** argv){
     ssize_t res, size;
     buf = constructSupervisionMessage(ADDR_SENT_RCV, CTRL_UA);
 
-    //ligar alarme  
+
     //tries to read the message back from the serialPort
+
+    printf("TO DO: Change this to read byte a byte\n");
     ret = readFromSP(fd, &size);
 
-    //printf("just read from SP\n");
 
     //verificar se recebeu e se é valida, caso nao reeenvia set enquanto nao for valida um maximo de 3 vezes
     if(size != (SUPERVISION_MESSAGE_SIZE + 1)){
+        printf("size : %d \n",size);
         printf("Can't set connection1\n");
     }
      if(ret[2]!= CTRL_SET){

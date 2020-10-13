@@ -60,7 +60,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
         exit(-1);
     }
 
-    //printf("New termios structure set\n");
+    printf("New termios structure set\n");
 
     return fd;
 }
@@ -101,7 +101,7 @@ char *  constructSupervisionMessage(char addr, char ctrl){
     msg[0] = MSG_FLAG;
     msg[1] = addr;
     msg[2] = ctrl;
-    msg[3] = MSG_FLAG ^ addr ^ ctrl;
+    msg[3] = BCC(addr, ctrl);
     msg[4]= MSG_FLAG;
 
     return msg;

@@ -14,6 +14,8 @@
 #define CTRL_SET        0x03
 #define CTRL_UA         0x07 
 
+#define BCC(a,c) (a^c)
+
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
@@ -24,6 +26,9 @@
 
 #define SUPERVISION_MESSAGE_SIZE 5
 #define TIME_OUT    3
+#define NO_TRIES    3
 
+
+enum stateMachine{Start, FLAG_RCV, A_RCV, C_RCV, BCC_OK, DONE};
 
 #endif /* _DEFINES_H_*/

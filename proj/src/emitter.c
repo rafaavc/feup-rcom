@@ -14,8 +14,13 @@ int main(int argc, char** argv){
     int fd, sum = 0, speed = 0;
     struct termios oldtio;
 
+
     checkCmdArgs(argc, argv);
     fd = openConfigureSP(argv[1], &oldtio);
+
+    if(signal(SIGALRM, alarmHandler) < 0)
+        printf("Wrong alarm\n");  // instala  rotina que atende interrupcao
+
 
     //writes to the serial port
     size_t res;
@@ -29,11 +34,9 @@ int main(int argc, char** argv){
    
 
 
-    if(signal(SIGALRM, alarmHandler) < 0)
-        printf("Wrong alarm\n");  // instala  rotina que atende interrupcao
 
     //write it
-    while(!valid && counter < 3) {
+    while(!valid && counter < NO_TRIES) {
         //turns the alarm on
         if(logicConnectionFlag) {
             alarm(TIME_OUT);              
