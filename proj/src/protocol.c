@@ -77,6 +77,8 @@ char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if
     int counter = 0;
     char bcc[2];
 
+    STOP = FALSE;
+
     //reads from the serial port
     while(STOP == FALSE) {
         printf("starting read\n");
@@ -87,13 +89,14 @@ char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if
         if (readRet <= 0) continue; // if read was not successful
 
         // if read is successful
-        checkState(&state, bcc,reading, emitter);
+        checkState(&state, bcc, reading, emitter);
 
         if(state == DONE || logicConnectionFlag) STOP = TRUE;
 
         buf[counter] = reading;
         counter++;
     }
+
     (*stringSize) = counter+1;
     printf("Leaving read\n");
     return buf;
@@ -125,6 +128,10 @@ void closeSP(int fd, struct termios *oldtio) {
 void checkState(enum stateMachine *state, char *bcc, char byte, int emitter){ 
     // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
+
+    //printf("start: %ud, flagRCV: %ud, aRCV: %ud, cRCV: %ud, bccOK: %ud, done: %ud\n", Start, FLAG_RCV, A_RCV, C_RCV, BCC_OK, DONE);
+
+    //printf("currentState: %ud, byte: %c\n", *state, byte);
     
     switch (*state){
     case Start:
@@ -195,7 +202,7 @@ void checkState(enum stateMachine *state, char *bcc, char byte, int emitter){
         }
         break;
     case C_RCV:
-        if(byte == BCC(bcc[1], bcc[2])){
+        if(byte == BCC(bcc[0], bcc[1])){
             *state = BCC_OK;
             break;
         }
