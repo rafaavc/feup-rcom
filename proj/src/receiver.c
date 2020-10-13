@@ -8,8 +8,6 @@ int main(int argc, char** argv){
     // sum=0, speed=0;
     struct termios oldtio;
 
-    logicConnectionFlag = FALSE;
-
     checkCmdArgs(argc, argv);
 
 

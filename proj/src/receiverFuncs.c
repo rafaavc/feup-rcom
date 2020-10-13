@@ -5,14 +5,14 @@ unsigned establishLogicConnection(int fd) {
     char* ret;
     char* buf = NULL;
     ssize_t res, size;
-    buf = constructSupervisionMessage(ADDR_SENT_RCV, CTRL_UA);
+    buf = constructSupervisionMessage(ADDR_SENT_EM, CTRL_UA);
 
 
     //tries to read the message back from the serialPort
-    ret = readFromSP(fd, &size,0);
-    
+    ret = readFromSP(fd, &size, ADDR_SENT_EM, CTRL_SET);
+    //printf("ret: %s, size: %ld\n", ret, size);
     //writes to the serial port, trying to connect
-    res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
+    res = writeToSP(fd, buf, SUPERVISION_MESSAGE_SIZE);
 
     return TRUE;
 }

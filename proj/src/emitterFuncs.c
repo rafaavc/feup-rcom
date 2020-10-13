@@ -7,11 +7,9 @@ unsigned establishLogicConnection(int fd) {
     
     //writes to the serial port
     size_t res;
-    char* buf = NULL;
-    char* ret = NULL;
     ssize_t size; 
+    char* buf = NULL, * ret = NULL;
     int counter = 0;
-    int valid = FALSE;
 
     buf = constructSupervisionMessage(ADDR_SENT_EM, CTRL_SET);
     
@@ -34,9 +32,9 @@ unsigned establishLogicConnection(int fd) {
             }
             
             //tries to read the message back from the serialPort
-            ret = readFromSP(fd, &size,1);
+            ret = readFromSP(fd, &size, ADDR_SENT_EM, CTRL_UA);
 
-            if(state == DONE)
+            if(size != 0)
                 return TRUE;
             
             counter++;

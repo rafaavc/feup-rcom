@@ -11,6 +11,8 @@ int main(int argc, char** argv){
     int fd;
     // sum = 0, speed = 0;
     struct termios oldtio;  
+
+    logicConnectionFlag = TRUE; // says that it is ready to attempt connection
    
     checkCmdArgs(argc, argv);
 
@@ -24,7 +26,7 @@ int main(int argc, char** argv){
     if (establishLogicConnection(fd))
         printf("Ligação lógica estabelecida!\n");
     else {
-        perror("Wasn't able to establish logic connection");
+        printf("Wasn't able to establish logic connection\n");
         exit(EXIT_FAILURE);
     }
 

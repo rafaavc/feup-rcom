@@ -17,6 +17,11 @@
 #define RR              0x03
 #define REJ             0x01
 
+#define ADDR_IDX        1
+#define CTRL_IDX        2
+
+#define ANY_VALUE       -1
+
 #define BCC(a,c) (a^c)
 
 #define BAUDRATE B38400

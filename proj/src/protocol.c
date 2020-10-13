@@ -1,6 +1,7 @@
 #include "protocol.h"
 
-unsigned logicConnectionFlag = TRUE;
+unsigned logicConnectionFlag = FALSE;
+
 enum stateMachine state;
 volatile int STOP=FALSE;
 
@@ -72,29 +73,42 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
-char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+char * readFromSP(int fd, ssize_t * stringSize, unsigned addressField, unsigned controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char *buf = malloc(700*sizeof(char)), reading;
     int counter = 0;
-    char bcc[2];
 
     STOP = FALSE;
+
+    char bcc[2];
 
     //reads from the serial port
     while(STOP == FALSE) {
         int readRet = read(fd, &reading, 1);
 
         if (logicConnectionFlag) STOP=TRUE; // if the alarm interrupts
-
-        if (readRet <= 0) break; // if read was not successful
+        //printf("1\n");
+        if (readRet < 0) {
+            //perror("Unsuccessful read");
+            break;
+        } else if (readRet == 0) continue; // if didn't read anything
+        //printf("2\n");
 
         // if read is successful
 
-        checkState(&state, bcc, reading, emitter);
-        
-        if(state == DONE || logicConnectionFlag) STOP = TRUE;
+        if (checkState(&state, bcc, reading, addressField, controlField) != 0) continue;
+        //printf("state: %ud\n", state);
+
+
+        //printf("3\n");
+        if(state == DONE) STOP = TRUE;
 
         buf[counter] = reading;
         counter++;
+    }
+
+    if (state != DONE) {
+        (*stringSize) = 0;
+        return NULL;
     }
 
     (*stringSize) = counter+1;
@@ -108,7 +122,7 @@ char *  constructSupervisionMessage(char addr, char ctrl){
     msg[1] = addr;
     msg[2] = ctrl;
     msg[3] = BCC(addr, ctrl);
-    msg[4]= MSG_FLAG;
+    msg[4] = MSG_FLAG;
 
     return msg;
 }
@@ -124,108 +138,77 @@ void closeSP(int fd, struct termios *oldtio) {
 
 
 
-void checkState(enum stateMachine *state, char *bcc, char byte, int emitter){ 
+unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField){ 
     // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
+
+    enum stateMachine prevState = *state;
     
     switch (*state){
     case Start:
         if(byte == MSG_FLAG){
             *state = FLAG_RCV;
+            //printf("flag ok\n");
         }
         break;
     
     case FLAG_RCV:
-        if(emitter == 1){
-            if(byte == ADDR_SENT_RCV){
-                *state = A_RCV;
-                bcc[0] = byte;
-                break;
-            }
-            else if(byte != MSG_FLAG){
-                *state = Start;
-                break;
-            }
-            break;
+        if(byte == addressField || addressField == ANY_VALUE){
+            *state = A_RCV;
+            bcc[0] = byte;
+            //printf("address ok\n");
         }
-        else if (emitter == 0){
-            if(byte == ADDR_SENT_EM){
-                *state = A_RCV;
-                bcc[0] = byte;
-                break;
-            }
-            else if(byte != MSG_FLAG){
-                *state = Start;
-                break;
-            }
-            break;
-
+        else if(byte != MSG_FLAG){
+            *state = Start;
         }
         break;
         
     case A_RCV:
-        if(emitter == 1){
-            if(byte == CTRL_UA){
-                *state = C_RCV;
-                bcc[1] = byte;
-                break;
-            }
-            else if (byte == MSG_FLAG){
-                *state = FLAG_RCV;
-                break;
-            }
-            else{
-                *state = Start;
-                break;
-            }
-
+        if (byte == controlField || controlField == ANY_VALUE) {
+            *state = C_RCV;
+            bcc[1] = byte;
+            //printf("control ok\n");
         }
-        else if (emitter == 0){
-            if(byte == CTRL_SET){
-                *state = C_RCV;
-                bcc[1] = byte;
-                break;
-            }
-            else if (byte == MSG_FLAG){
-                *state = FLAG_RCV;
-                break;
-            }
-            else{
-                *state = Start;
-                break;
-            }
+        else if (byte == MSG_FLAG) {
+            *state = FLAG_RCV;
+        }
+        else {
+            *state = Start;
         }
         break;
+
     case C_RCV:
         if(byte == BCC(bcc[0], bcc[1])){
             *state = BCC_OK;
-            break;
+            //printf("bcc ok\n");
         }
         else if(byte == MSG_FLAG){
             *state = FLAG_RCV;
-            break;
+            //printf("received MSG_FLAG :(\n");
         }
         else{
             *state = Start;
-            break;
+            //printf("received %x, bcc: %x\n", byte, BCC(bcc[0], bcc[1]));
         }
         break;
+
     case BCC_OK:
         if(byte == MSG_FLAG){
             *state = DONE;
-            break;
         }
         else{
             *state = Start;
-            break;
         }
         break;
+
     case DONE:
-        break;
     default:
         break;
     }
 
-
+    if ((*state == FLAG_RCV && prevState != Start) || *state == Start) { // if the state was restarted
+        return 1;
+    }
+    return 0;
 }
 
