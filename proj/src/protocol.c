@@ -77,6 +77,8 @@ char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if
     int counter = 0;
     char bcc[2];
 
+    STOP = FALSE;
+
     //reads from the serial port
     while(STOP == FALSE) {
         int readRet = read(fd, &reading, 1);
@@ -86,12 +88,15 @@ char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if
         if (readRet <= 0) break; // if read was not successful
 
         // if read is successful
-        checkState(&state, bcc,reading, emitter);
+
+        checkState(&state, bcc, reading, emitter);
+        
         if(state == DONE || logicConnectionFlag) STOP = TRUE;
 
         buf[counter] = reading;
         counter++;
     }
+
     (*stringSize) = counter+1;
     return buf;
 }
