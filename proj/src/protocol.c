@@ -81,7 +81,6 @@ char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if
 
     //reads from the serial port
     while(STOP == FALSE) {
-        printf("starting read\n");
         int readRet = read(fd, &reading, 1);
 
         if (logicConnectionFlag) STOP=TRUE; // if the alarm interrupts
@@ -98,7 +97,6 @@ char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if
     }
 
     (*stringSize) = counter+1;
-    printf("Leaving read\n");
     return buf;
 }
 

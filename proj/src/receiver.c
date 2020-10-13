@@ -13,7 +13,6 @@ int main(int argc, char** argv){
 
 
     fd = openConfigureSP(argv[1], &oldtio);
-    printf("HelloR");
 
     //unsigned valid = FALSE, counter = 0;
     char* ret;
