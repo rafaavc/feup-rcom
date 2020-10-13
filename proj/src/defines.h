@@ -13,9 +13,9 @@
 
 #define CTRL_SET        0x03
 #define CTRL_UA         0x07 
-#define DISC            0x0B
-#define RR              0x03
-#define REJ             0x01
+#define CTRL_DISC       0x0B
+#define CTRL_RR         0x03
+#define CTRL_REJ        0x01
 
 #define ADDR_IDX        1
 #define CTRL_IDX        2

@@ -39,5 +39,7 @@ unsigned establishLogicConnection(int fd) {
             
             counter++;
         }
-    } 
+    }
+
+    return FALSE;
 }

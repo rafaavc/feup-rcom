@@ -3,6 +3,7 @@
 unsigned logicConnectionFlag = FALSE;
 
 enum stateMachine state;
+
 volatile int STOP=FALSE;
 
 void checkCmdArgs(int argc, char ** argv) {
@@ -78,6 +79,7 @@ char * readFromSP(int fd, ssize_t * stringSize, unsigned addressField, unsigned 
     int counter = 0;
 
     STOP = FALSE;
+    state = Start;
 
     char bcc[2];
 
@@ -138,7 +140,7 @@ void closeSP(int fd, struct termios *oldtio) {
 
 
 
-unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField){ 
+unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField) { 
     // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
 
@@ -194,10 +196,10 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned ad
 
     case BCC_OK:
         if(byte == MSG_FLAG){
-            *state = DONE;
+            *state = DONE; // S and U
         }
         else{
-            *state = Start;
+            *state = Start; // I
         }
         break;
 
@@ -206,9 +208,9 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned ad
         break;
     }
 
+
     if ((*state == FLAG_RCV && prevState != Start) || *state == Start) { // if the state was restarted
         return 1;
     }
     return 0;
 }
-
