@@ -68,7 +68,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 
 size_t writeToSP(int fd, char* message, size_t messageSize) {
     message[messageSize]='\0';
-    //printf("Do we need to verify if the writing was correct\n");
+
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
@@ -85,11 +85,12 @@ char * readFromSP(int fd, ssize_t * stringSize, int emitter) {// emitter is 1 if
 
         if (logicConnectionFlag) STOP=TRUE; // if the alarm interrupts
 
-        if (readRet <= 0) continue; // if read was not successful
+        if (readRet <= 0) break; // if read was not successful
 
         // if read is successful
-        checkState(&state, bcc, reading, emitter);
 
+        checkState(&state, bcc, reading, emitter);
+        
         if(state == DONE || logicConnectionFlag) STOP = TRUE;
 
         buf[counter] = reading;
@@ -126,10 +127,6 @@ void closeSP(int fd, struct termios *oldtio) {
 void checkState(enum stateMachine *state, char *bcc, char byte, int emitter){ 
     // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
-
-    //printf("start: %ud, flagRCV: %ud, aRCV: %ud, cRCV: %ud, bccOK: %ud, done: %ud\n", Start, FLAG_RCV, A_RCV, C_RCV, BCC_OK, DONE);
-
-    //printf("currentState: %ud, byte: %c\n", *state, byte);
     
     switch (*state){
     case Start:

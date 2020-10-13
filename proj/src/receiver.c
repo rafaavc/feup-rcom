@@ -1,6 +1,7 @@
 #include "receiverFuncs.h"
 
 extern int logicConnectionFlag;
+extern enum stateMachine state;
 
 int main(int argc, char** argv){
     int fd;
