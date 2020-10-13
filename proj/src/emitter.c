@@ -1,7 +1,8 @@
-#include "protocol.h"
+#include "emitterFuncs.h"
 
 extern unsigned logicConnectionFlag;
 extern enum stateMachine_S_U state;
+
 
 void alarmHandler(int signo) {
     //if(state != DONE)
@@ -12,57 +13,22 @@ int main(int argc, char** argv){
     int fd;
     // sum = 0, speed = 0;
     struct termios oldtio;  
-
    
     checkCmdArgs(argc, argv);
+
     fd = openConfigureSP(argv[1], &oldtio);
     
-    if(signal(SIGALRM, alarmHandler) < 0)
-        printf("Wrong alarm\n");  // instala  rotina que atende interrupcao
+    if(signal(SIGALRM, alarmHandler) < 0) {
+        perror("Alarm handler wasn't installed");  // instala  rotina que atende interrupcao
+        exit(EXIT_FAILURE);
+    }
 
-
-    //writes to the serial port
-    size_t res;
-    char* buf = NULL;
-    char* ret = NULL;
-    ssize_t size; 
-    int counter = 0;
-    int valid = FALSE;
-
-    buf = constructSupervisionMessage(ADDR_SENT_EM, CTRL_SET);
-    
-
-    //write it
-    while(!valid && counter < NO_TRIES) {
-        //turns the alarm on
-        if(logicConnectionFlag) {            
-            //writes to the serial port, trying to connect
-            res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
-
-            alarm(TIME_OUT);  
-
-            logicConnectionFlag = FALSE;
-            state = Start;
-            
-            //verifies if it was written correctly
-            if (res != (SUPERVISION_MESSAGE_SIZE+1)) {
-                printf("Wrong message size\n");
-            }
-            
-            //tries to read the message back from the serialPort
-            ret = readFromSP(fd, &size,1);
-
-            
-            if(state == DONE)
-                valid = TRUE;
-            else valid = FALSE;
-            
-            counter++;
-        }
-    
-    } 
-    if (valid)
+    if (establishLogicConnection(fd))
         printf("Ligação lógica estabelecida!\n");
+    else {
+        perror("Wasn't able to establish logic connection");
+        exit(EXIT_FAILURE);
+    }
 
     sleep(1);
     

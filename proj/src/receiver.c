@@ -1,4 +1,4 @@
-#include "protocol.h"
+#include "receiverFuncs.h"
 
 extern int logicConnectionFlag;
 extern enum stateMachine_S_U state;
@@ -14,6 +14,7 @@ int main(int argc, char** argv){
 
 
     fd = openConfigureSP(argv[1], &oldtio);
+
 
     unsigned valid = FALSE;
     // counter = 0;
@@ -31,13 +32,11 @@ int main(int argc, char** argv){
     res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
     
     if(valid && res>0){
+    if (establishLogicConnection(fd))
+
         printf("Connected successfully!\n");
-    }
-    else {
-        printf("no connection madwe \n");        
-    }
-   
- 
+    
+    
     sleep(1);
 
     closeSP(fd, &oldtio);

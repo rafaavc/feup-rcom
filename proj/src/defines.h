@@ -9,7 +9,7 @@
 #define ADDR_SENT_EM    0x03 /*Commands sent by emitter and answers sent by receiver*/
 #define ADDR_SENT_RCV   0x01 /*Commands sent by receiver and answers sent by emitter*/
 
-//#define SOCAT           
+#define SOCAT           
 
 #define CTRL_SET        0x03
 #define CTRL_UA         0x07 
