@@ -53,4 +53,6 @@ char *  constructSupervisionMessage(char  addr, char ctrl);
 
 void closeSP(int fd, struct termios *oldtio);
 
-void checkState(enum stateMachine *state, char *bcc, char byte, int emitter);
+void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte);
+void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int emitter);
+void checkState_data(enum stateMachine_I *state, char *bcc, char byte, int emitter);

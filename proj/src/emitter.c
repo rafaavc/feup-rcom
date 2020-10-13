@@ -1,7 +1,7 @@
 #include "protocol.h"
 
 extern unsigned logicConnectionFlag;
-extern enum stateMachine state;
+extern enum stateMachine_S_U state;
 
 void alarmHandler(int signo) {
     //if(state != DONE)

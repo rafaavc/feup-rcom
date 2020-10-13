@@ -13,7 +13,7 @@
 
 #define CTRL_SET        0x03
 #define CTRL_UA         0x07 
-#define DISC            0x0B
+#define CTRL_DISC            0x0B
 #define RR              0x03
 #define REJ             0x01
 
@@ -32,6 +32,7 @@
 #define NO_TRIES    3
 
 
-enum stateMachine{Start, FLAG_RCV, A_RCV, C_RCV, BCC_OK, DONE};
+enum stateMachine_S_U{Start, FLAG_RCV, A_RCV, C_RCV, BCC_OK, DONE};
+enum stateMachine_I{Start};//acabar
 
 #endif /* _DEFINES_H_*/

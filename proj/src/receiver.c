@@ -1,7 +1,7 @@
 #include "protocol.h"
 
 extern int logicConnectionFlag;
-extern enum stateMachine state;
+extern enum stateMachine_S_U state;
 
 int main(int argc, char** argv){
     int fd;
@@ -16,7 +16,7 @@ int main(int argc, char** argv){
     fd = openConfigureSP(argv[1], &oldtio);
 
     unsigned valid = FALSE;
-// counter = 0;
+    // counter = 0;
     char* ret;
     char* buf = NULL;
     ssize_t res, size;

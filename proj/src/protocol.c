@@ -1,7 +1,7 @@
 #include "protocol.h"
 
 unsigned logicConnectionFlag = TRUE;
-enum stateMachine state;
+enum stateMachine_S_U state;
 volatile int STOP=FALSE;
 
 void checkCmdArgs(int argc, char ** argv) {
@@ -124,10 +124,7 @@ void closeSP(int fd, struct termios *oldtio) {
 
 
 
-void checkState(enum stateMachine *state, char *bcc, char byte, int emitter){ 
-    // emitter is 1 if it's the emitter reading and 0 if it's the receiver
-    //checkar melhor o bcc
-    
+void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int emitter){ 
     switch (*state){
     case Start:
         if(byte == MSG_FLAG){
@@ -225,7 +222,176 @@ void checkState(enum stateMachine *state, char *bcc, char byte, int emitter){
     default:
         break;
     }
-
-
 }
 
+
+
+void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte){  
+    switch (*state){
+    case Start:
+        if(byte == MSG_FLAG){
+            *state = FLAG_RCV;
+        }
+        break;
+    
+    case FLAG_RCV:
+        if(byte == ADDR_SENT_RCV){
+            *state = A_RCV;
+            bcc[0] = byte;
+            break;
+        }
+        else if(byte != MSG_FLAG){
+            *state = Start;
+            break;
+        }
+        break;
+       
+        
+    case A_RCV:
+        if(byte == CTRL_DISC){
+            *state = C_RCV;
+            bcc[1] = byte;
+            break;
+        }
+        else if (byte == MSG_FLAG){
+            *state = FLAG_RCV;
+            break;
+        }
+        else{
+            *state = Start;
+            break;
+        }
+
+        
+    case C_RCV:
+        if(byte == BCC(bcc[0], bcc[1])){
+            *state = BCC_OK;
+            break;
+        }
+        else if(byte == MSG_FLAG){
+            *state = FLAG_RCV;
+            break;
+        }
+        else{
+            *state = Start;
+            break;
+        }
+        break;
+    case BCC_OK:
+        if(byte == MSG_FLAG){
+            *state = DONE;
+            break;
+        }
+        else{
+            *state = Start;
+            break;
+        }
+        break;
+    case DONE:
+        break;
+    default:
+        break;
+    }
+}
+
+
+void checkState_data(enum stateMachine_I *state, char *bcc, char byte, int emitter){ 
+    //TO DO: change this to have all the fields of the data
+    switch (*state){
+    case Start:
+        if(byte == MSG_FLAG){
+            *state = FLAG_RCV;
+        }
+        break;
+    
+    case FLAG_RCV:
+        if(emitter == 1){
+            if(byte == ADDR_SENT_RCV){
+                *state = A_RCV;
+                bcc[0] = byte;
+                break;
+            }
+            else if(byte != MSG_FLAG){
+                *state = Start;
+                break;
+            }
+            break;
+        }
+        else if (emitter == 0){
+            if(byte == ADDR_SENT_EM){
+                *state = A_RCV;
+                bcc[0] = byte;
+                break;
+            }
+            else if(byte != MSG_FLAG){
+                *state = Start;
+                break;
+            }
+            break;
+
+        }
+        break;
+        
+    case A_RCV:
+        if(emitter == 1){
+            if(byte == CTRL_UA){
+                *state = C_RCV;
+                bcc[1] = byte;
+                break;
+            }
+            else if (byte == MSG_FLAG){
+                *state = FLAG_RCV;
+                break;
+            }
+            else{
+                *state = Start;
+                break;
+            }
+
+        }
+        else if (emitter == 0){
+            if(byte == CTRL_SET){
+                *state = C_RCV;
+                bcc[1] = byte;
+                break;
+            }
+            else if (byte == MSG_FLAG){
+                *state = FLAG_RCV;
+                break;
+            }
+            else{
+                *state = Start;
+                break;
+            }
+        }
+        break;
+    case C_RCV:
+        if(byte == BCC(bcc[0], bcc[1])){
+            *state = BCC_OK;
+            break;
+        }
+        else if(byte == MSG_FLAG){
+            *state = FLAG_RCV;
+            break;
+        }
+        else{
+            *state = Start;
+            break;
+        }
+        break;
+    case BCC_OK:
+        if(byte == MSG_FLAG){
+            *state = DONE;
+            break;
+        }
+        else{
+            *state = Start;
+            break;
+        }
+        break;
+    case DONE:
+        break;
+    default:
+        break;
+    }
+}
