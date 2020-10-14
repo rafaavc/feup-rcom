@@ -4,6 +4,8 @@ unsigned logicConnectionFlag = FALSE;
 
 volatile int STOP=FALSE;
 
+
+
 void checkCmdArgs(int argc, char ** argv) {
     char * ports[2] = {
         #ifndef SOCAT 
@@ -72,8 +74,8 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
-char * readFromSP(int fd, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
-    char *buf = malloc(700*sizeof(char)), reading;
+void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+    char reading;
     int counter = 0;
 
     STOP = FALSE;
@@ -107,24 +109,20 @@ char * readFromSP(int fd, enum stateMachine *state, ssize_t * stringSize, unsign
     }
 
     if (!isAcceptanceState(state)) {
+        buf = NULL;
         (*stringSize) = 0;
-        return NULL;
+        return;
     }
 
     (*stringSize) = counter+1;
-    return buf;
 }
 
-char *  constructSupervisionMessage(char addr, char ctrl){
-    char* msg = malloc(sizeof(char)*SUPERVISION_MESSAGE_SIZE);
-
-    msg[0] = MSG_FLAG;
-    msg[1] = addr;
-    msg[2] = ctrl;
-    msg[3] = BCC(addr, ctrl);
-    msg[4] = MSG_FLAG;
-
-    return msg;
+void constructSupervisionMessage(char * ret, char addr, char ctrl){
+    ret[0] = MSG_FLAG;
+    ret[1] = addr;
+    ret[2] = ctrl;
+    ret[3] = BCC(addr, ctrl);
+    ret[4] = MSG_FLAG;
 }
 
 void closeSP(int fd, struct termios *oldtio) {
@@ -222,7 +220,7 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned ad
         } else {
             dataCount++;
             dataBCC ^= byte;
-            if (dataCount >= DATA_LENGTH) { *state = DATA_OK; dataCount = 0; dataBCC = 0; }
+            if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK; dataCount = 0; dataBCC = 0; }
         }
         break;
 

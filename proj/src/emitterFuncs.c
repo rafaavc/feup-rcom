@@ -8,10 +8,10 @@ unsigned establishLogicConnection(int fd) {
     //writes to the serial port
     size_t res;
     ssize_t size; 
-    char* buf = NULL, * ret = NULL;
+    char buf[SUPERVISION_MSG_SIZE], ret[MAX_I_MSG_SIZE];
     int counter = 0;
 
-    buf = constructSupervisionMessage(ADDR_SENT_EM, CTRL_SET);
+    constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_SET);
     
 
     //write it
@@ -19,21 +19,21 @@ unsigned establishLogicConnection(int fd) {
         //turns the alarm on
         if(logicConnectionFlag) {            
             //writes to the serial port, trying to connect
-            res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
+            res = writeToSP(fd, buf, SUPERVISION_MSG_SIZE);
 
             alarm(TIME_OUT);  
 
             logicConnectionFlag = FALSE;
             
             //verifies if it was written correctly
-            if (res != (SUPERVISION_MESSAGE_SIZE+1)) {
+            if (res != (SUPERVISION_MSG_SIZE + 1)) {
                 printf("Wrong message size\n");
             }
             
             enum stateMachine state;
 
             //tries to read the message back from the serialPort
-            ret = readFromSP(fd, &state, &size, ADDR_SENT_EM, CTRL_UA);
+            readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, CTRL_UA);
 
             if(isAcceptanceState(&state))
                 return TRUE;

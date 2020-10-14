@@ -56,9 +56,9 @@ size_t writeToSP(int fd, char * message, size_t messageSize);
  * @param controlField the desired control field (ANY_VALUE if not specified)
  * @return the string read
  */
-char * readFromSP(int fd, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField);
+void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField);
 
-char *  constructSupervisionMessage(char  addr, char ctrl);
+void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
 void closeSP(int fd, struct termios *oldtio);
 
