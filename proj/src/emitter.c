@@ -1,8 +1,6 @@
 #include "emitterFuncs.h"
 
 extern unsigned logicConnectionFlag;
-extern enum stateMachine_S_U state;
-
 
 void alarmHandler(int signo) {
     //if(state != DONE)
