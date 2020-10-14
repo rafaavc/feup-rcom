@@ -24,17 +24,18 @@ unsigned establishLogicConnection(int fd) {
             alarm(TIME_OUT);  
 
             logicConnectionFlag = FALSE;
-            state = Start;
             
             //verifies if it was written correctly
             if (res != (SUPERVISION_MESSAGE_SIZE+1)) {
                 printf("Wrong message size\n");
             }
             
-            //tries to read the message back from the serialPort
-            ret = readFromSP(fd, &size, ADDR_SENT_EM, CTRL_UA);
+            enum stateMachine state;
 
-            if(size != 0)
+            //tries to read the message back from the serialPort
+            ret = readFromSP(fd, &state, &size, ADDR_SENT_EM, CTRL_UA);
+
+            if(isAcceptanceState(&state))
                 return TRUE;
             
             counter++;
