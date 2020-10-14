@@ -40,6 +40,6 @@
 #define NO_TRIES    3
 
 
-enum stateMachine{Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I};
+enum stateMachine { Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
 
 #endif /* _DEFINES_H_*/

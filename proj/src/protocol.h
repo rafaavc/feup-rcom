@@ -56,7 +56,7 @@ size_t writeToSP(int fd, char * message, size_t messageSize);
  * @param controlField the desired control field (ANY_VALUE if not specified)
  * @return the string read
  */
-void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField);
+void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField);
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
@@ -90,7 +90,7 @@ unsigned isSU(enum stateMachine *state);
  * @param controlField the desired control field (ANY_VALUE if not specified)
  * @return 0 if OK, 1 if the machine restarted
  */
-unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField);
+unsigned checkState(enum stateMachine *state, char * bcc, char byte, char addressField, char controlField);
 
 /*void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte);
 void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int emitter);

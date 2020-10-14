@@ -74,7 +74,7 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
-void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char reading;
     int counter = 0;
 
@@ -145,16 +145,14 @@ unsigned isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
 }
 
-unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField) { 
+unsigned checkState(enum stateMachine *state, char * bcc, char byte, char addressField, char controlField) { 
     // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
-    static dataCount = 0;
-    static dataBCC = 0;
+    static unsigned dataCount = 0;
+    static char dataBCC = 0;
 
     enum stateMachine prevState = *state;
 
-
-    
     switch (*state){
     case Start:
         if(byte == MSG_FLAG){
