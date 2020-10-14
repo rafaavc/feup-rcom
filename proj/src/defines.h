@@ -17,6 +17,8 @@
 #define CTRL_RR         0x03
 #define CTRL_REJ        0x01
 
+#define DATA_LENGTH     64
+
 #define ADDR_IDX        1
 #define CTRL_IDX        2
 
@@ -37,6 +39,6 @@
 #define NO_TRIES    3
 
 
-enum stateMachine{Start, FLAG_RCV, A_RCV, C_RCV, BCC_OK, DONE};
+enum stateMachine{Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I};
 
 #endif /* _DEFINES_H_*/

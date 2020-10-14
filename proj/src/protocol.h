@@ -47,13 +47,51 @@ int openConfigureSP(char* port, struct termios *oldtio);
  */
 size_t writeToSP(int fd, char * message, size_t messageSize);
 
-char * readFromSP(int fd, ssize_t * stringSize, unsigned addressField, unsigned controlField);
+/**
+ * Reads from the serial port using the state machine implementation
+ * @param fd the fd of the serial port
+ * @param state return variable (at end of execution, contains the final state)
+ * @param stringSize return variable (at end of execution, contains the string's size)
+ * @param addressField the desired address value (ANY_VALUE if not specified)
+ * @param controlField the desired control field (ANY_VALUE if not specified)
+ * @return the string read
+ */
+char * readFromSP(int fd, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField);
 
 char *  constructSupervisionMessage(char  addr, char ctrl);
 
 void closeSP(int fd, struct termios *oldtio);
 
+/**
+ * @param the state variable
+ * @return TRUE if is acceptance state
+ */
+unsigned isAcceptanceState(enum stateMachine *state);
+
+/**
+ * @param the state variable
+ * @return TRUE if is DONE_I
+ */
+unsigned isI(enum stateMachine *state);
+
+/**
+ * @param the state variable
+ * @return TRUE if is DONE_S_U
+ */
+unsigned isSU(enum stateMachine *state);
+
+
+/**
+ * Deals with the state transitions
+ * @param state the state variable
+ * @param bcc an array of two chars, the first is the address field and the second is the control field. They are used to calculate the bcc
+ * @param byte the byte received
+ * @param addressField the desired address value (ANY_VALUE if not specified)
+ * @param controlField the desired control field (ANY_VALUE if not specified)
+ * @return 0 if OK, 1 if the machine restarted
+ */
 unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField);
+
 /*void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte);
 void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int emitter);
 void checkState_data(enum stateMachine_I *state, char *bcc, char byte, int emitter);*/

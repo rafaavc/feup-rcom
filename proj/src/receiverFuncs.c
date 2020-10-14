@@ -7,12 +7,15 @@ unsigned establishLogicConnection(int fd) {
     ssize_t res, size;
     buf = constructSupervisionMessage(ADDR_SENT_EM, CTRL_UA);
 
+    enum stateMachine state;
 
     //tries to read the message back from the serialPort
-    ret = readFromSP(fd, &size, ADDR_SENT_EM, CTRL_SET);
+    ret = readFromSP(fd, &state, &size, ADDR_SENT_EM, CTRL_SET);
     //printf("ret: %s, size: %ld\n", ret, size);
     //writes to the serial port, trying to connect
-    res = writeToSP(fd, buf, SUPERVISION_MESSAGE_SIZE);
+    if (isAcceptanceState(&state))
+        res = writeToSP(fd, buf, SUPERVISION_MESSAGE_SIZE);
+    else return FALSE;
 
     return TRUE;
 }

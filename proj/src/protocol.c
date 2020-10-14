@@ -2,8 +2,6 @@
 
 unsigned logicConnectionFlag = FALSE;
 
-enum stateMachine state;
-
 volatile int STOP=FALSE;
 
 void checkCmdArgs(int argc, char ** argv) {
@@ -74,12 +72,12 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
-char * readFromSP(int fd, ssize_t * stringSize, unsigned addressField, unsigned controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+char * readFromSP(int fd, enum stateMachine *state, ssize_t * stringSize, unsigned addressField, unsigned controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char *buf = malloc(700*sizeof(char)), reading;
     int counter = 0;
 
     STOP = FALSE;
-    state = Start;
+    *state = Start;
 
     char bcc[2];
 
@@ -97,18 +95,18 @@ char * readFromSP(int fd, ssize_t * stringSize, unsigned addressField, unsigned 
 
         // if read is successful
 
-        if (checkState(&state, bcc, reading, addressField, controlField) != 0) continue;
+        if (checkState(state, bcc, reading, addressField, controlField) != 0) continue;
         //printf("state: %ud\n", state);
 
 
         //printf("3\n");
-        if(state == DONE) STOP = TRUE;
+        if(isAcceptanceState(state)) STOP = TRUE;
 
         buf[counter] = reading;
         counter++;
     }
 
-    if (state != DONE) {
+    if (!isAcceptanceState(state)) {
         (*stringSize) = 0;
         return NULL;
     }
@@ -138,13 +136,26 @@ void closeSP(int fd, struct termios *oldtio) {
     close(fd);
 }
 
+unsigned isAcceptanceState(enum stateMachine *state) {
+    return *state == DONE_I || *state == DONE_S_U;
+}
 
+unsigned isI(enum stateMachine *state) {
+    return *state == DONE_I;
+}
+unsigned isSU(enum stateMachine *state) {
+    return *state == DONE_S_U;
+}
 
 unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField) { 
     // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
+    static dataCount = 0;
+    static dataBCC = 0;
 
     enum stateMachine prevState = *state;
+
+
     
     switch (*state){
     case Start:
@@ -181,7 +192,7 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned ad
 
     case C_RCV:
         if(byte == BCC(bcc[0], bcc[1])){
-            *state = BCC_OK;
+            *state = BCC_HEAD_OK;
             //printf("bcc ok\n");
         }
         else if(byte == MSG_FLAG){
@@ -194,20 +205,48 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned ad
         }
         break;
 
-    case BCC_OK:
+    case BCC_HEAD_OK:
         if(byte == MSG_FLAG){
-            *state = DONE; // S and U
+            *state = DONE_S_U; // S and U
         }
         else{
-            *state = Start; // I
+            *state = DATA; // I
         }
         break;
 
-    case DONE:
+    case DATA:
+        if(byte == MSG_FLAG){ 
+            *state = FLAG_RCV;
+            dataCount = 0;
+            dataBCC = 0;
+        } else {
+            dataCount++;
+            dataBCC ^= byte;
+            if (dataCount >= DATA_LENGTH) { *state = DATA_OK; dataCount = 0; dataBCC = 0; }
+        }
+        break;
+
+    case DATA_OK:
+        if (byte == dataBCC) {
+            *state = BCC_DATA_OK;
+        } else {
+            *state = Start;
+        }
+        break;
+
+    case BCC_DATA_OK:
+        if (byte == MSG_FLAG) {
+            *state = DONE_I;
+        } else {
+            *state = Start;
+        }
+        break;
+
+    case DONE_I:
+    case DONE_S_U:
     default:
         break;
     }
-
 
     if ((*state == FLAG_RCV && prevState != Start) || *state == Start) { // if the state was restarted
         return 1;
