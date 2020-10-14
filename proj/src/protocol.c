@@ -150,8 +150,12 @@ unsigned isSU(enum stateMachine *state) {
 unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField) { 
     // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
+    static dataCount = 0;
+    static dataBCC = 0;
 
     enum stateMachine prevState = *state;
+
+
     
     switch (*state){
     case Start:
@@ -211,8 +215,30 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned ad
         break;
 
     case DATA:
-        if(byte == MSG_FLAG){ // not complete yet; need to check data BCC and data length
+        if(byte == MSG_FLAG){ 
+            *state = FLAG_RCV;
+            dataCount = 0;
+            dataBCC = 0;
+        } else {
+            dataCount++;
+            dataBCC ^= byte;
+            if (dataCount >= DATA_LENGTH) { *state = DATA_OK; dataCount = 0; dataBCC = 0; }
+        }
+        break;
+
+    case DATA_OK:
+        if (byte == dataBCC) {
+            *state = BCC_DATA_OK;
+        } else {
+            *state = Start;
+        }
+        break;
+
+    case BCC_DATA_OK:
+        if (byte == MSG_FLAG) {
             *state = DONE_I;
+        } else {
+            *state = Start;
         }
         break;
 
