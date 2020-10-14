@@ -17,7 +17,7 @@
 #define CTRL_RR         0x03
 #define CTRL_REJ        0x01
 
-#define DATA_LENGTH     64
+#define MAX_DATA_LENGTH     64
 
 #define ADDR_IDX        1
 #define CTRL_IDX        2
@@ -34,7 +34,8 @@
 
 
 
-#define SUPERVISION_MESSAGE_SIZE 5
+#define SUPERVISION_MSG_SIZE 5
+#define MAX_I_MSG_SIZE MAX_DATA_LENGTH + SUPERVISION_MSG_SIZE + 1 // the 1 is from the data bcc
 #define TIME_OUT    3
 #define NO_TRIES    3
 
