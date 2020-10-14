@@ -60,6 +60,12 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
+void constructInformationMessage(char* ret ,char* data, size_t dataSize);
+
+void byteStuffing(char* ret, size_t dataSize);
+
+void byteDestuffing(char * ret, size_t dataSize);
+
 void closeSP(int fd, struct termios *oldtio);
 
 /**

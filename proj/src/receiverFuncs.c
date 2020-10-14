@@ -3,7 +3,7 @@
 unsigned establishLogicConnection(int fd) {
     //unsigned valid = FALSE, counter = 0;
     char buf[SUPERVISION_MSG_SIZE], ret[MAX_I_MSG_SIZE];
-    ssize_t res, size;
+    ssize_t size;//res
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
 
     enum stateMachine state;
@@ -14,7 +14,7 @@ unsigned establishLogicConnection(int fd) {
     //printf("ret: %s, size: %ld\n", ret, size);
     //writes to the serial port, trying to connect
     if (isAcceptanceState(&state))
-        res = writeToSP(fd, buf, SUPERVISION_MSG_SIZE);
+        writeToSP(fd, buf, SUPERVISION_MSG_SIZE);
     else return FALSE;
 
     return TRUE;

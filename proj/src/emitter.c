@@ -3,7 +3,6 @@
 extern unsigned logicConnectionFlag;
 
 void alarmHandler(int signo) {
-    //if(state != DONE)
         logicConnectionFlag = TRUE;
 }
 

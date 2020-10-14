@@ -4,7 +4,7 @@ unsigned logicConnectionFlag = FALSE;
 
 volatile int STOP=FALSE;
 
-
+int s = 0;
 
 void checkCmdArgs(int argc, char ** argv) {
     char * ports[2] = {
@@ -97,7 +97,7 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
 
         // if read is successful
 
-        if (checkState(state, bcc, reading, addressField, controlField) != 0) continue;
+        if (checkState(state, bcc, reading, addressField, controlField) != 0) continue;//tramas com cabeçalho errado sao ignoradas
         //printf("state: %ud\n", state);
 
 
@@ -118,12 +118,103 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
 }
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl){
-    ret[0] = MSG_FLAG;
-    ret[1] = addr;
-    ret[2] = ctrl;
-    ret[3] = BCC(addr, ctrl);
-    ret[4] = MSG_FLAG;
+    ret[BEGIN_FLAG_IDX] = MSG_FLAG;
+    ret[ADDR_IDX] = addr;
+    ret[CTRL_IDX] = ctrl;
+    ret[BCC1_IDX] = BCC(addr, ctrl);
+    ret[BCC1_IDX+1] = MSG_FLAG;
 }
+
+void constructInformationMessage(char* ret ,char* data, size_t dataSize){//ret size = 5 + dataSize
+    if(dataSize == 0) return;
+    char bcc;
+
+    ret[BEGIN_FLAG_IDX] = MSG_FLAG;
+    ret[ADDR_IDX] = ADDR_SENT_EM;
+    ret[CTRL_IDX] = CTRL_S(s);
+    ret[BCC1_IDX] = BCC(ret[2], ret[1]);
+
+    for(size_t i = 0; i < dataSize; i++){
+        ret[BCC1_IDX+1+i] = data[i];
+        char aux = data[i];
+        if(i == 1) bcc = aux;
+        else bcc = BCC(bcc, aux);
+    }
+
+
+    ret[BCC1_IDX+dataSize+1] = bcc;
+    ret[BCC1_IDX+dataSize+2] = MSG_FLAG;
+
+    byteStuffing(ret, dataSize);
+    
+    s++;
+
+}
+
+void byteStuffing(char* ret, size_t dataSize){//confirmar estes andamentos de um para a frente
+/*Provavelmente ha uma maneira melhor de fazer isto com shifts mas por agora isto faz sentido na minha cabeça*/
+    char* buf = ret;
+    int startDataIdx = BCC1_IDX + 1;
+    int dataIdx = startDataIdx;
+
+    buf[BEGIN_FLAG_IDX] = ret[BEGIN_FLAG_IDX];
+    buf[ADDR_IDX] = ret[ADDR_IDX];
+    buf[CTRL_IDX] = ret[CTRL_IDX];
+    buf[BCC1_IDX] = ret[BCC1_IDX];
+
+    for(int i = startDataIdx; i < startDataIdx + dataSize; i++){
+
+        if(ret[i] == 0x7E){// caso de ser igual ao padrão que corresponde a uma flag
+            buf[dataIdx++] = 0x7D;
+            buf[dataIdx++] = 0x5E;
+        }
+        else if (ret[i] == 0x7D){//caso de ser igual ao padrao que corresponde ao octeto de escape
+            buf[dataIdx++] = 0x7D;
+            buf[dataIdx++] = 0x5D;
+        }
+        else{
+            buf[dataIdx++] = ret[i];
+        }
+    }
+    buf[dataIdx++] = ret[startDataIdx+dataSize];//BCC2 fica igual
+    buf[dataIdx] = MSG_FLAG;
+
+    ret = buf;
+    return;
+}
+
+
+void byteDestuffing(char * ret, size_t dataSize){// dataSize = tamanho do array recebido - 6-->2flag, addr, ctr, bcc1, bcc2
+    char* buf = ret;
+    int startDataIdx = BCC1_IDX + 1;
+    int dataIdx = startDataIdx;   
+
+    buf[BEGIN_FLAG_IDX] = ret[BEGIN_FLAG_IDX];
+    buf[ADDR_IDX] = ret[ADDR_IDX];
+    buf[CTRL_IDX] = ret[CTRL_IDX];
+    buf[BCC1_IDX] = ret[BCC1_IDX];
+
+    for(int i = startDataIdx; i < startDataIdx + dataSize; i++){
+        if(ret[i] == 0x7D){
+            if(ret[i+1] == 0x5E){
+                buf[dataIdx++] = 0x7E;
+                i++; 
+                continue;
+            }
+            else if(ret[i+1] == 0x5D){
+                buf[dataIdx++] = 0x7D;
+                i++;
+                continue;
+            }
+        }
+        buf[dataIdx++] = ret[i];
+
+    }
+    ret = buf;
+    return;
+}
+
+
 
 void closeSP(int fd, struct termios *oldtio) {
     if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
@@ -146,10 +237,9 @@ unsigned isSU(enum stateMachine *state) {
 }
 
 unsigned checkState(enum stateMachine *state, char * bcc, char byte, unsigned addressField, unsigned controlField) { 
-    // emitter is 1 if it's the emitter reading and 0 if it's the receiver
     //checkar melhor o bcc
-    static dataCount = 0;
-    static dataBCC = 0;
+    static int dataCount = 0;
+    static char dataBCC = 0;
 
     enum stateMachine prevState = *state;
 
