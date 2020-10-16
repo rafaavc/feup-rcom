@@ -1,10 +1,11 @@
 #include "emitterFuncs.h"
 
-extern unsigned logicConnectionFlag;
+extern unsigned stopAndWaitFlag;
+extern int fd;
 
 void alarmHandler(int signo) {
     if (signo == SIGALRM) {
-        logicConnectionFlag = TRUE;
+        stopAndWaitFlag = TRUE;
         #ifdef DEBUG
         debugMessage("[SIG HANDLER] SIGALRM");
         #endif
@@ -12,22 +13,22 @@ void alarmHandler(int signo) {
 }
 
 int main(int argc, char** argv){
-    int fd;
     // sum = 0, speed = 0;
     struct termios oldtio;  
 
+    stopAndWaitFlag = TRUE;
+
     checkCmdArgs(argc, argv);
 
-    fd = openConfigureSP(argv[1], &oldtio);
+    openConfigureSP(argv[1], &oldtio);
 
-    logicConnectionFlag = TRUE;
     
     if(signal(SIGALRM, alarmHandler) < 0) {
         perror("Alarm handler wasn't installed");  // instala  rotina que atende interrupcao
         exit(EXIT_FAILURE);
     }
 
-    if (!establishLogicConnection(fd)) {
+    if (!establishLogicConnection()) {
         printf("Wasn't able to establish logic connection\n");
         exit(EXIT_FAILURE);
     }
@@ -41,11 +42,11 @@ int main(int argc, char** argv){
     
     */
 
-    disconnect(fd);
+    establishDisconnection();
 
     sleep(1);
     
-    closeSP(fd, &oldtio);
+    closeSP(&oldtio);
 
     return 0;
 }

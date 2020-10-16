@@ -1,14 +1,15 @@
 #include "receiverFuncs.h"
 
+extern int fd;
+
 int main(int argc, char** argv){
-    int fd;
     // sum=0, speed=0;
     struct termios oldtio;
 
     checkCmdArgs(argc, argv);
 
 
-    fd = openConfigureSP(argv[1], &oldtio);
+    openConfigureSP(argv[1], &oldtio);
 
 
     //char* ret;
@@ -25,7 +26,7 @@ int main(int argc, char** argv){
     res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
     
     if(valid && res>0){*/
-    if (!establishLogicConnection(fd)) {
+    if (!establishLogicConnection()) {
         printf("Wasn't able to establish logic connection!\n");
     }
     /*
@@ -36,7 +37,7 @@ int main(int argc, char** argv){
     
     sleep(1);
 
-    closeSP(fd, &oldtio);
+    closeSP(&oldtio);
 
     return 0;
 }

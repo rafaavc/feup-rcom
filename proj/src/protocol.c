@@ -1,9 +1,9 @@
 #include "protocol.h"
 
 volatile int STOP = FALSE;
-unsigned logicConnectionFlag = FALSE;
+unsigned stopAndWaitFlag = FALSE;
 
-int s = 0;
+int s = 0, fd;
 
 char prevByte;
 void checkCmdArgs(int argc, char ** argv) {
@@ -27,7 +27,6 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     Open serial port device for reading and writing and not as controlling tty
     because we don't want to get killed if linenoise sends CTRL-C.
     */
-    int fd;
     struct termios newtio; 
 
     fd = open(port, O_RDWR | O_NOCTTY );
@@ -89,7 +88,7 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
     while(STOP == FALSE) {
         int readRet = read(fd, &reading, 1);
 
-        if (logicConnectionFlag) STOP=TRUE; // if the alarm interrupts
+        if (stopAndWaitFlag) STOP=TRUE; // if the alarm interrupts
         //printf("1\n");
         if (readRet < 0) {
             //perror("Unsuccessful read");
@@ -216,7 +215,7 @@ char* byteDestuffing(char * ret, size_t dataSize){// dataSize = tamanho do array
 
 
 
-void closeSP(int fd, struct termios *oldtio) {
+void closeSP(struct termios *oldtio) {
     if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
       perror("tcsetattr");
       exit(EXIT_FAILURE);

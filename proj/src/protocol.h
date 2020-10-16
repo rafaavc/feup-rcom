@@ -64,7 +64,7 @@ void byteStuffing(char* ret, size_t dataSize);
 
 char* byteDestuffing(char * ret, size_t dataSize);
 
-void closeSP(int fd, struct termios *oldtio);
+void closeSP(struct termios *oldtio);
 
 /**
  * @param the state variable

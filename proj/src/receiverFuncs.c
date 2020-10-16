@@ -1,6 +1,8 @@
 #include "receiverFuncs.h"
 
-unsigned establishLogicConnection(int fd) {
+extern int fd;
+
+unsigned establishLogicConnection() {
     //unsigned valid = FALSE, counter = 0;
     char buf[SUPERVISION_MSG_SIZE], ret[MAX_I_MSG_SIZE];
     ssize_t size;//res
