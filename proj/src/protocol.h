@@ -62,7 +62,7 @@ void constructInformationMessage(char* ret ,char* data, size_t dataSize);
 
 void byteStuffing(char* ret, size_t dataSize);
 
-void byteDestuffing(char * ret, size_t dataSize);
+char* byteDestuffing(char * ret, size_t dataSize);
 
 void closeSP(int fd, struct termios *oldtio);
 

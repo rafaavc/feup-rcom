@@ -5,6 +5,7 @@ unsigned logicConnectionFlag = FALSE;
 
 int s = 0;
 
+char prevByte;
 void checkCmdArgs(int argc, char ** argv) {
     char * ports[2] = {
         #ifndef SOCAT 
@@ -142,7 +143,6 @@ void constructInformationMessage(char* ret ,char* data, size_t dataSize){//ret s
         else bcc = BCC(bcc, aux);
     }
 
-
     ret[BCC1_IDX+dataSize+1] = bcc;
     ret[BCC1_IDX+dataSize+2] = MSG_FLAG;
 
@@ -185,7 +185,7 @@ void byteStuffing(char* ret, size_t dataSize){//confirmar estes andamentos de um
 }
 
 
-void byteDestuffing(char * ret, size_t dataSize){// dataSize = tamanho do array recebido - 6-->2flag, addr, ctr, bcc1, bcc2
+char* byteDestuffing(char * ret, size_t dataSize){// dataSize = tamanho do array recebido - 6-->2flag, addr, ctr, bcc1, bcc2
     char* buf = ret;
     int startDataIdx = BCC1_IDX + 1;
     int dataIdx = startDataIdx;   
@@ -210,9 +210,8 @@ void byteDestuffing(char * ret, size_t dataSize){// dataSize = tamanho do array 
         }
         buf[dataIdx++] = ret[i];
 
-    }
-    ret = buf;
-    return;
+    } 
+    return buf;
 }
 
 
@@ -243,6 +242,8 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, char addres
     static char dataBCC = 0;
 
     enum stateMachine prevState = *state;
+
+    prevByte = byte;
 
     switch (*state){
     case Start:
@@ -308,7 +309,7 @@ unsigned checkState(enum stateMachine *state, char * bcc, char byte, char addres
             dataBCC = 0;
         } else {
             dataCount++;
-            dataBCC ^= byte;
+            //dataBCC ^= byte;
             if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK; dataCount = 0; dataBCC = 0; }
         }
         break;

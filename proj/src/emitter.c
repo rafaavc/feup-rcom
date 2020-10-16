@@ -32,6 +32,17 @@ int main(int argc, char** argv){
         exit(EXIT_FAILURE);
     }
 
+    //Começar a escrita da informação
+    /*
+    tudo acerca da escrita da informaçao
+
+    //enquanto tiver informação para escrever vai tentar escrever da mesma forma que no estabelecimento de conexao
+    //quando nao tiver, vai mandar DISC, espera um Disc e manda UA, terminando o programa
+    
+    */
+
+    disconnect(fd);
+
     sleep(1);
     
     closeSP(fd, &oldtio);
@@ -40,6 +51,5 @@ int main(int argc, char** argv){
 }
 
 /*
-Notas: pus a correr com /dev/ttyS0
-Nao fiz tratamento de erros nas leituras e escritas
+! FAZER TRATAMENTOS DE ERROS NAS ESCRITAS E LEITURAS!
 */
