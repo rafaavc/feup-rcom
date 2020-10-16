@@ -62,9 +62,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
         exit(EXIT_FAILURE);
     }
 
-    #ifdef DEBUG
     debugMessage("[SP] OPENED AND CONFIGURED");
-    #endif
 
     return fd;
 }

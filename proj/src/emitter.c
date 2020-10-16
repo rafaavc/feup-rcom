@@ -6,9 +6,7 @@ extern int fd;
 void alarmHandler(int signo) {
     if (signo == SIGALRM) {
         stopAndWaitFlag = TRUE;
-        #ifdef DEBUG
         debugMessage("[SIG HANDLER] SIGALRM");
-        #endif
     }
 }
 

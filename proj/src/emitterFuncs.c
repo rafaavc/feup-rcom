@@ -7,8 +7,10 @@ extern enum stateMachine state;
 unsigned stopAndWait(unsigned (*functionToExec)(char*), char * msgToWrite) {
     unsigned counter = 0;
 
+    #ifdef DEBUG
     struct myTimer timer;
     initTimer(&timer, "SIGALARM");
+    #endif
     
     while(counter < NO_TRIES) {
         if(stopAndWaitFlag) {
