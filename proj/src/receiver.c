@@ -30,7 +30,11 @@ int main(int argc, char** argv){
     if (establishLogicConnection(fd))
 
         printf("Connected successfully!\n");
+    /*
+    Reads the data, until it receives a disconnect, when this happens sends back a disconect and the program hands
     
+    
+    */
     
     sleep(1);
 
