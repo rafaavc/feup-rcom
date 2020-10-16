@@ -3,7 +3,9 @@
 
 #define BIT(n)      (0x01 << n )
 
-#define SOCAT    
+#define SOCAT
+#define DEBUG    
+#define MAX_DEBUG_MSG_LENGTH 100
 
 /* Message */
 #define MSG_FLAG    0x7E /*all messages are delimited by this flag*/

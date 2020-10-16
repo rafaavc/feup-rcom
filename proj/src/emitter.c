@@ -3,7 +3,12 @@
 extern unsigned logicConnectionFlag;
 
 void alarmHandler(int signo) {
+    if (signo == SIGALRM) {
         logicConnectionFlag = TRUE;
+        #ifdef DEBUG
+        debugMessage("[SIG HANDLER] SIGALRM");
+        #endif
+    }
 }
 
 int main(int argc, char** argv){
@@ -11,20 +16,18 @@ int main(int argc, char** argv){
     // sum = 0, speed = 0;
     struct termios oldtio;  
 
-    logicConnectionFlag = TRUE; // says that it is ready to attempt connection
-   
     checkCmdArgs(argc, argv);
 
     fd = openConfigureSP(argv[1], &oldtio);
+
+    logicConnectionFlag = TRUE;
     
     if(signal(SIGALRM, alarmHandler) < 0) {
         perror("Alarm handler wasn't installed");  // instala  rotina que atende interrupcao
         exit(EXIT_FAILURE);
     }
 
-    if (establishLogicConnection(fd))
-        printf("Ligação lógica estabelecida!\n");
-    else {
+    if (!establishLogicConnection(fd)) {
         printf("Wasn't able to establish logic connection\n");
         exit(EXIT_FAILURE);
     }

@@ -1,8 +1,7 @@
 #include "protocol.h"
 
+volatile int STOP = FALSE;
 unsigned logicConnectionFlag = FALSE;
-
-volatile int STOP=FALSE;
 
 int s = 0;
 
@@ -47,7 +46,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     newtio.c_lflag = 0;
 
     // t = TIME * 0.1 s
-    newtio.c_cc[VTIME]    = 20;   // if read only blocks for 2 seconds, or until a character is received
+    newtio.c_cc[VTIME]    = 0;   // if read only blocks for 2 seconds, or until a character is received
     newtio.c_cc[VMIN]     = 0;   
 
 
@@ -63,7 +62,9 @@ int openConfigureSP(char* port, struct termios *oldtio) {
         exit(EXIT_FAILURE);
     }
 
-    printf("New termios structure set\n");
+    #ifdef DEBUG
+    debugMessage("[SP] OPENED AND CONFIGURED");
+    #endif
 
     return fd;
 }

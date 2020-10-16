@@ -1,7 +1,5 @@
 #include "receiverFuncs.h"
 
-extern int logicConnectionFlag;
-
 int main(int argc, char** argv){
     int fd;
     // sum=0, speed=0;
@@ -27,9 +25,9 @@ int main(int argc, char** argv){
     res = writeToSP(fd,buf,SUPERVISION_MESSAGE_SIZE);
     
     if(valid && res>0){*/
-    if (establishLogicConnection(fd))
-
-        printf("Connected successfully!\n");
+    if (!establishLogicConnection(fd)) {
+        printf("Wasn't able to establish logic connection!\n");
+    }
     
     
     sleep(1);

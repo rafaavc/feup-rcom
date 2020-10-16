@@ -13,10 +13,12 @@ unsigned establishLogicConnection(int fd) {
     
     //printf("ret: %s, size: %ld\n", ret, size);
     //writes to the serial port, trying to connect
-    if (isAcceptanceState(&state))
+    if (isAcceptanceState(&state)) {
         writeToSP(fd, buf, SUPERVISION_MSG_SIZE);
-    else return FALSE;
+        debugMessage("[LOGIC CONNECTION] SUCCESS");
+        return TRUE;
+    }
+    return FALSE;
 
-    return TRUE;
 }
 
