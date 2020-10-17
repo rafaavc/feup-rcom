@@ -180,16 +180,9 @@ void byteDestuffing(char * ret, size_t * retSize){// dataSize = tamanho do array
         char val = ret[i];
         ret[i] = '\0';
         if(val == 0x7D){
-            if(ret[i+1] == 0x5E){
+            if(ret[i+1] == 0x5E || ret[i+1] == 0x5D){
+                ret[i-amountOfDestuffedChars] =  ret[i+1] == 0x5E ? 0x7E : 0x7D;
                 ret[i+1] = '\0';
-                ret[i-amountOfDestuffedChars] = 0x7E;
-                i++; 
-                amountOfDestuffedChars++;
-                continue;
-            }
-            else if(ret[i+1] == 0x5D){
-                ret[i+1] = '\0';
-                ret[i-amountOfDestuffedChars] = 0x7D;
                 i++;
                 amountOfDestuffedChars++;
                 continue;
