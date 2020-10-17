@@ -4,7 +4,7 @@
 #define BIT(n)      (0x01 << n )
 
 #define SOCAT
-#define DEBUG    
+//#define DEBUG    
 #define MAX_DEBUG_MSG_LENGTH 100
 
 /* Message */
@@ -50,6 +50,7 @@ typedef unsigned bool;
 
 /* Changeable Constants */
 #define MAX_I_MSG_SIZE MAX_DATA_LENGTH + SUPERVISION_MSG_SIZE + 1 // the 1 is from the data bcc
+#define MAX_I_BUFFER_SIZE MAX_I_MSG_SIZE*2 // needs to be this value due to the stuffing operation
 #define TIME_OUT    3
 #define NO_TRIES    3
 #define MAX_DATA_LENGTH     64
@@ -58,6 +59,7 @@ typedef unsigned bool;
 
 enum stateMachine { Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
 enum programState { WaitingForLC, LogicallyConnected, WaitingForDISC, WaitingForUA, WaitingForRR };
+enum destuffingState { OK, WaitingForSecondByte, ViewingDestuffedByte };
 
 
 #endif /* _DEFINES_H_*/

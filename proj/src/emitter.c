@@ -16,13 +16,12 @@ int main(int argc, char** argv){
 
     checkCmdArgs(argc, argv);
 
-    openConfigureSP(argv[1], &oldtio);
-
-    
     if(signal(SIGALRM, alarmHandler) < 0) {
         perror("Alarm handler wasn't installed");  // instala  rotina que atende interrupcao
         exit(EXIT_FAILURE);
     }
+
+    openConfigureSP(argv[1], &oldtio);
 
     if (!establishLogicConnection()) {
         printf("Wasn't able to establish logic connection\n");
@@ -36,7 +35,14 @@ int main(int argc, char** argv){
         //quando nao tiver, vai mandar DISC, espera um Disc e manda UA, terminando o programa
         
         */
+
+        char ret[MAX_I_BUFFER_SIZE] = {'\0'};
+        size_t s = 12;
+        constructInformationMessage(ret, "testi}ng!!!~", &s);  // note: '}' is 0x7D and '~' is 0x7E
+        writeToSP(fd, ret, s);
+        //printCharArray(ret, s);
     
+        debugMessage("SENDING DISC...");
         establishDisconnection();
     }
 

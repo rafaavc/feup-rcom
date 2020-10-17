@@ -58,11 +58,14 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
-void constructInformationMessage(char* ret ,char* data, size_t dataSize);
+/**
+ * @param dataSize - the number of bytes in the data array (if it's a string, exclude \0)
+ */
+void constructInformationMessage(char* ret ,char* data, size_t * dataSize);
 
-void byteStuffing(char* ret, size_t dataSize);
+void byteStuffing(char * ret, size_t * dataSize);
 
-char* byteDestuffing(char * ret, size_t dataSize);
+void byteDestuffing(char * ret, size_t * dataSize);
 
 void closeSP(struct termios *oldtio);
 
@@ -92,9 +95,9 @@ bool isSU(enum stateMachine *state);
  * @param byte the byte received
  * @param addressField the desired address value (ANY_VALUE if not specified)
  * @param controlField the desired control field (ANY_VALUE if not specified)
- * @return 0 if OK, 1 if the machine restarted
+ * @return 0 if OK, 1 if this byte doesn't count
  */
-bool checkState(enum stateMachine *state, char * bcc, char byte, char addressField, char controlField);
+bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressField, char controlField);
 
 /*void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte);
 void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int emitter);

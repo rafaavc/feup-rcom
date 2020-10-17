@@ -51,7 +51,7 @@ bool logicConnectionFunction(char * msg) {
     readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, CTRL_UA);
 
     if(isAcceptanceState(&state)) {
-        debugMessage("[LOGIC CONNECTION] SUCCESS");
+        debugMessage("[LOGIC CONNECTION] SUCCESS\n");
         return TRUE;
     }
     return FALSE;

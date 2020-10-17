@@ -10,6 +10,8 @@ struct myTimer {
     char * timerName;
 };
 
+void printCharArray(char * arr, size_t arrSize);
+
 void initTimer(struct myTimer * timer, char * time);
 
 void startTimer(struct myTimer * timer);

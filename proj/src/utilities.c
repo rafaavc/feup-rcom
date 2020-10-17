@@ -16,6 +16,13 @@ void debugMessage(char * msg) {
     puts(pre);
 }
 
+void printCharArray(char * arr, size_t arrSize) {
+    for (size_t i = 0; i < arrSize; i++) {
+        printf("%x ", arr[i]);
+    }
+    printf("\n");
+}
+
 void initTimer(struct myTimer * timer, char * name) {
     timer->startTime = -1;
     timer->timerName = name;
