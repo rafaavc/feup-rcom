@@ -9,13 +9,13 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg) {
         debugMessage("RECEIVED «I» DATA");
     } else if (state == DONE_S_U) {
         debugMessage("RECEIVED «S,U» DATA");
-        if (WaitingForDISC && msg[CTRL_IDX] != CTRL_UA) {
+        if (progState == WaitingForDISC && msg[CTRL_IDX] != CTRL_UA) {
             progState = LogicallyConnected;
         }
         switch (msg[CTRL_IDX]) {
             case CTRL_UA:
                 debugMessage("RECEIVED UA");
-                if (WaitingForDISC) {
+                if (progState == WaitingForDISC) {
                     debugMessage("[DISC] SUCCESSFUL");
                     return TRUE;
                 }
