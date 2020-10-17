@@ -14,8 +14,6 @@ int main(int argc, char** argv){
     // sum = 0, speed = 0;
     struct termios oldtio;  
 
-    stopAndWaitFlag = TRUE;
-
     checkCmdArgs(argc, argv);
 
     openConfigureSP(argv[1], &oldtio);
@@ -28,19 +26,19 @@ int main(int argc, char** argv){
 
     if (!establishLogicConnection()) {
         printf("Wasn't able to establish logic connection\n");
-        exit(EXIT_FAILURE);
-    }
+    } else {
 
-    //Começar a escrita da informação
-    /*
-    tudo acerca da escrita da informaçao
+        //Começar a escrita da informação
+        /*
+        tudo acerca da escrita da informaçao
 
-    //enquanto tiver informação para escrever vai tentar escrever da mesma forma que no estabelecimento de conexao
-    //quando nao tiver, vai mandar DISC, espera um Disc e manda UA, terminando o programa
+        //enquanto tiver informação para escrever vai tentar escrever da mesma forma que no estabelecimento de conexao
+        //quando nao tiver, vai mandar DISC, espera um Disc e manda UA, terminando o programa
+        
+        */
     
-    */
-
-    establishDisconnection();
+        establishDisconnection();
+    }
 
     sleep(1);
     

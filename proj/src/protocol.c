@@ -89,7 +89,7 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
         if (stopAndWaitFlag) STOP=TRUE; // if the alarm interrupts
         //printf("1\n");
         if (readRet < 0) {
-            //perror("Unsuccessful read");
+            perror("Unsuccessful read");
             break;
         } else if (readRet == 0) continue; // if didn't read anything
         //printf("2\n");
@@ -222,18 +222,18 @@ void closeSP(struct termios *oldtio) {
     close(fd);
 }
 
-unsigned isAcceptanceState(enum stateMachine *state) {
+bool isAcceptanceState(enum stateMachine *state) {
     return *state == DONE_I || *state == DONE_S_U;
 }
 
-unsigned isI(enum stateMachine *state) {
+bool isI(enum stateMachine *state) {
     return *state == DONE_I;
 }
-unsigned isSU(enum stateMachine *state) {
+bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
 }
 
-unsigned checkState(enum stateMachine *state, char * bcc, char byte, char addressField, char controlField) { 
+bool checkState(enum stateMachine *state, char * bcc, char byte, char addressField, char controlField) { 
     //checkar melhor o bcc
     static unsigned dataCount = 0;
     static char dataBCC = 0;

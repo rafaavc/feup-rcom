@@ -4,13 +4,15 @@ extern unsigned stopAndWaitFlag;
 extern int fd;
 extern enum stateMachine state;
 
-unsigned stopAndWait(unsigned (*functionToExec)(char*), char * msgToWrite) {
+bool stopAndWait(unsigned (*functionToExec)(char*), char * msgToWrite) {
     unsigned counter = 0;
 
     #ifdef DEBUG
     struct myTimer timer;
     initTimer(&timer, "SIGALARM");
     #endif
+
+    stopAndWaitFlag = TRUE;
     
     while(counter < NO_TRIES) {
         if(stopAndWaitFlag) {
@@ -23,15 +25,17 @@ unsigned stopAndWait(unsigned (*functionToExec)(char*), char * msgToWrite) {
             stopTimer(&timer, TRUE);
             startTimer(&timer);
             #endif
-
-            if (functionToExec(msgToWrite))
+            if (functionToExec(msgToWrite)) {
+                alarm(0); // unset alarm
                 return TRUE;
+            }
         }
     }
+    alarm(0);
     return FALSE;
 }
 
-unsigned logicConnectionFunction(char * msg) {
+bool logicConnectionFunction(char * msg) {
     size_t res;
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
@@ -43,7 +47,7 @@ unsigned logicConnectionFunction(char * msg) {
         printf("Wrong message size\n");
     }
     
-    enum stateMachine state;            
+    enum stateMachine state;
     readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, CTRL_UA);
 
     if(isAcceptanceState(&state)) {
@@ -53,7 +57,7 @@ unsigned logicConnectionFunction(char * msg) {
     return FALSE;
 }
 
-unsigned establishLogicConnection() {
+bool establishLogicConnection() {
     // the message to send
     char buf[SUPERVISION_MSG_SIZE];
 
@@ -64,7 +68,7 @@ unsigned establishLogicConnection() {
 }
 
 
-unsigned disconnectionFunction(char * msg) {
+bool disconnectionFunction(char * msg) {
     size_t res;
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
@@ -88,14 +92,14 @@ unsigned disconnectionFunction(char * msg) {
     return FALSE;
 }
 
-unsigned establishDisconnection() {
+bool establishDisconnection() {
     char buf[SUPERVISION_MSG_SIZE];
 
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_DISC);
-    
     if (stopAndWait(&disconnectionFunction, buf)) {
         constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_UA);
-        writeToSP(fd, buf, SUPERVISION_MSG_SIZE);//write UA
+        writeToSP(fd, buf, SUPERVISION_MSG_SIZE); //write UA
+        debugMessage("[DISC] SUCCESS");
         return TRUE;
     }
     

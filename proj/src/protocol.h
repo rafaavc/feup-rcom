@@ -70,19 +70,19 @@ void closeSP(struct termios *oldtio);
  * @param the state variable
  * @return TRUE if is acceptance state
  */
-unsigned isAcceptanceState(enum stateMachine *state);
+bool isAcceptanceState(enum stateMachine *state);
 
 /**
  * @param the state variable
  * @return TRUE if is DONE_I
  */
-unsigned isI(enum stateMachine *state);
+bool isI(enum stateMachine *state);
 
 /**
  * @param the state variable
  * @return TRUE if is DONE_S_U
  */
-unsigned isSU(enum stateMachine *state);
+bool isSU(enum stateMachine *state);
 
 
 /**
@@ -94,7 +94,7 @@ unsigned isSU(enum stateMachine *state);
  * @param controlField the desired control field (ANY_VALUE if not specified)
  * @return 0 if OK, 1 if the machine restarted
  */
-unsigned checkState(enum stateMachine *state, char * bcc, char byte, char addressField, char controlField);
+bool checkState(enum stateMachine *state, char * bcc, char byte, char addressField, char controlField);
 
 /*void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte);
 void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int emitter);

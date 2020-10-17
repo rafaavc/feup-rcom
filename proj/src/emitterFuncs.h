@@ -1,5 +1,5 @@
 #include "protocol.h"
 
-unsigned establishLogicConnection();
+bool establishLogicConnection();
 
-unsigned establishDisconnection();
+bool establishDisconnection();

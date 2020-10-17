@@ -1,3 +1,5 @@
 #include "protocol.h"
 
-unsigned establishLogicConnection();
+bool establishLogicConnection();
+
+void receiverLoop();

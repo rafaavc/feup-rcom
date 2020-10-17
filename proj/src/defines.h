@@ -42,8 +42,10 @@
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
+
 #define FALSE 0
 #define TRUE 1
+typedef unsigned bool;
 
 
 /* Changeable Constants */
@@ -55,5 +57,7 @@
 
 
 enum stateMachine { Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
+enum programState { WaitingForLC, LogicallyConnected, WaitingForDISC, WaitingForUA, WaitingForRR };
+
 
 #endif /* _DEFINES_H_*/
