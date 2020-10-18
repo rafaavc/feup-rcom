@@ -25,7 +25,8 @@ int main(int argc, char** argv){
 
     if (!establishLogicConnection()) {
         printf("Wasn't able to establish logic connection\n");
-    } else {
+    } 
+    else {
 
         //Começar a escrita da informação
         /*

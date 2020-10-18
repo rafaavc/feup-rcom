@@ -81,6 +81,7 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
     *state = Start;
 
     char bcc[2];
+    char ** data;
 
     //reads from the serial port
     while(STOP == FALSE) {
@@ -96,12 +97,34 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
 
         // if read is successful
 
-        if (checkState(state, bcc, &reading, addressField, controlField) != 0) continue;//tramas com cabeçalho errado sao ignoradas
+        switch (checkState(state, bcc, &reading, &data, addressField, controlField)) {
+            //tramas com cabeçalho errado sao ignoradas
+            case HEAD_INVALID:
+                // IGNORE ALL
+                continue;
+            case DATA_INVALID:
+                // Evaluate head && act accordingly
+                // if (new data (Ns))
+                    // send REJ
+                // else 
+                    // send RR
+                continue;
+            case IGNORE_CHAR:
+                continue;
+            case NICE:
+            default: break;
+        }
         //printf("state: %ud\n", state);
 
 
         //printf("3\n");
-        if(isAcceptanceState(state)) STOP = TRUE;
+        if(isAcceptanceState(state)) {
+            // if (new data (Ns))
+                // send RR
+            // else 
+                // send RR & discard
+            STOP = TRUE;
+        }
 
         buf[counter] = reading;
         counter++;
@@ -215,8 +238,7 @@ bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
 }
 
-bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressField, char controlField) { 
-    //checkar melhor o bcc
+enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*data, char addressField, char controlField) { 
     static unsigned dataCount = 0;
     static char dataBCC = 0;
     static enum destuffingState destuffing = OK;
@@ -227,7 +249,7 @@ bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressF
         case OK:
             if (*byte == 0x7D){
                 destuffing = WaitingForSecondByte;
-                return TRUE;
+                return IGNORE_CHAR;
             }
             break;
         case WaitingForSecondByte:
@@ -291,6 +313,7 @@ bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressF
         }
         else{
             *state = Start;
+            return HEAD_INVALID;
             //printf("received %x, bcc: %x\n", *byte, BCC(bcc[0], bcc[1]));
         }
         break;
@@ -305,23 +328,34 @@ bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressF
         break;
 
     case DATA:
-        if(*byte == MSG_FLAG && destuffing != ViewingDestuffedByte){ 
-            // verify BCC
-            *state = DONE_I;
-            //printf("DONE_I\n");
-            //dataCount = 0;
-        } else {
-            dataCount++;
-            dataBCC ^= *byte;
-            if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK; dataCount = 0; }
-        }
-        break;
-
+        if(*byte != MSG_FLAG || destuffing == ViewingDestuffedByte){ 
+            data[dataCount++] = byte;
+            if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK; dataCount = 0;}
+            break;
+        } 
+        // break is missing intentionally!
     case DATA_OK:
-        if (*byte == dataBCC) {
-            *state = BCC_DATA_OK;
-        } else {
-            *state = Start;
+        // verify BCC
+        for(int i=0; i < dataCount-1; i++){ dataBCC ^= data[i];}
+        if(*byte == MSG_FLAG){
+             if(dataBCC == prevByte){
+                dataCount = 0;
+                *state = DONE_I;
+             }
+             else{
+                 return DATA_INVALID;
+             }
+             
+        }
+        else{
+            if(dataBCC == *byte){
+                *state = BCC_DATA_OK;    
+            }
+            else{
+                *state = Start;
+                destuffing = OK;
+                return DATA_INVALID;
+            }   
         }
         break;
 
@@ -330,11 +364,13 @@ bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressF
             *state = DONE_I;
         } else {
             *state = Start;
+            destuffing = OK;
         }
         break;
 
     case DONE_I:
     case DONE_S_U:
+    destuffing = OK;
     default:
         break;
     }
@@ -343,5 +379,5 @@ bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressF
     if ((*state == FLAG_RCV && prevState != Start) || *state == Start) { // if the state was restarted
         return TRUE;
     }
-    return FALSE;
+    return NICE;
 }

@@ -4,7 +4,7 @@
 #define BIT(n)      (0x01 << n )
 
 #define SOCAT
-//#define DEBUG    
+#define DEBUG    
 #define MAX_DEBUG_MSG_LENGTH 100
 
 /* Message */
@@ -61,5 +61,13 @@ enum stateMachine { Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, B
 enum programState { WaitingForLC, LogicallyConnected, WaitingForDISC, WaitingForUA, WaitingForRR };
 enum destuffingState { OK, WaitingForSecondByte, ViewingDestuffedByte };
 
+
+enum checkStateRET  { 
+    NICE, 
+    IGNORE_CHAR,
+    // need to manage where state changed to and the implications on the buffer inside checkState 
+    HEAD_INVALID,
+    DATA_INVALID
+};
 
 #endif /* _DEFINES_H_*/

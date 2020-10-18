@@ -97,7 +97,7 @@ bool isSU(enum stateMachine *state);
  * @param controlField the desired control field (ANY_VALUE if not specified)
  * @return 0 if OK, 1 if this byte doesn't count
  */
-bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressField, char controlField);
+enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*data, char addressField, char controlField);
 
 /*void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte);
 void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int emitter);
