@@ -17,7 +17,7 @@ int main(int argc, char** argv){
     checkCmdArgs(argc, argv);
 
     if(signal(SIGALRM, alarmHandler) < 0) {
-        perror("Alarm handler wasn't installed");  // instala  rotina que atende interrupcao
+        perror("Alarm handler wasn't installed");  // instala rotina que atende interrupcao
         exit(EXIT_FAILURE);
     }
 

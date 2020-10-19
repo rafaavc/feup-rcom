@@ -5,14 +5,14 @@ extern enum programState progState;
 
 bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize) {
     char buf[SUPERVISION_MSG_SIZE];
-    if (state == DONE_I) {
+    if (isI(&state)) {
         printf("RECEIVED: ");
         for (int i = BCC1_IDX+1; i < msgSize-2; i++) {
             printf("%c", msg[i]);
         }
         printf("\n");
 
-    } else if (state == DONE_S_U) {
+    } else if (isSU(&state)) {
         //debugMessage("RECEIVED «S,U» DATA");
         if (progState == WaitingForDISC && msg[CTRL_IDX] != CTRL_UA) {
             progState = LogicallyConnected;

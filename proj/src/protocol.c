@@ -173,7 +173,7 @@ void byteStuffing(char * ret, size_t * retSize){//confirmar estes andamentos de 
     memcpy(ret, buf, *retSize);
 }
 
-
+// this function is not needed, but is here for reference
 void byteDestuffing(char * ret, size_t * retSize){// dataSize = tamanho do array recebido - 6-->2flag, addr, ctr, bcc1, bcc2
     unsigned amountOfDestuffedChars = 0;
     for(int i = 0; i < (*retSize); i++){
@@ -340,6 +340,7 @@ bool checkState(enum stateMachine *state, char * bcc, char * byte, char addressF
     }
     prevByte = *byte;
 
+    // this needs to be revisited !!
     if ((*state == FLAG_RCV && prevState != Start) || *state == Start) { // if the state was restarted
         return TRUE;
     }
