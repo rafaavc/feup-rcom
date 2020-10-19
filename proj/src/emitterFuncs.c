@@ -25,10 +25,11 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t), char * msgToWrite, si
             stopTimer(&timer, TRUE);
             startTimer(&timer);
             #endif
-            if (functionToExec(msgToWrite,msgSize)) {
+            if (functionToExec(msgToWrite, msgSize)) {
                 alarm(0); // unset alarm
                 return TRUE;
             }
+            
         }
     }
     alarm(0);
@@ -40,7 +41,7 @@ bool logicConnectionFunction(char * msg, size_t msgSize) {
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
 
-    res = writeToSP(fd, msg, SUPERVISION_MSG_SIZE);
+    res = writeToSP(msg, SUPERVISION_MSG_SIZE);
 
     //verifies if it was written correctly
     if (res != SUPERVISION_MSG_SIZE) {
@@ -48,7 +49,7 @@ bool logicConnectionFunction(char * msg, size_t msgSize) {
     }
     
     enum stateMachine state;
-    readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, CTRL_UA);
+    readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_UA);
 
     if(isAcceptanceState(&state)) {
         debugMessage("[LOGIC CONNECTION] SUCCESS\n");
@@ -74,7 +75,7 @@ bool disconnectionFunction(char * msg, size_t msgSize) {
     char ret[MAX_I_MSG_SIZE];
 
     //writes to serial port, trying to connect
-    res = writeToSP(fd, msg, SUPERVISION_MSG_SIZE);//write DISC
+    res = writeToSP(msg, SUPERVISION_MSG_SIZE);//write DISC
     
     //verifies if it was written correctly
     if (res != SUPERVISION_MSG_SIZE) {
@@ -84,7 +85,7 @@ bool disconnectionFunction(char * msg, size_t msgSize) {
     enum stateMachine state;
 
     //tries to read the message back from the serialPort
-    readFromSP(fd, ret, &state, &size, ADDR_SENT_RCV, CTRL_DISC);//read DISC
+    readFromSP(ret, &state, &size, ADDR_SENT_RCV, CTRL_DISC);//read DISC
 
     if(isAcceptanceState(&state))
         return TRUE;
@@ -98,7 +99,7 @@ bool establishDisconnection() {
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_DISC);
     if (stopAndWait(&disconnectionFunction, buf,SUPERVISION_MSG_SIZE)) {
         constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_UA);
-        writeToSP(fd, buf, SUPERVISION_MSG_SIZE); //write UA
+        writeToSP(buf, SUPERVISION_MSG_SIZE); //write UA
         debugMessage("[DISC] SUCCESS");
         return TRUE;
     }
@@ -106,25 +107,46 @@ bool establishDisconnection() {
     return FALSE;
 }
 
-bool informationExchange(char *msg, size_t msgSize){
+bool informationExchange(char* msg, size_t msgSize){
     size_t res;
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
+    
+    res = writeToSP(msg, msgSize);
 
-    res = writeToSP(fd, msg, msgSize);
-
-    //verifies if it was written correctly
-    if (res != msgSize) {
+    
+    if (res != msgSize) { //verifies if it was written correctly
         printf("Wrong message size\n");
     }
     
     enum stateMachine state;
-    readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
+    enum readFromSPRet result;
+    result = readFromSP(ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
 
+    
     if(!isAcceptanceState(&state)) {
         debugMessage("[SENDING DATA] WRONG MESSAGE RECEIVED\n");
         return FALSE;
     }
+    if(result == REJ){
+        stopAndWaitFlag = TRUE;
+        return FALSE;
+    } 
+    
     return TRUE;
-
 }
+//Rej reenvia, Rr termina alarme e envia a proxima
+
+bool sendMessage(char* msg, size_t msgSize) {
+    return stopAndWait(&informationExchange, msg, msgSize);
+}
+
+/*bool sendMessageArray(char ** msgs, size_t msgsSize) {
+    for (int i = 0; i < msgSize; i++) {
+        if (!sendMessage(msgs[i], ))
+            return FALSE
+    }
+    return TRUE;
+}*/
+
+

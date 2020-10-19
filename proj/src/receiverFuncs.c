@@ -2,9 +2,9 @@
 
 extern int fd;
 extern enum programState progState;
-int r = 0;
+static int r = 1;
 
-bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize,enum readFromSPRet res) {
+bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize, enum readFromSPRet res) {
     char buf[SUPERVISION_MSG_SIZE];
     if (isI(&state)) {
         if(res == REJ){
@@ -17,6 +17,7 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize
             constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR(r));
             r++;
         }
+        writeToSP(buf, SUPERVISION_MSG_SIZE);
         printf("RECEIVED: ");
         for (int i = BCC1_IDX+1; i < msgSize-2; i++) {
             printf("%c", msg[i]);
@@ -44,12 +45,12 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize
 
                 debugMessage("RECEIVED DISC");
                 constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_DISC);
-                writeToSP(fd, buf, SUPERVISION_MSG_SIZE);
+                writeToSP(buf, SUPERVISION_MSG_SIZE);
                 progState = WaitingForDISC;
                 break;
             case CTRL_SET:
                 constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
-                writeToSP(fd, buf, SUPERVISION_MSG_SIZE);
+                writeToSP(buf, SUPERVISION_MSG_SIZE);
 
                 debugMessage("[LOGIC CONNECTION] SUCCESS\n");
                 progState = LogicallyConnected;
@@ -71,7 +72,7 @@ void receiverLoop() {
 
     while (TRUE) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
-        res = readFromSP(fd, ret, &state, &size, ANY_VALUE, ANY_VALUE);
+        res = readFromSP(ret, &state, &size, ANY_VALUE, ANY_VALUE);
         //printCharArray(ret, size);
         if (isAcceptanceState(&state)) {
             if (dealWithReceivedMessage(state, ret, size, res)) return;

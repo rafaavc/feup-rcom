@@ -3,7 +3,7 @@
 volatile int STOP = FALSE;
 unsigned stopAndWaitFlag = FALSE;
 
-int s = 0, fd;
+int fd;
 
 char prevByte;
 
@@ -68,7 +68,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     return fd;
 }
 
-size_t writeToSP(int fd, char* message, size_t messageSize) {
+size_t writeToSP(char* message, size_t messageSize) {
     message[messageSize]='\0';
 
     return write(fd, message, messageSize*sizeof(message[0]));
@@ -76,7 +76,7 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
 
 char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
 
-enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char reading;
     int counter = 0;
 
@@ -85,7 +85,7 @@ enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssiz
 
     char bcc[2];
 
-    int pS;
+    static int pS = 1;
     //reads from the serial port
     while(STOP == FALSE) {
         int readRet = read(fd, &reading, 1);
@@ -123,6 +123,7 @@ enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssiz
                 debugMessage("StateOK");
                 #endif
             default: break;
+            
         }
 
         #ifdef DEBUG_STATE_MACHINE
@@ -139,25 +140,37 @@ enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssiz
             STOP = TRUE;
 
     }
+    //printf("COUNTER SHOULD BE HERE\n");
 
-    if(isAcceptanceState(state)) {   
-        /*if(s == pS){// send RR & discard
-            return RR;
+    if (isI(state)) {
+        int s = buf[CTRL_IDX] >> 6;
+        if(isAcceptanceState(state)) {   
+            //printf("s: %d, pS: %d\n", s, pS);
+            if(s == pS){// send RR & discard
+                //printf("COUNTER/SiZE S == PS: %d\n", counter);
+                *stringSize = counter;
+                return RR;
+            }
+            else{// send RR and accept data
+                pS = s; 
+                //printf("COUNTER/SiZE ELSE: %d\n", counter);
+                *stringSize = counter;
+                //printf("COUNTER/SiZE: %d\n", counter);
+                return SAVE; 
+            }
         }
-        else{// send RR and accept data 
-            return SAVE; 
-        }*/
-        STOP = TRUE;
-        *stringSize = counter;
-    }
-    else{
-        /*if(s == pS){//send RR 
-            return RR;
+        else{
+            if(s == pS){//send RR 
+                //printf("COUNTER/SiZE: %d\n", counter);
+                return RR;
+            }
+            else{//send REJ 
+                //printf("COUNTER/SiZE: %d\n", counter);
+                return REJ;
+            }
         }
-        else{//send REJ 
-            return REJ;
-        }*/
     }
+    return SAVE;
 }
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl){
@@ -169,6 +182,8 @@ void constructSupervisionMessage(char * ret, char addr, char ctrl){
 }
 
 void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret size = 6 + dataSize OR NOT (if stuffing actually replaces bytes)
+    static int s = 0;
+    
     if(*dataSize == 0) return;
     char bcc = 0;
 
@@ -187,10 +202,9 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret
     ret[BCC1_IDX+*dataSize+2] = MSG_FLAG;
 
     *dataSize += 6;
+    s++;
 
     byteStuffing(ret, dataSize); // dataSize is updated in the byteStuffing function
-
-    s++;
 }
 
 void byteStuffing(char * ret, size_t * retSize){//confirmar estes andamentos de um para a frente

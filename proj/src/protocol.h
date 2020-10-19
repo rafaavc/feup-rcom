@@ -43,7 +43,7 @@ int openConfigureSP(char* port, struct termios *oldtio);
 /**
  * Writes the serial port
  */
-size_t writeToSP(int fd, char * message, size_t messageSize);
+size_t writeToSP( char * message, size_t messageSize);
 
 /**
  * Reads from the serial port using the state machine implementation
@@ -54,7 +54,7 @@ size_t writeToSP(int fd, char * message, size_t messageSize);
  * @param controlField the desired control field (ANY_VALUE if not specified)
  * @return the string read
  */
-enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField);
+enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField);
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
