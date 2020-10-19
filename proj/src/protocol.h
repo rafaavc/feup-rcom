@@ -54,7 +54,7 @@ size_t writeToSP(int fd, char * message, size_t messageSize);
  * @param controlField the desired control field (ANY_VALUE if not specified)
  * @return the string read
  */
-void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField);
+enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField);
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
@@ -87,7 +87,7 @@ bool isI(enum stateMachine *state);
  */
 bool isSU(enum stateMachine *state);
 
-
+bool checkDestuffedBCC(char* buf, char bcc, size_t bufSize, int noFlag);
 /**
  * Deals with the state transitions
  * @param state the state variable

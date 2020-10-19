@@ -119,7 +119,7 @@ bool informationExchange(char *msg, size_t msgSize){
     }
     
     enum stateMachine state;
-    readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, CTRL_RR);
+    readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
 
     if(!isAcceptanceState(&state)) {
         debugMessage("[SENDING DATA] WRONG MESSAGE RECEIVED\n");

@@ -2,17 +2,29 @@
 
 extern int fd;
 extern enum programState progState;
+int r = 0;
 
-bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize) {
+bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize,enum readFromSPRet res) {
     char buf[SUPERVISION_MSG_SIZE];
     if (isI(&state)) {
-        printf("RECEIVED: ");
+        if(res == REJ){
+            constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_REJ(r));
+        }
+        else{
+            if(res == SAVE){
+                //guardar dados
+            }
+            constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR(r));
+            r++;
+        }
+        /*printf("RECEIVED: ");
         for (int i = BCC1_IDX+1; i < msgSize-2; i++) {
             printf("%c", msg[i]);
         }
-        printf("\n");
+        printf("\n");*/
 
-    } else if (isSU(&state)) {
+    } 
+    else if (isSU(&state)) {
         //debugMessage("RECEIVED «S,U» DATA");
         if (progState == WaitingForDISC && msg[CTRL_IDX] != CTRL_UA) {
             progState = LogicallyConnected;
@@ -55,13 +67,14 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize
 void receiverLoop() {
     ssize_t size;
     enum stateMachine state;
+    enum readFromSPRet res;
 
     while (TRUE) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
-        readFromSP(fd, ret, &state, &size, ANY_VALUE, ANY_VALUE);
+        res = readFromSP(fd, ret, &state, &size, ANY_VALUE, ANY_VALUE);
         //printCharArray(ret, size);
         if (isAcceptanceState(&state)) {
-            if (dealWithReceivedMessage(state, ret, size)) return;
+            if (dealWithReceivedMessage(state, ret, size, res)) return;
         }
     }
 }

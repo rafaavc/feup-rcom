@@ -6,6 +6,7 @@ unsigned stopAndWaitFlag = FALSE;
 int s = 0, fd;
 
 char prevByte;
+
 void checkCmdArgs(int argc, char ** argv) {
     char * ports[2] = {
         #ifndef SOCAT 
@@ -73,7 +74,7 @@ size_t writeToSP(int fd, char* message, size_t messageSize) {
     return write(fd, message, (messageSize+1)*sizeof(message[0]));
 }
 
-void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char reading;
     int counter = 0;
 
@@ -81,8 +82,8 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
     *state = Start;
 
     char bcc[2];
-    char ** data;
 
+    int pS;
     //reads from the serial port
     while(STOP == FALSE) {
         int readRet = read(fd, &reading, 1);
@@ -92,51 +93,53 @@ void readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSi
         if (readRet < 0) {
             perror("Unsuccessful read");
             break;
-        } else if (readRet == 0) continue; // if didn't read anything
+        } 
+        else if (readRet == 0) continue; // if didn't read anything
         //printf("2\n");
 
         // if read is successful
-
-        switch (checkState(state, bcc, &reading, &data, addressField, controlField)) {
-            //tramas com cabeçalho errado sao ignoradas
-            case HEAD_INVALID:
-                // IGNORE ALL
+        switch (checkState(state, bcc, &reading, buf, addressField, controlField)) {
+            case HEAD_INVALID: // IGNORE ALL, can start reading next one
+                counter = 0;
                 continue;
-            case DATA_INVALID:
-                // Evaluate head && act accordingly
-                // if (new data (Ns))
-                    // send REJ
-                // else 
-                    // send RR
+            case DATA_INVALID: // Evaluate head && act accordingly
+                STOP = TRUE;
                 continue;
             case IGNORE_CHAR:
                 continue;
-            case NICE:
+            case StateOK:
             default: break;
         }
         //printf("state: %ud\n", state);
 
 
         //printf("3\n");
-        if(isAcceptanceState(state)) {
-            // if (new data (Ns))
-                // send RR
-            // else 
-                // send RR & discard
-            STOP = TRUE;
-        }
-
+      
         buf[counter] = reading;
         counter++;
+
+        if (isAcceptanceState(state))
+            STOP = TRUE;
+
     }
 
-    if (!isAcceptanceState(state)) {
-        buf = NULL;
-        (*stringSize) = 0;
-        return;
+    if(isAcceptanceState(state)) {   
+        if(s == pS){// send RR & discard
+            return RR;
+        }
+        else{// send RR and accept data 
+            return SAVE; 
+        }
+        STOP = TRUE;
     }
-
-    (*stringSize) = counter;
+    else{
+        if(s == pS){//send RR 
+            return RR;
+        }
+        else{//send REJ 
+            return REJ;
+        }
+    }
 }
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl){
@@ -238,15 +241,47 @@ bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
 }
 
-enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*data, char addressField, char controlField) { 
-    static unsigned dataCount = 0;
-    static char dataBCC = 0;
-    static enum destuffingState destuffing = OK;
+bool checkDestuffedBCC(char* buf, char bcc, size_t bufSize, int noFlag){
+    char aux = buf[4];
 
-    enum stateMachine prevState = *state;
+    if(noFlag == 0){//caso de ja ter recebido MSG_FLAG
+        for(size_t i = 5; i < bufSize - 2; i++){
+            aux ^= buf[i];
+        }
+    }
+    else if(noFlag == 1){//caso de ter recebido agora o BCC
+        for(size_t i = 5; i < bufSize-1; i++){
+            aux ^= buf[i];
+        }
+    }
+    if(aux == bcc) return TRUE;
+    else return FALSE;
+    
+}
+
+bool receivedMessageFlag(char * byte, enum destuffingState destuffing) {
+    return *byte == MSG_FLAG && destuffing == DestuffingOK;
+}
+
+void goBackToStart(enum stateMachine * state, enum destuffingState * destuffing) {
+    *state = Start;
+    *destuffing = DestuffingOK;
+}
+
+void goBackToFLAG_RCV(enum stateMachine * state, enum destuffingState * destuffing) {
+    *state = FLAG_RCV;
+    *destuffing = DestuffingOK;
+}
+
+enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*buf, char addressField, char controlField) { 
+    static unsigned dataCount = 4;
+    static bool dataBCC = 0;
+    static enum destuffingState destuffing = DestuffingOK;
+
+    //enum stateMachine prevState = *state;
 
     switch (destuffing) {
-        case OK:
+        case DestuffingOK:
             if (*byte == 0x7D){
                 destuffing = WaitingForSecondByte;
                 return IGNORE_CHAR;
@@ -263,7 +298,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             destuffing = ViewingDestuffedByte;
             break;
         case ViewingDestuffedByte:
-            destuffing = OK;
+            destuffing = DestuffingOK;
         default: 
             break;
     }
@@ -271,114 +306,113 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
 
     switch (*state){
     case Start:
-        if(*byte == MSG_FLAG){
+        // Advances from Start when flag id received
+        if(receivedMessageFlag(byte, destuffing)){
             *state = FLAG_RCV;
-            //printf("flag ok\n");
         }
         break;
     
     case FLAG_RCV:
-        if(*byte == addressField || (addressField == ANY_VALUE && (*byte != MSG_FLAG || destuffing == ViewingDestuffedByte))) {
+        // Only advances when a valid address field is received
+        if(!receivedMessageFlag(byte, destuffing)
+            && (*byte == addressField || addressField == ANY_VALUE)) {
             *state = A_RCV;
             bcc[0] = *byte;
-            //printf("address ok\n");
         }
-        else if(*byte != MSG_FLAG){
-            *state = Start;
+        else if(!receivedMessageFlag(byte, destuffing)){ // If it receives a flag, it doesn't change state
+            goBackToStart(state, &destuffing);
+            return HEAD_INVALID;
         }
         break;
         
     case A_RCV:
-        if (*byte == controlField || (controlField == ANY_VALUE && (*byte != MSG_FLAG || destuffing == ViewingDestuffedByte))) {
+        // Only advances when a valid control field is received
+        if (!receivedMessageFlag(byte, destuffing) && 
+            (*byte == controlField || controlField == ANY_VALUE)) {
             *state = C_RCV;
             bcc[1] = *byte;
             //printf("control ok\n");
         }
-        else if (*byte == MSG_FLAG) {
-            *state = FLAG_RCV;
-        }
-        else {
-            *state = Start;
+        else { // INVALID
+            receivedMessageFlag(byte, destuffing) ? 
+                goBackToFLAG_RCV(state, &destuffing) : 
+                goBackToStart(state, &destuffing);
+            return HEAD_INVALID;
         }
         break;
 
     case C_RCV:
-        if(*byte == BCC(bcc[0], bcc[1])) {
+        // Only advances if BCC is correct
+        if (*byte == BCC(bcc[0], bcc[1]) && !receivedMessageFlag(byte, destuffing)) {
             *state = BCC_HEAD_OK;
-            //printf("bcc ok\n");
         }
-        else if(*byte == MSG_FLAG){
-            *state = FLAG_RCV;
-            //printf("received MSG_FLAG :(\n");
-        }
-        else{
-            *state = Start;
+        else { // INVALID
+            receivedMessageFlag(byte, destuffing) ? 
+                goBackToFLAG_RCV(state, &destuffing) : 
+                goBackToStart(state, &destuffing);
             return HEAD_INVALID;
-            //printf("received %x, bcc: %x\n", *byte, BCC(bcc[0], bcc[1]));
         }
         break;
 
     case BCC_HEAD_OK:
-        if(*byte == MSG_FLAG && destuffing != ViewingDestuffedByte){
+        if (receivedMessageFlag(byte, destuffing)) {
             *state = DONE_S_U; // S and U
         }
-        else{
+        else {
             *state = DATA; // I
+            dataCount++;
         }
         break;
 
     case DATA:
-        if(*byte != MSG_FLAG || destuffing == ViewingDestuffedByte){ 
-            data[dataCount++] = byte;
-            if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK; dataCount = 0;}
+        if(!receivedMessageFlag(byte, destuffing)){
+            dataCount++;
+            if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK;}
             break;
         } 
         // break is missing intentionally!
     case DATA_OK:
         // verify BCC
-        for(int i=0; i < dataCount-1; i++){ dataBCC ^= data[i];}
-        if(*byte == MSG_FLAG){
-             if(dataBCC == prevByte){
+        if(receivedMessageFlag(byte, destuffing)){
+            dataBCC = checkDestuffedBCC(buf, prevByte, dataCount, 0);    
+             if(dataBCC ){
                 dataCount = 0;
                 *state = DONE_I;
              }
              else{
+
                  return DATA_INVALID;
              }
-             
         }
         else{
-            if(dataBCC == *byte){
-                *state = BCC_DATA_OK;    
+            dataBCC = checkDestuffedBCC(buf, *byte, dataCount, 1);
+            if(dataBCC){
+                *state = BCC_DATA_OK;   
             }
             else{
-                *state = Start;
-                destuffing = OK;
+                goBackToStart(byte, &destuffing);
                 return DATA_INVALID;
             }   
+            dataCount = 0; 
         }
         break;
 
     case BCC_DATA_OK:
-        if (*byte == MSG_FLAG) {
+        if (receivedMessageFlag(byte, destuffing)) {
             *state = DONE_I;
         } else {
-            *state = Start;
-            destuffing = OK;
+            goBackToStart(byte, destuffing);
+            return DATA_INVALID;
         }
         break;
 
     case DONE_I:
     case DONE_S_U:
-    destuffing = OK;
+        destuffing = DestuffingOK;
     default:
         break;
     }
     prevByte = *byte;
 
-    // this needs to be revisited !!
-    if ((*state == FLAG_RCV && prevState != Start) || *state == Start) { // if the state was restarted
-        return TRUE;
-    }
-    return NICE;
+    return StateOK;
 }

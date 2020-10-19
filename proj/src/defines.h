@@ -20,10 +20,9 @@
 #define CTRL_SET        0x03
 #define CTRL_UA         0x07 
 #define CTRL_DISC       0x0B
-#define CTRL_RR         0x03
-#define CTRL_REJ        0x01
-#define CTRL_S(s)      ((s%2)<<6) /*0S000000 S = N(s)*/
-#define CTRL_R(r)      ((r%2)<<7) || BIT(3)
+#define CTRL_S(s)       ((s%2)<<6) /*0S000000 S = N(s)*/
+#define CTRL_RR(r)      ((r%2)<<7) || BIT(3)
+#define CTRL_REJ(r)      ((r%2)<<7) || BIT(3)
 
 
 
@@ -59,11 +58,11 @@ typedef unsigned bool;
 
 enum stateMachine { Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
 enum programState { WaitingForLC, LogicallyConnected, WaitingForDISC, WaitingForUA, WaitingForRR };
-enum destuffingState { OK, WaitingForSecondByte, ViewingDestuffedByte };
+enum destuffingState { DestuffingOK, WaitingForSecondByte, ViewingDestuffedByte };
+enum readFromSPRet{ RR, REJ, SAVE };
 
-
-enum checkStateRET  { 
-    NICE, 
+enum checkStateRET { 
+    StateOK, 
     IGNORE_CHAR,
     // need to manage where state changed to and the implications on the buffer inside checkState 
     HEAD_INVALID,
