@@ -43,7 +43,7 @@ bool logicConnectionFunction(char * msg, size_t msgSize) {
     res = writeToSP(fd, msg, SUPERVISION_MSG_SIZE);
 
     //verifies if it was written correctly
-    if (res != (SUPERVISION_MSG_SIZE + 1)) {
+    if (res != SUPERVISION_MSG_SIZE) {
         printf("Wrong message size\n");
     }
     
@@ -77,7 +77,7 @@ bool disconnectionFunction(char * msg, size_t msgSize) {
     res = writeToSP(fd, msg, SUPERVISION_MSG_SIZE);//write DISC
     
     //verifies if it was written correctly
-    if (res != (SUPERVISION_MSG_SIZE + 1)) {
+    if (res != SUPERVISION_MSG_SIZE) {
         printf("Wrong message size\n");
     }
     
@@ -114,7 +114,7 @@ bool informationExchange(char *msg, size_t msgSize){
     res = writeToSP(fd, msg, msgSize);
 
     //verifies if it was written correctly
-    if (res != (msgSize + 1)) {
+    if (res != msgSize) {
         printf("Wrong message size\n");
     }
     

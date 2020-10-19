@@ -17,11 +17,11 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize
             constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR(r));
             r++;
         }
-        /*printf("RECEIVED: ");
+        printf("RECEIVED: ");
         for (int i = BCC1_IDX+1; i < msgSize-2; i++) {
             printf("%c", msg[i]);
         }
-        printf("\n");*/
+        printf("\n");
 
     } 
     else if (isSU(&state)) {

@@ -71,8 +71,10 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 size_t writeToSP(int fd, char* message, size_t messageSize) {
     message[messageSize]='\0';
 
-    return write(fd, message, (messageSize+1)*sizeof(message[0]));
+    return write(fd, message, messageSize*sizeof(message[0]));
 }
+
+char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
 
 enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char reading;
@@ -100,17 +102,32 @@ enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssiz
         // if read is successful
         switch (checkState(state, bcc, &reading, buf, addressField, controlField)) {
             case HEAD_INVALID: // IGNORE ALL, can start reading next one
+                #ifdef DEBUG_STATE_MACHINE
+                debugMessage("HEAD_INVALID");
+                #endif
                 counter = 0;
                 continue;
             case DATA_INVALID: // Evaluate head && act accordingly
+                #ifdef DEBUG_STATE_MACHINE
+                debugMessage("DATA_INVALID");
+                #endif
                 STOP = TRUE;
                 continue;
             case IGNORE_CHAR:
+                #ifdef DEBUG_STATE_MACHINE
+                debugMessage("IGNORE_CHAR");
+                #endif
                 continue;
             case StateOK:
+                #ifdef DEBUG_STATE_MACHINE
+                debugMessage("StateOK");
+                #endif
             default: break;
         }
-        //printf("state: %ud\n", state);
+
+        #ifdef DEBUG_STATE_MACHINE
+        printf("state after checkstate: %s\n", stateNames[*state]);
+        #endif
 
 
         //printf("3\n");
@@ -124,21 +141,22 @@ enum readFromSPRet readFromSP(int fd, char * buf, enum stateMachine *state, ssiz
     }
 
     if(isAcceptanceState(state)) {   
-        if(s == pS){// send RR & discard
+        /*if(s == pS){// send RR & discard
             return RR;
         }
         else{// send RR and accept data 
             return SAVE; 
-        }
+        }*/
         STOP = TRUE;
+        *stringSize = counter;
     }
     else{
-        if(s == pS){//send RR 
+        /*if(s == pS){//send RR 
             return RR;
         }
         else{//send REJ 
             return REJ;
-        }
+        }*/
     }
 }
 
@@ -241,19 +259,26 @@ bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
 }
 
-bool checkDestuffedBCC(char* buf, char bcc, size_t bufSize, int noFlag){
-    char aux = buf[4];
+bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount, int noFlag){
+    char aux = 0;
+    if (dataCount == 0) return FALSE;
 
-    if(noFlag == 0){//caso de ja ter recebido MSG_FLAG
-        for(size_t i = 5; i < bufSize - 2; i++){
-            aux ^= buf[i];
-        }
+    // Can be done like this because dataCount is the number of data bytes received, and that will always be true
+
+    #ifdef DEBUG_STATE_MACHINE
+    printf("BCC calculated with: ");
+    #endif
+    for(size_t i = 4; i < dataCount + 4; i++){
+        #ifdef DEBUG_STATE_MACHINE
+        printf("%x ", buf[i]);
+        #endif
+        aux ^= buf[i];
     }
-    else if(noFlag == 1){//caso de ter recebido agora o BCC
-        for(size_t i = 5; i < bufSize-1; i++){
-            aux ^= buf[i];
-        }
-    }
+
+    #ifdef DEBUG_STATE_MACHINE
+    printf("\nCalculated BCC: %x, real BCC: %x\n", aux, bcc);
+    #endif
+
     if(aux == bcc) return TRUE;
     else return FALSE;
     
@@ -272,6 +297,7 @@ void goBackToFLAG_RCV(enum stateMachine * state, enum destuffingState * destuffi
     *state = FLAG_RCV;
     *destuffing = DestuffingOK;
 }
+
 
 enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*buf, char addressField, char controlField) { 
     static unsigned dataCount = 4;
@@ -303,12 +329,17 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             break;
     }
 
+    #ifdef DEBUG_STATE_MACHINE
+    printf("\nSM: byte received: %x; currentState: %s\n", *byte, stateNames[*state]);
+    #endif
 
     switch (*state){
     case Start:
         // Advances from Start when flag id received
         if(receivedMessageFlag(byte, destuffing)){
             *state = FLAG_RCV;
+        } else {
+            return HEAD_INVALID;
         }
         break;
     
@@ -360,7 +391,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
         }
         else {
             *state = DATA; // I
-            dataCount++;
+            dataCount = 1;
         }
         break;
 
@@ -369,31 +400,32 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             dataCount++;
             if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK;}
             break;
-        } 
-        // break is missing intentionally!
+        } else {
+            dataCount--; // discounts the BCC from the data count
+            dataBCC = checkDestuffedBCC(buf, prevByte, dataCount, 0);    
+            if (dataBCC){
+                *state = DONE_I;
+            }
+            else {
+                goBackToStart(state, &destuffing);
+                return DATA_INVALID;
+            }
+        }
+        break;
     case DATA_OK:
         // verify BCC
-        if(receivedMessageFlag(byte, destuffing)){
-            dataBCC = checkDestuffedBCC(buf, prevByte, dataCount, 0);    
-             if(dataBCC ){
-                dataCount = 0;
-                *state = DONE_I;
-             }
-             else{
-
-                 return DATA_INVALID;
-             }
-        }
-        else{
+        if (!receivedMessageFlag(byte, destuffing)) {
             dataBCC = checkDestuffedBCC(buf, *byte, dataCount, 1);
             if(dataBCC){
                 *state = BCC_DATA_OK;   
             }
             else{
-                goBackToStart(byte, &destuffing);
+                goBackToStart(state, &destuffing);
                 return DATA_INVALID;
-            }   
-            dataCount = 0; 
+            }
+        } else {
+            goBackToStart(state, &destuffing);
+            return DATA_INVALID;
         }
         break;
 
@@ -401,7 +433,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
         if (receivedMessageFlag(byte, destuffing)) {
             *state = DONE_I;
         } else {
-            goBackToStart(byte, destuffing);
+            goBackToStart(state, &destuffing);
             return DATA_INVALID;
         }
         break;
