@@ -1,5 +1,9 @@
 #include "protocol.h"
 
-bool establishLogicConnection();
 
+bool stopAndWait(unsigned (*functionToExec)(char*,size_t), char * msgToWrite, size_t msgSize);
+bool logicConnectionFunction(char * msg, size_t msgSize);
+bool establishLogicConnection();
+bool disconnectionFunction(char * msg, size_t msgSize);
 bool establishDisconnection();
+bool informationExchange(char *msg, size_t msgSize);

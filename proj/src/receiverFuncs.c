@@ -57,7 +57,7 @@ void receiverLoop() {
     enum stateMachine state;
 
     while (TRUE) {
-    char ret[MAX_I_MSG_SIZE] = {'\0'};
+        char ret[MAX_I_MSG_SIZE] = {'\0'};
         readFromSP(fd, ret, &state, &size, ANY_VALUE, ANY_VALUE);
         //printCharArray(ret, size);
         if (isAcceptanceState(&state)) {

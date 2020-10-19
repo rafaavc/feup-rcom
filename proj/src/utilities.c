@@ -4,16 +4,7 @@ void debugMessage(char * msg) {
     #ifndef DEBUG
     return;
     #endif
-    if (strlen(msg) > MAX_DEBUG_MSG_LENGTH-3)  {
-        printf("[DEBUG INFO] Can't use debug message\n");
-        return;
-    }
-    char pre[MAX_DEBUG_MSG_LENGTH] = {'\0'};
-
-    strcat(pre, "- ");
-    strcat(pre, msg);
-
-    puts(pre);
+    printf("- %s\n", msg);
 }
 
 void printCharArray(char * arr, size_t arrSize) {

@@ -4,7 +4,7 @@ extern unsigned stopAndWaitFlag;
 extern int fd;
 extern enum stateMachine state;
 
-bool stopAndWait(unsigned (*functionToExec)(char*), char * msgToWrite) {
+bool stopAndWait(unsigned (*functionToExec)(char*,size_t), char * msgToWrite, size_t msgSize) {
     unsigned counter = 0;
 
     #ifdef DEBUG
@@ -25,7 +25,7 @@ bool stopAndWait(unsigned (*functionToExec)(char*), char * msgToWrite) {
             stopTimer(&timer, TRUE);
             startTimer(&timer);
             #endif
-            if (functionToExec(msgToWrite)) {
+            if (functionToExec(msgToWrite,msgSize)) {
                 alarm(0); // unset alarm
                 return TRUE;
             }
@@ -35,7 +35,7 @@ bool stopAndWait(unsigned (*functionToExec)(char*), char * msgToWrite) {
     return FALSE;
 }
 
-bool logicConnectionFunction(char * msg) {
+bool logicConnectionFunction(char * msg, size_t msgSize) {
     size_t res;
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
@@ -64,11 +64,11 @@ bool establishLogicConnection() {
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_SET);
     
     // writes to the serial port, trying to connect
-    return stopAndWait(&logicConnectionFunction, buf);
+    return stopAndWait(&logicConnectionFunction, buf,SUPERVISION_MSG_SIZE);
 }
 
 
-bool disconnectionFunction(char * msg) {
+bool disconnectionFunction(char * msg, size_t msgSize) {
     size_t res;
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
@@ -96,7 +96,7 @@ bool establishDisconnection() {
     char buf[SUPERVISION_MSG_SIZE];
 
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_DISC);
-    if (stopAndWait(&disconnectionFunction, buf)) {
+    if (stopAndWait(&disconnectionFunction, buf,SUPERVISION_MSG_SIZE)) {
         constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_UA);
         writeToSP(fd, buf, SUPERVISION_MSG_SIZE); //write UA
         debugMessage("[DISC] SUCCESS");
@@ -104,4 +104,27 @@ bool establishDisconnection() {
     }
     
     return FALSE;
+}
+
+bool informationExchange(char *msg, size_t msgSize){
+    size_t res;
+    ssize_t size; 
+    char ret[MAX_I_MSG_SIZE];
+
+    res = writeToSP(fd, msg, msgSize);
+
+    //verifies if it was written correctly
+    if (res != (msgSize + 1)) {
+        printf("Wrong message size\n");
+    }
+    
+    enum stateMachine state;
+    readFromSP(fd, ret, &state, &size, ADDR_SENT_EM, CTRL_RR);
+
+    if(!isAcceptanceState(&state)) {
+        debugMessage("[SENDING DATA] WRONG MESSAGE RECEIVED\n");
+        return FALSE;
+    }
+    return TRUE;
+
 }
