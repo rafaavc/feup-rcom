@@ -35,7 +35,8 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 
     if (tcgetattr(fd, oldtio) == -1) { /* save current port settings */
         perror("tcgetattr");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
+        return -1;
     }
 
     bzero(&newtio, sizeof(newtio));
@@ -60,7 +61,8 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 
     if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
         perror("tcsetattr");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
+        return -1;
     }
 
     debugMessage("[SP] OPENED AND CONFIGURED");
@@ -253,13 +255,18 @@ void byteDestuffing(char * ret, size_t * retSize){// dataSize = tamanho do array
 
 
 
-void closeSP(struct termios *oldtio) {
+int closeSP(struct termios *oldtio) {
     if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
-      perror("tcsetattr");
-      exit(EXIT_FAILURE);
+      perror("Error on tcsetattr");
+      return -1;
     }
 
-    close(fd);
+    if(close(fd) != 0){
+        perror("Error on close\n");
+        return -1;
+    }
+    fprint(stdout,"Closing successfull\n");
+    return 0;
 }
 
 bool isAcceptanceState(enum stateMachine *state) {

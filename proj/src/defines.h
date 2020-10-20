@@ -1,10 +1,14 @@
 #ifndef _DEFINES_H_
 #define _DEFINES_H_
 
+#define EMITTER     0
+#define RECEIVER    1
+
+
 #define BIT(n)      (0x01 << n )
 
 #define SOCAT
-#define DEBUG    
+#define DEBUG
 //#define DEBUG_STATE_MACHINE
 #define MAX_DEBUG_MSG_LENGTH 100
 

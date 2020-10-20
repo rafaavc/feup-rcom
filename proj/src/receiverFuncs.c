@@ -65,7 +65,7 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize
     return FALSE;
 }
 
-void receiverLoop() {
+size_t receiverLoop(char * buffer) {
     ssize_t size;
     enum stateMachine state;
     enum readFromSPRet res;
@@ -75,7 +75,13 @@ void receiverLoop() {
         res = readFromSP(ret, &state, &size, ANY_VALUE, ANY_VALUE);
         //printCharArray(ret, size);
         if (isAcceptanceState(&state)) {
-            if (dealWithReceivedMessage(state, ret, size, res)) return;
+            if (dealWithReceivedMessage(state, ret, size, res)) return -1; 
+            // NEED TO RECHECK THIS!!!!!! if it receives SET or DISC while llread is happening, it's an error!
+            if (isI(&state)) {
+                size_t dataLength = size - 6;
+                memcpy(buffer, &buffer[BCC1_IDX+1], dataLength);
+                return dataLength;
+            }
         }
     }
 }

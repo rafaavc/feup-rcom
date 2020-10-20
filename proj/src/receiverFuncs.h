@@ -2,4 +2,4 @@
 
 bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize,enum readFromSPRet res);
 
-void receiverLoop();
+size_t receiverLoop(char * buffer);

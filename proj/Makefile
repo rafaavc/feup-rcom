@@ -1,7 +1,7 @@
 CC=gcc
-_DEPS = protocol.h utilities.h defines.h
-_EmitterOBJ = emitter.o protocol.o emitterFuncs.o utilities.o
-_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o utilities.o
+_DEPS = protocol.h utilities.h defines.h iPA.h receiverFuncs.h emitterFuncs.h
+_EmitterOBJ = emitter.o protocol.o emitterFuncs.o receiverFuncs.o utilities.o iPA.o
+_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o emitterFuncs.o utilities.o iPA.o
 OBJDIR = obj
 SRCDIR = src
 EmitterName = emitter
