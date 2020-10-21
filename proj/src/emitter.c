@@ -1,4 +1,4 @@
-#include "emitterFuncs.h"
+#include "emitter.h"
 
 extern unsigned stopAndWaitFlag;
 extern int fd;
@@ -10,11 +10,10 @@ void alarmHandler(int signo) {
     }
 }
 
-int main(int argc, char** argv){
+void emitter(int serialPort){
     // sum = 0, speed = 0;
     //struct termios oldtio;  
 
-    checkCmdArgs(argc, argv);
 
     if(signal(SIGALRM, alarmHandler) < 0) {
         perror("Alarm handler wasn't installed");  // instala rotina que atende interrupcao
@@ -24,10 +23,10 @@ int main(int argc, char** argv){
     //openConfigureSP(argv[1], &oldtio);
 
     // Establish communication with receiver
-    llopen(argv[1], EMITTER); 
+    llopen(serialPort, EMITTER); 
     if (fd == -1) {
         fprintf(stderr, "\nWasn't able to establish logic connection\n");
-        return -1;//provavelmente dar nomes signifcativos--LLOPENFAILED
+        exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLOPENFAILED
     }
     
     fprintf(stdout,"\n Connection established successfully|\n");
@@ -54,10 +53,8 @@ int main(int argc, char** argv){
     //closeSP(&oldtio);
     if (llclose(fd) != 0) {
         fprintf(stderr, "\nIssues during disconnection\n");
-        return -1;//provavelmente dar nomes signifcativos--LLCLOSEFAILED
+        exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLCLOSEFAILED
     }
-
-    return 0;
 }
 
 /*

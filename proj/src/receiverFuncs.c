@@ -25,43 +25,6 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize
         printf("\n");
 
     } 
-    else if (isSU(&state)) {
-        //debugMessage("RECEIVED «S,U» DATA");
-        if (progState == WaitingForDISC && msg[CTRL_IDX] != CTRL_UA) {
-            progState = LogicallyConnected;
-        }
-        switch (msg[CTRL_IDX]) {
-            case CTRL_UA:
-                if (progState == WaitingForLC) break;
-
-                debugMessage("RECEIVED UA");
-                if (progState == WaitingForDISC) {
-                    debugMessage("[DISC] SUCCESSFUL");
-                    return TRUE;
-                }
-                break;
-            case CTRL_DISC:
-                if (progState == WaitingForLC) break;
-
-                debugMessage("RECEIVED DISC");
-                constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_DISC);
-                writeToSP(buf, SUPERVISION_MSG_SIZE);
-                progState = WaitingForDISC;
-                break;
-            case CTRL_SET:
-                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
-                writeToSP(buf, SUPERVISION_MSG_SIZE);
-
-                debugMessage("[LOGIC CONNECTION] SUCCESS\n");
-                progState = LogicallyConnected;
-                break;
-            default:
-                if (progState == WaitingForDISC) {
-                    progState = LogicallyConnected;
-                }
-                break;
-        }
-    }
     return FALSE;
 }
 
@@ -78,6 +41,8 @@ size_t receiverLoop(char * buffer) {
             if (dealWithReceivedMessage(state, ret, size, res)) return -1; 
             // NEED TO RECHECK THIS!!!!!! if it receives SET or DISC while llread is happening, it's an error!
             if (isI(&state)) {
+                if(size < 0)
+                    return -1;
                 size_t dataLength = size - 6;
                 memcpy(buffer, &buffer[BCC1_IDX+1], dataLength);
                 return dataLength;
@@ -86,3 +51,55 @@ size_t receiverLoop(char * buffer) {
     }
 }
 
+size_t receiverDisconnecting(){
+    ssize_t size;
+    enum stateMachine state;
+    enum readFromSPRet res;
+    char buf[SUPERVISION_MSG_SIZE];
+
+    while (TRUE) {
+        char ret[MAX_I_MSG_SIZE] = {'\0'};
+        res = readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_DISC);
+        //printCharArray(ret, size);
+        if (isAcceptanceState(&state)) {
+            if(ret[CTRL_IDX] == CTRL_DISC){
+                if (progState == WaitingForLC) break;
+
+                debugMessage("RECEIVED DISC");
+                constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_DISC);
+                writeToSP(buf, SUPERVISION_MSG_SIZE);
+                progState = WaitingForDISC;
+                
+            }
+
+
+        }
+    }
+
+
+
+
+
+    //debugMessage("RECEIVED «S,U» DATA");
+     /*   if (progState == WaitingForDISC && msg[CTRL_IDX] != CTRL_UA) {
+            progState = LogicallyConnected;
+        }
+        switch (msg[CTRL_IDX]) {
+
+            case CTRL_DISC:
+                if (progState == WaitingForLC) break;
+
+                debugMessage("RECEIVED DISC");
+                constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_DISC);
+                writeToSP(buf, SUPERVISION_MSG_SIZE);
+                progState = WaitingForDISC;
+                break;
+            
+                    }
+    */
+
+
+}
+
+
+        

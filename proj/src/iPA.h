@@ -1,6 +1,5 @@
 /*INTERFACE PROTOCOL-APPLICATION*/
 #include "defines.h"
-#include "emitterFuncs.h"
 #include "receiverFuncs.h"
 
 /**

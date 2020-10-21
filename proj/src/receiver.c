@@ -1,20 +1,18 @@
-#include "receiverFuncs.h"
+#include "receiver.h"
 
 extern int fd;
 enum programState progState = WaitingForLC;
 
-int main(int argc, char** argv){
+void receiver(int serialPort){
     // sum=0, speed=0;
     struct termios oldtio;
-
-    checkCmdArgs(argc, argv);
 
     //openConfigureSP(argv[1], &oldtio);
 
       // Establish communication with emitter
-    if (llopen(argv[1], EMITTER) != 0) {
+    if (llopen(serialPort, EMITTER) != 0) {
         fprintf(stderr, "\nWasn't able to establish logic connection\n");
-        return -1;//provavelmente dar nomes signifcativos--LLOPENFAILED
+        exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLOPENFAILED
     }
     /*
     Reads the data, until it receives a disconnect, when this happens sends back a disconect and the program hands
@@ -28,9 +26,6 @@ int main(int argc, char** argv){
     //closeSP(&oldtio);
     if (llclose(fd) != 0) {
         fprintf(stderr, "\nIssues during disconnection\n");
-        return -1;//provavelmente dar nomes signifcativos--LLCLOSEFAILED
+        exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLCLOSEFAILED
     }
-
-
-    return 0;
 }

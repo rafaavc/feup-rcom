@@ -2,26 +2,8 @@
 
 volatile int STOP = FALSE;
 unsigned stopAndWaitFlag = FALSE;
-
 int fd;
-
 char prevByte;
-
-void checkCmdArgs(int argc, char ** argv) {
-    char * ports[2] = {
-        #ifndef SOCAT 
-        "/dev/ttyS0",
-        "/dev/ttyS1"
-        #else
-        "/dev/ttyS10",
-        "/dev/ttyS11"
-        #endif
-    };
-    if ( (argc < 2) || ((strcmp(ports[0], argv[1])!=0) && (strcmp(ports[1], argv[1])!=0) )) {
-        printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
-        exit(EXIT_FAILURE);
-    }
-}
 
 int openConfigureSP(char* port, struct termios *oldtio) {
     /*
@@ -162,11 +144,11 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
             }
         }
         else{
-            if(s == pS){//send RR 
+            if(s == pS){//send RR, confirme reception
                 //printf("COUNTER/SiZE: %d\n", counter);
                 return RR;
             }
-            else{//send REJ 
+            else{//send REJ,needs retransmission
                 //printf("COUNTER/SiZE: %d\n", counter);
                 return REJ;
             }

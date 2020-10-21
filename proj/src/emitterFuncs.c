@@ -4,7 +4,7 @@ extern unsigned stopAndWaitFlag;
 extern int fd;
 extern enum stateMachine state;
 
-bool stopAndWait(unsigned (*functionToExec)(char*,size_t), char * msgToWrite, size_t msgSize) {
+bool stopAndWait(unsigned (*functionToExec)(char*,size_t), char * msgToWrite, size_t msgSize, size_t res) {
     unsigned counter = 0;
 
     #ifdef DEBUG
@@ -25,7 +25,7 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t), char * msgToWrite, si
             stopTimer(&timer, TRUE);
             startTimer(&timer);
             #endif
-            if (functionToExec(msgToWrite, msgSize)) {
+            if (functionToExec(msgToWrite, msgSize, &res)) {
                 alarm(0); // unset alarm
                 return TRUE;
             }
@@ -63,9 +63,9 @@ bool establishLogicConnection() {
     char buf[SUPERVISION_MSG_SIZE];
 
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_SET);
-    
+    int res; 
     // writes to the serial port, trying to connect
-    return stopAndWait(&logicConnectionFunction, buf,SUPERVISION_MSG_SIZE);
+    return stopAndWait(&logicConnectionFunction, buf,SUPERVISION_MSG_SIZE, &res);
 }
 
 
@@ -95,9 +95,9 @@ bool disconnectionFunction(char * msg, size_t msgSize) {
 
 bool establishDisconnection() {
     char buf[SUPERVISION_MSG_SIZE];
-
+    size_t res;
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_DISC);
-    if (stopAndWait(&disconnectionFunction, buf,SUPERVISION_MSG_SIZE)) {
+    if (stopAndWait(&disconnectionFunction, buf,SUPERVISION_MSG_SIZE,&res)) {
         constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_UA);
         writeToSP(buf, SUPERVISION_MSG_SIZE); //write UA
         debugMessage("[DISC] SUCCESS");
@@ -107,8 +107,7 @@ bool establishDisconnection() {
     return FALSE;
 }
 
-bool informationExchange(char* msg, size_t msgSize){
-    size_t res;
+bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
     
@@ -135,10 +134,15 @@ bool informationExchange(char* msg, size_t msgSize){
     
     return TRUE;
 }
+
 //Rej reenvia, Rr termina alarme e envia a proxima
 
 bool sendMessage(char* msg, size_t msgSize) {
-    return stopAndWait(&informationExchange, msg, msgSize);
+    size_t bytesWritten;
+    stopAndWait(&informationExchange, msg, msgSize, bytesWritten);
+    if(bytesWritten < 0)
+        return -1;
+    return bytesWritten;
 }
 
 /*bool sendMessageArray(char ** msgs, size_t msgsSize) {

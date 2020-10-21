@@ -27,10 +27,7 @@ struct ProtocolI {
 
 struct ProtocolI getProtocolI(enum type endType, char * data);*/
 
-/**
- * Verifies the command line arguments
- */
-void checkCmdArgs(int argc, char** argv);
+
 
 
 /**
