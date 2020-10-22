@@ -2,8 +2,9 @@
 
 volatile int STOP = FALSE;
 unsigned stopAndWaitFlag = FALSE;
-int fd;
+int fd = -1;
 char prevByte;
+char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
 
 int openConfigureSP(char* port, struct termios *oldtio) {
     /*
@@ -13,11 +14,11 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     struct termios newtio; 
 
     fd = open(port, O_RDWR | O_NOCTTY );
+
     if (fd < 0) { perror(port); exit(EXIT_FAILURE); }
 
     if (tcgetattr(fd, oldtio) == -1) { /* save current port settings */
         perror("tcgetattr");
-        //exit(EXIT_FAILURE);
         return -1;
     }
 
@@ -28,22 +29,18 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 
     /* set input mode (non-canonical, no echo,...) */
     newtio.c_lflag = 0;
-
-    // t = TIME * 0.1 s
-    newtio.c_cc[VTIME]    = 0;   // if read only blocks for 2 seconds, or until a character is received
-    newtio.c_cc[VMIN]     = 0;   
-
-
     /*
-    VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
-    leitura do(s) pr�ximo(s) caracter(es)
+        VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
+        leitura do(s) pr�ximo(s) caracter(es)
+        t = TIME * 0.1s
     */
+    newtio.c_cc[VTIME]    = 0;   // if read only blocks for VTIME seconds, or until a character is received
+    newtio.c_cc[VMIN]     = 0;   
 
     tcflush(fd, TCIOFLUSH);   // discards from the queue data received but not read and data written but not transmitted
 
     if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
         perror("tcsetattr");
-        //exit(EXIT_FAILURE);
         return -1;
     }
 
@@ -58,8 +55,6 @@ size_t writeToSP(char* message, size_t messageSize) {
     return write(fd, message, messageSize*sizeof(message[0]));
 }
 
-char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
-
 enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
     char reading;
     int counter = 0;
@@ -68,6 +63,8 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     *state = Start;
 
     char bcc[2];
+
+    printf("%d\n", fd);
 
     static int pS = 1;
     //reads from the serial port
@@ -78,7 +75,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         //printf("1\n");
         if (readRet < 0) {
             perror("Unsuccessful read");
-            break;
+            return READ_ERROR;
         } 
         else if (readRet == 0) continue; // if didn't read anything
         //printf("2\n");
@@ -247,7 +244,7 @@ int closeSP(struct termios *oldtio) {
         perror("Error on close\n");
         return -1;
     }
-    fprint(stdout,"Closing successfull\n");
+    printf("Closing successfull\n");
     return 0;
 }
 
@@ -300,7 +297,6 @@ void goBackToFLAG_RCV(enum stateMachine * state, enum destuffingState * destuffi
     *state = FLAG_RCV;
     *destuffing = DestuffingOK;
 }
-
 
 enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*buf, char addressField, char controlField) { 
     static unsigned dataCount = 4;

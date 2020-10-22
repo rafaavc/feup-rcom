@@ -29,7 +29,7 @@ void checkCmdArgs(int argc, char ** argv) {
     } else {
         unsigned isValidSP = 0;
         for (unsigned i = 0; i < PORT_AMOUNT; i++) {
-            if (argv[1] == ports[i]){
+            if (atoi(argv[1]) == ports[i]){
                 isValidSP = 1;
                 break;
             }
@@ -46,7 +46,7 @@ void applicationLoop(int argc, char ** argv) {
 
     if (strcmp(argv[2], TRANSMITTER_STRING) == 0) {
         // TRANSMITTER
-        emitter(stoi(argv[1]));
+        emitter(atoi(argv[1]));
     } else {
         // RECEIVER
         receiver(atoi(argv[1]));

@@ -5,12 +5,11 @@ enum programState progState = WaitingForLC;
 
 void receiver(int serialPort){
     // sum=0, speed=0;
-    struct termios oldtio;
 
     //openConfigureSP(argv[1], &oldtio);
 
       // Establish communication with emitter
-    if (llopen(serialPort, EMITTER) != 0) {
+    if ((fd = llopen(serialPort, RECEIVER)) == -1) {
         fprintf(stderr, "\nWasn't able to establish logic connection\n");
         exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLOPENFAILED
     }

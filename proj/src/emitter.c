@@ -23,7 +23,7 @@ void emitter(int serialPort){
     //openConfigureSP(argv[1], &oldtio);
 
     // Establish communication with receiver
-    llopen(serialPort, EMITTER); 
+    fd = llopen(serialPort, EMITTER); 
     if (fd == -1) {
         fprintf(stderr, "\nWasn't able to establish logic connection\n");
         exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLOPENFAILED

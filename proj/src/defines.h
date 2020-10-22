@@ -64,7 +64,7 @@ typedef unsigned bool;
 enum stateMachine { Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
 enum programState { WaitingForLC, LogicallyConnected, WaitingForDISC, WaitingForUA, WaitingForRR };
 enum destuffingState { DestuffingOK, WaitingForSecondByte, ViewingDestuffedByte };
-enum readFromSPRet{ RR, REJ, SAVE };
+enum readFromSPRet{ RR, REJ, SAVE, READ_ERROR };
 
 enum checkStateRET { 
     StateOK, 

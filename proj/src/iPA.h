@@ -1,4 +1,5 @@
-/*INTERFACE PROTOCOL-APPLICATION*/
+/* INTERFACE PROTOCOL-APPLICATION */
+
 #include "defines.h"
 #include "receiverFuncs.h"
 
@@ -6,13 +7,28 @@
  * 
  * @param porta - serial port
  * @param role -EMITTER / RECEIVER
- * @return identifier of data connection, -1 in case of error
+ * @return data link identifier, negative value in case of error
  */
 int llopen(int porta, char role);
-
+/**
+ * 
+ * @param fd - data link identifier
+ * @param buffer - array of chars to be transmitted
+ * @param length - char array length
+ * @return number of characters written, negative value in case of error
+ */
 
 int llwrite(int fd, char * buffer, int length);
-
+/**
+ * 
+ * @param fd - data link identifier
+ * @param buffer - array of received chars 
+ * @return number of characters read, negative value in case of error
+ */
 int llread(int fd, char * buffer);  
-
+/**
+ * 
+ * @param fd - data link identifier
+ * @return positive number in case of success, negative value in case of error
+ */
 int llclose(int fd);

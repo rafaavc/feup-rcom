@@ -1,5 +1,6 @@
 obj
-emitter
-receiver
+app
 *.o
 test
+emitter
+receiver
