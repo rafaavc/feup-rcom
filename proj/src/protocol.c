@@ -62,7 +62,7 @@ size_t writeToSP(char* message, size_t messageSize) {
     return write(fd, message, messageSize*sizeof(message[0]));
 }
 
-enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {// emitter is 1 if it's the emitter reading and 0 if it's the receiver
+enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {
     char reading;
     int counter = 0;
 
@@ -72,6 +72,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     char bcc[2];
 
     static int pS = 1;
+    static int pR = 0;
     //reads from the serial port
     while(STOP == FALSE) {
         int readRet = read(fd, &reading, 1);
@@ -98,7 +99,15 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 debugMessage("DATA_INVALID");
                 #endif
                 STOP = TRUE;
-                continue;
+                int s = buf[CTRL_IDX] >> 6;
+                if(s == pS){//send RR, confirme reception
+                    //printf("COUNTER/SiZE: %d\n", counter);
+                    return RR;
+                }
+                else{//send REJ,needs retransmission
+                    //printf("COUNTER/SiZE: %d\n", counter);
+                    return REJ;
+                }
             case IGNORE_CHAR:
                 #ifdef DEBUG_STATE_MACHINE
                 debugMessage("IGNORE_CHAR");
@@ -115,48 +124,39 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         #ifdef DEBUG_STATE_MACHINE
         printf("state after checkstate: %s\n", stateNames[*state]);
         #endif
-
-
-        //printf("3\n");
-      
-        buf[counter] = reading;
-        counter++;
-
-        if (isAcceptanceState(state))
-            STOP = TRUE;
-
+        buf[counter++] = reading;
+        if (isAcceptanceState(state)) break;
     }
-    //printf("COUNTER SHOULD BE HERE\n");
+
+    *stringSize = counter;
 
     if (isI(state)) {
-        int s = buf[CTRL_IDX] >> 6;
-        if(isAcceptanceState(state)) {   
-            //printf("s: %d, pS: %d\n", s, pS);
-            if(s == pS){// send RR & discard
-                //printf("COUNTER/SiZE S == PS: %d\n", counter);
-                *stringSize = counter;
-                return RR;
-            }
-            else{// send RR and accept data
-                pS = s; 
-                //printf("COUNTER/SiZE ELSE: %d\n", counter);
-                *stringSize = counter;
-                //printf("COUNTER/SiZE: %d\n", counter);
-                return SAVE; 
-            }
+        int s = buf[CTRL_IDX] >> 6; 
+        //printf("s: %d, pS: %d\n", s, pS);
+            
+        if(s == pS){// send RR & discard
+            //printf("COUNTER/SiZE S == PS: %d\n", counter);
+            return RR;
         }
-        else{
-            if(s == pS){//send RR, confirme reception
-                //printf("COUNTER/SiZE: %d\n", counter);
-                return RR;
-            }
-            else{//send REJ,needs retransmission
-                //printf("COUNTER/SiZE: %d\n", counter);
-                return REJ;
-            }
+        else{// send RR and accept data
+            pS = s; 
+            //printf("COUNTER/SiZE ELSE: %d\n", counter);
+            //printf("COUNTER/SiZE: %d\n", counter);
+            return SAVE; 
+        }
+    } else if (isSU(state) && isRRorREJ(buf[CTRL_IDX])) {
+        int r = buf[CTRL_IDX] >> 7;
+        if (r == pR) {
+            // RR (ignore)
+            return RR;
+        } else {
+            pR = r;
+            // SAVE (act upon the result)
+            return SAVE;
         }
     }
-    return SAVE;
+
+    return SAVE; // This means it was stopped by the stop and wait alarm OR it is either UA, SET or DISC
 }
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl){
@@ -258,10 +258,13 @@ bool isAcceptanceState(enum stateMachine *state) {
 }
 
 bool isI(enum stateMachine *state) {
-    return *state == DONE_I;
+    return *state == DONE_I ;
 }
 bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
+}
+bool isRRorREJ(char ctrl) {
+    return ctrl == 0x85 || ctrl == 0x05 || ctrl == 0x81 || ctrl == 0x01;
 }
 
 bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount, int noFlag){

@@ -18,12 +18,12 @@ size_t receiverLoop(char * buffer) {
         // readFromSP only returns acceptance state
         char buf[SUPERVISION_MSG_SIZE];
         if (isI(&state)) {
-            if(res == REJ){
+            if(res == REJ) {
                 debugMessage("Sending REJ");
                 constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_REJ(r));
                 writeToSP(buf, SUPERVISION_MSG_SIZE);
             }
-            else{
+            else {
                 debugMessage("Sending RR");
                 constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR(r));
                 writeToSP(buf, SUPERVISION_MSG_SIZE);
@@ -68,7 +68,7 @@ size_t receiverDisconnecting(){
     //printCharArray(ret, size);
     while (TRUE) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
-        readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_DISC);
+        if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_DISC) == READ_ERROR) return -1;
 
         if (isAcceptanceState(&state)) {
             debugMessage("RECEIVED DISC");
@@ -77,7 +77,7 @@ size_t receiverDisconnecting(){
         }
         else return -1;
 
-        readFromSP(ret, &state, &size, ADDR_SENT_RCV, CTRL_UA);
+        if (readFromSP(ret, &state, &size, ADDR_SENT_RCV, CTRL_UA) == READ_ERROR) return -1;
 
         if (isAcceptanceState(&state)) {
             debugMessage("RECEIVED UA");

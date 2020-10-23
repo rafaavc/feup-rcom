@@ -66,6 +66,8 @@ bool isI(enum stateMachine *state);
  */
 bool isSU(enum stateMachine *state);
 
+bool isRRorREJ(char ctrl);
+
 bool checkDestuffedBCC(char* buf, char bcc, size_t bufSize, int noFlag);
 /**
  * Deals with the state transitions

@@ -25,7 +25,7 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgTo
             stopTimer(&timer, TRUE);
             startTimer(&timer);
             #endif
-            if (functionToExec(msgToWrite, msgSize, res)) {
+            if (functionToExec(msgToWrite, msgSize, res)) { // NEED TO FIND WAY TO HANDLE ERRORS IN THIS FUNCTION
                 alarm(0); // unset alarm
                 return TRUE;
             }
@@ -48,7 +48,7 @@ bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     }
     
     enum stateMachine state;
-    readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_UA);
+    if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_UA) == READ_ERROR) return FALSE;
 
     if(isAcceptanceState(&state)) {
         debugMessage("[LOGIC CONNECTION] SUCCESS\n");
