@@ -1,7 +1,6 @@
 #include "receiverFuncs.h"
 
 extern int fd;
-extern enum programState progState;
 
 size_t receiverLoop(char * buffer) {
     ssize_t size;

@@ -1,7 +1,6 @@
 #include "receiver.h"
 
 extern int fd;
-enum programState progState = WaitingForLC;
 
 void receiver(int serialPort){
     // sum=0, speed=0;

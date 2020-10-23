@@ -66,9 +66,9 @@ bool isI(enum stateMachine *state);
  */
 bool isSU(enum stateMachine *state);
 
-bool isRR(char ctrl);
+bool isRR(unsigned char ctrl);
 
-bool isREJ(char ctrl);
+bool isREJ(unsigned char ctrl);
 
 int getS(unsigned char ctrl);
 

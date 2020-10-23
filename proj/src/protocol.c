@@ -271,12 +271,12 @@ bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
 }
 
-bool isRR(char ctrl) {
-    return ctrl == (char)0x85 || ctrl == 0x05;
+bool isRR(unsigned char ctrl) {
+    return ctrl == 0x85 || ctrl == 0x05;
 }
 
-bool isREJ(char ctrl) {
-    return ctrl == (char)0x81 || ctrl == 0x01;
+bool isREJ(unsigned char ctrl) {
+    return ctrl == 0x81 || ctrl == 0x01;
 }
 
 int getS(unsigned char ctrl) {
