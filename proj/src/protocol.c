@@ -246,10 +246,9 @@ int closeSP(struct termios *oldtio) {
     }
 
     if(close(fd) != 0){
-        perror("Error on close\n");
+        perror("Error on close");
         return -1;
     }
-    printf("Closing successfull\n");
     return 0;
 }
 

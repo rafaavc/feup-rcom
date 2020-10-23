@@ -15,8 +15,11 @@ void receiver(int serialPort){
     Reads the data, until it receives a disconnect, when this happens sends back a disconect and the program hands
     */
     char buffer[MAX_DATA_LENGTH];
-    size_t dataLen = llread(fd, buffer);
-    write(STDOUT_FILENO, buffer, dataLen);
+    while (TRUE) {
+        size_t dataLen = llread(fd, buffer);
+        if (dataLen == 3 && buffer[0] == 'e' && buffer[1] == 'n' && buffer[2] == 'd') break;
+        write(STDOUT_FILENO, buffer, dataLen);
+    }
 
 
     if (llclose(fd) != 0) {

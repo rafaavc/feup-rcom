@@ -17,9 +17,17 @@ void emitter(int serialPort){
 
     //Começa a escrever todas as tramas de informação, tendo em conta a necessidade de reenvios e etc
     //enquanto tiver informaçao para escrever, escreve com o mesmo mecanismo de stop & wait como nas outras situações    
-
-    llwrite(fd, "testi}ng!!!~", 12); // o segundo argumento tem tamanho máximo = MAX_DATA_LENGTH
-    //printCharArray(ret, s);
+    FILE * file = fopen("fileToTransfer.txt", "r");
+    char buffer[MAX_DATA_LENGTH];
+    while (!feof(file)) {
+        size_t amount = fread(buffer, sizeof(char), MAX_DATA_LENGTH, file);
+        llwrite(fd, buffer, amount); // o segundo argumento tem tamanho máximo = MAX_DATA_LENGTH
+        if (ferror(file)) {
+            perror("Error reading file");
+            exit(EXIT_FAILURE);
+        }
+    }
+    llwrite(fd, "end", 3);
 
     //Quando ja nao tiver mais informaçao para escrever vai disconectar,entao
     // envia um DISC, espera um Disc e envia um UA, terminando o programa

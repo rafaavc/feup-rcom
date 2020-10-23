@@ -8,7 +8,7 @@
 #define BIT(n)      (0x01 << n )
 
 #define SOCAT
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_STATE_MACHINE
 #define MAX_DEBUG_MSG_LENGTH 100
 
@@ -59,7 +59,7 @@ typedef unsigned bool;
 #define MAX_I_BUFFER_SIZE MAX_I_MSG_SIZE*2 // needs to be this value due to the stuffing operation
 #define TIME_OUT    3
 #define NO_TRIES    3
-#define MAX_DATA_LENGTH     12
+#define MAX_DATA_LENGTH     60
 
 
 
