@@ -4,6 +4,6 @@ bool dealWithReceivedMessage(enum stateMachine state, char * msg, size_t msgSize
 
 size_t receiverLoop(char * buffer);
 
-void receiverConnecting();
+bool receiverConnecting();
 
 size_t receiverDisconnecting();

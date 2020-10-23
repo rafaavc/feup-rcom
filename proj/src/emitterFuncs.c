@@ -64,7 +64,7 @@ bool establishLogicConnection() {
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_SET);
     
     // writes to the serial port, trying to connect
-    return stopAndWait(&logicConnectionFunction, buf,SUPERVISION_MSG_SIZE, &res);
+    return stopAndWait(&logicConnectionFunction, buf, SUPERVISION_MSG_SIZE, &res);
 }
 
 
@@ -106,6 +106,7 @@ bool establishDisconnection() {
 }
 
 bool informationExchange(char* msg, size_t msgSize, size_t *res ){
+    //need to check errors
     ssize_t size; 
     char ret[MAX_I_MSG_SIZE];
     
@@ -118,16 +119,17 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     enum stateMachine state;
     enum readFromSPRet result;
     result = readFromSP(ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
-
+    //if (result == READ_ERROR) return FALSE;
     
     if(!isAcceptanceState(&state)) {
         debugMessage("[SENDING DATA] WRONG MESSAGE RECEIVED\n");
         return FALSE;
     }
     if(result == REJ){
+        debugMessage("Received REJ\n");
         stopAndWaitFlag = TRUE;
         return FALSE;
-    } 
+    }
     
     return TRUE;
 }
@@ -136,9 +138,7 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
 
 bool sendMessage(char* msg, size_t msgSize) {
     size_t bytesWritten;
-    stopAndWait(&informationExchange, msg, msgSize, &bytesWritten);
-    if(bytesWritten < 0)
-        return -1;
+    if (!stopAndWait(&informationExchange, msg, msgSize, &bytesWritten)) return -1;
     return bytesWritten;
 }
 

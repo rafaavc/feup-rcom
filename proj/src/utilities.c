@@ -39,5 +39,3 @@ double stopTimer(struct myTimer * timer, unsigned verbose) {
 }
 
 
-
-

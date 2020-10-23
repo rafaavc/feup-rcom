@@ -3,43 +3,22 @@
 extern unsigned stopAndWaitFlag;
 extern int fd;
 
-void alarmHandler(int signo) {
-    if (signo == SIGALRM) {
-        stopAndWaitFlag = TRUE;
-        debugMessage("[SIG HANDLER] SIGALRM");
-    }
-}
-
 void emitter(int serialPort){
     // sum = 0, speed = 0;
-    //struct termios oldtio;  
-
-
-    if(signal(SIGALRM, alarmHandler) < 0) {
-        perror("Alarm handler wasn't installed");  // instala rotina que atende interrupcao
-        exit(EXIT_FAILURE);
-    }
-
-    //openConfigureSP(argv[1], &oldtio);
 
     // Establish communication with receiver
     fd = llopen(serialPort, EMITTER); 
     if (fd == -1) {
-        fprintf(stderr, "\nWasn't able to establish logic connection\n");
+        printError("Wasn't able to establish logic connection!");
         exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLOPENFAILED
     }
     
-    fprintf(stdout,"\n Connection established successfully|\n");
+    debugMessage("Connection established successfully!");
 
     //Começa a escrever todas as tramas de informação, tendo em conta a necessidade de reenvios e etc
     //enquanto tiver informaçao para escrever, escreve com o mesmo mecanismo de stop & wait como nas outras situações    
 
-    char ret[MAX_I_BUFFER_SIZE] = {'\0'};
-    size_t s = 12;
-    
-    constructInformationMessage(ret, "testi}ng!!!~", &s);  // note: '}' is 0x7D and '~' is 0x7E
-    //note cant always change s, only when we dont need to retransmit it
-    sendMessage(ret,s);
+    llwrite(fd, "testi}ng!!!~", 12); // o segundo argumento tem tamanho máximo = MAX_DATA_LENGTH
     //printCharArray(ret, s);
 
     //Quando ja nao tiver mais informaçao para escrever vai disconectar,entao
@@ -52,7 +31,7 @@ void emitter(int serialPort){
     
     //closeSP(&oldtio);
     if (llclose(fd) != 0) {
-        fprintf(stderr, "\nIssues during disconnection\n");
+        printError("Wasn't able to disconnect!");
         exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLCLOSEFAILED
     }
 }

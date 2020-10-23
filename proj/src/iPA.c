@@ -8,15 +8,18 @@ int llopen(int porta, char r){
 
     sprintf(portString, "/dev/ttyS%d", porta);
     int fd = openConfigureSP(portString, &oldtio);
+    if (fd == -1) return -1;
 
     role = r;
     if(role == RECEIVER){
-        receiverConnecting();
+        if (!receiverConnecting()) return -1;
     }
     else if (role == EMITTER){
-        if (!establishLogicConnection()) {
-            return -1;
+        if (signal(SIGALRM, alarmHandler) < 0) {
+            perror("Alarm handler wasn't installed");  // instala rotina que atende interrupcao
+            exit(EXIT_FAILURE);
         }
+        if (!establishLogicConnection()) return -1;
     } 
     else return -1;
 
@@ -24,7 +27,12 @@ int llopen(int porta, char r){
 }
 
 int llwrite(int fd, char * buffer, int length){
-    int res = sendMessage(buffer,length);
+    char msg[MAX_I_BUFFER_SIZE] = {'\0'};
+    size_t s = length;
+    
+    constructInformationMessage(msg, buffer, &s);
+
+    int res = sendMessage(msg,s);
 
     if (res < 0) return -1;// in case of error
     

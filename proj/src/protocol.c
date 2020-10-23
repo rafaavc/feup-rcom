@@ -6,6 +6,13 @@ int fd = -1;
 char prevByte;
 char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
 
+void alarmHandler(int signo) {
+    if (signo == SIGALRM) {
+        stopAndWaitFlag = TRUE;
+        debugMessage("[SIG HANDLER] SIGALRM");
+    }
+}
+
 int openConfigureSP(char* port, struct termios *oldtio) {
     /*
     Open serial port device for reading and writing and not as controlling tty
@@ -15,10 +22,10 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 
     fd = open(port, O_RDWR | O_NOCTTY );
 
-    if (fd < 0) { perror(port); exit(EXIT_FAILURE); }
+    if (fd < 0) { perror(port); return -1; }
 
     if (tcgetattr(fd, oldtio) == -1) { /* save current port settings */
-        perror("tcgetattr");
+        perror("Error on tcgetattr");
         return -1;
     }
 
@@ -63,8 +70,6 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     *state = Start;
 
     char bcc[2];
-
-    printf("%d\n", fd);
 
     static int pS = 1;
     //reads from the serial port

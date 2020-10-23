@@ -11,29 +11,30 @@ size_t receiverLoop(char * buffer) {
 
     while (TRUE) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
+
         res = readFromSP(ret, &state, &size, ANY_VALUE, ANY_VALUE);
         if (res == READ_ERROR) return -1;
-        // readFromSP only return acceptance state
+
+        // readFromSP only returns acceptance state
         char buf[SUPERVISION_MSG_SIZE];
         if (isI(&state)) {
             if(res == REJ){
+                debugMessage("Sending REJ");
                 constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_REJ(r));
+                writeToSP(buf, SUPERVISION_MSG_SIZE);
             }
             else{
-                if(res == SAVE){
+                debugMessage("Sending RR");
+                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR(r));
+                writeToSP(buf, SUPERVISION_MSG_SIZE);
+                r++;
+                if(res == SAVE) {
                     size_t dataLength = size - 6;
-                    memcpy(buffer, &buffer[BCC1_IDX+1], dataLength);
+                    memcpy(buffer, &ret[BCC1_IDX+1], dataLength);
                     return dataLength;
                 }
-                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR(r));
-                r++;
             }
             writeToSP(buf, SUPERVISION_MSG_SIZE);
-            printf("RECEIVED: ");
-            for (int i = BCC1_IDX+1; i < size-2; i++) {
-                printf("%c", ret[i]);
-            }
-            printf("\n");
         } else {
             return -1;
         }
@@ -41,22 +42,21 @@ size_t receiverLoop(char * buffer) {
 }
 
 
-void receiverConnecting() {
+bool receiverConnecting() {
     ssize_t size;
     enum stateMachine state;
     char buf[SUPERVISION_MSG_SIZE];
+
     while (TRUE) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
-        readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_SET);
+        if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_SET) == READ_ERROR) break;
         //printCharArray(ret, size);
-        if (isAcceptanceState(&state)) {
-            debugMessage("RECEIVED SET");
-            constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
-            writeToSP(buf, SUPERVISION_MSG_SIZE);
-            progState = WaitingForDISC;
-        }        
+        debugMessage("RECEIVED SET");
+        constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
+        writeToSP(buf, SUPERVISION_MSG_SIZE);
+        return TRUE;
     }
-    //return 0;
+    return FALSE;
 }
 
 

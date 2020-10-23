@@ -47,6 +47,8 @@
 #define MODEMDEVICE "/dev/ttyS1"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 
+#define printError(args...) fprintf(stderr, ##args)
+
 #define FALSE 0
 #define TRUE 1
 typedef unsigned bool;
