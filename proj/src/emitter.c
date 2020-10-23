@@ -21,7 +21,11 @@ void emitter(int serialPort){
     char buffer[MAX_DATA_LENGTH];
     while (!feof(file)) {
         size_t amount = fread(buffer, sizeof(char), MAX_DATA_LENGTH, file);
-        llwrite(fd, buffer, amount); // o segundo argumento tem tamanho máximo = MAX_DATA_LENGTH
+        size_t ret = llwrite(fd, buffer, amount); // o segundo argumento tem tamanho máximo = MAX_DATA_LENGTH
+        if (ret == -1) {
+            printError("Error in llwrite\n");
+            exit(EXIT_FAILURE);
+        }
         if (ferror(file)) {
             perror("Error reading file");
             exit(EXIT_FAILURE);

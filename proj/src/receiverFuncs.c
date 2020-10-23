@@ -2,7 +2,6 @@
 
 extern int fd;
 extern enum programState progState;
-int r = 1;
 
 size_t receiverLoop(char * buffer) {
     ssize_t size;
@@ -17,25 +16,26 @@ size_t receiverLoop(char * buffer) {
 
         // readFromSP only returns acceptance state
         char buf[SUPERVISION_MSG_SIZE];
+
         if (isI(&state)) {
+            int s = getS(ret[CTRL_IDX]);
             if(res == REJ) {
-                debugMessage("Sending REJ");
-                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_REJ(r));
+                //debugMessage("Sending REJ");
+                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_REJ((s+1)%2));
                 writeToSP(buf, SUPERVISION_MSG_SIZE);
             }
-            else {
-                debugMessage("Sending RR");
-                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR(r));
+            else { // SAVE or RR
+                //debugMessage("Sending RR");
+                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_RR((s+1)%2));
                 writeToSP(buf, SUPERVISION_MSG_SIZE);
-                r++;
                 if(res == SAVE) {
                     size_t dataLength = size - 6;
                     memcpy(buffer, &ret[BCC1_IDX+1], dataLength);
                     return dataLength;
                 }
             }
-            writeToSP(buf, SUPERVISION_MSG_SIZE);
         } else {
+            printError("Received invalid data while running llread.\n");
             return -1;
         }
     }

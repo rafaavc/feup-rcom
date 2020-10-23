@@ -40,12 +40,12 @@ int llwrite(int fd, char * buffer, int length){
 }
 
 int llread(int fd, char * buffer){
-        /* 
-        Tem de continuar a ler enquanto não ler 
-        uma trama de informação (E acionar as ações necessárias com as tramas de controlo)
-        Retorna os dados da trama de informação
-        */
-        return receiverLoop(buffer);
+    /* 
+    Tem de continuar a ler enquanto não ler 
+    uma trama de informação (E acionar as ações necessárias com as tramas de controlo)
+    Retorna os dados da trama de informação
+    */
+    return receiverLoop(buffer);
 } 
 
 int llclose(int fd){

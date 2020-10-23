@@ -5,10 +5,10 @@
 #define RECEIVER    1
 
 
-#define BIT(n)      (0x01 << n )
+#define BIT(n)      (0x01 << (n-1) )
 
 #define SOCAT
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_STATE_MACHINE
 #define MAX_DEBUG_MSG_LENGTH 100
 
@@ -26,8 +26,8 @@
 #define CTRL_UA         0x07 
 #define CTRL_DISC       0x0B
 #define CTRL_S(s)       ((s%2)<<6) /*0S000000 S = N(s)*/
-#define CTRL_RR(r)      ((r%2)<<7) | BIT(3)
-#define CTRL_REJ(r)      ((r%2)<<7) | BIT(3)
+#define CTRL_RR(r)      ((r%2)<<7) | BIT(3) | BIT(1)
+#define CTRL_REJ(r)      ((r%2)<<7) | BIT(1)
 
 
 
@@ -57,9 +57,9 @@ typedef unsigned bool;
 /* Changeable Constants */
 #define MAX_I_MSG_SIZE MAX_DATA_LENGTH + SUPERVISION_MSG_SIZE + 1 // the 1 is from the data bcc
 #define MAX_I_BUFFER_SIZE MAX_I_MSG_SIZE*2 // needs to be this value due to the stuffing operation
-#define TIME_OUT    3
-#define NO_TRIES    3
-#define MAX_DATA_LENGTH     60
+#define TIME_OUT    3   // time between tries
+#define NO_TRIES    3   // tries to send message 3 times
+#define MAX_DATA_LENGTH     30   // max message data size (excluding header and tail)
 
 
 

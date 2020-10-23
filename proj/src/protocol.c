@@ -5,6 +5,7 @@ unsigned stopAndWaitFlag = FALSE;
 int fd = -1;
 char prevByte;
 char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
+unsigned nextS = 0;
 
 void alarmHandler(int signo) {
     if (signo == SIGALRM) {
@@ -66,13 +67,16 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     char reading;
     int counter = 0;
 
+    #ifdef DEBUG
+    static int sendREJ = 4;
+    #endif
+
     STOP = FALSE;
     *state = Start;
 
     char bcc[2];
 
     static int pS = 1;
-    static int pR = 0;
     //reads from the serial port
     while(STOP == FALSE) {
         int readRet = read(fd, &reading, 1);
@@ -99,7 +103,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 debugMessage("DATA_INVALID");
                 #endif
                 STOP = TRUE;
-                int s = buf[CTRL_IDX] >> 6;
+                int s = getS(buf[CTRL_IDX]);
                 if(s == pS){//send RR, confirme reception
                     //printf("COUNTER/SiZE: %d\n", counter);
                     return RR;
@@ -129,30 +133,36 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     }
 
     *stringSize = counter;
-
     if (isI(state)) {
-        int s = buf[CTRL_IDX] >> 6; 
-        //printf("s: %d, pS: %d\n", s, pS);
+        int s = getS(buf[CTRL_IDX]);
+        //printf("Received s: %d, pS: %d\n", s, pS);
             
         if(s == pS){// send RR & discard
             //printf("COUNTER/SiZE S == PS: %d\n", counter);
             return RR;
         }
         else{// send RR and accept data
-            pS = s; 
             //printf("COUNTER/SiZE ELSE: %d\n", counter);
             //printf("COUNTER/SiZE: %d\n", counter);
+            #ifdef DEBUG
+            if (sendREJ > 0) {
+                sendREJ--;
+                return REJ;
+            }
+            #endif
+            pS = s; 
             return SAVE; 
         }
-    } else if (isSU(state) && isRRorREJ(buf[CTRL_IDX])) {
-        int r = buf[CTRL_IDX] >> 7;
-        if (r == pR) {
+    } else if (isSU(state) && (isRR(buf[CTRL_IDX])|| isREJ(buf[CTRL_IDX]))) {
+        int r = getR(buf[CTRL_IDX]);
+        //printf("Received r: %d, nextS: %d\n", r, nextS%2);
+
+        if (r != (nextS%2)) { // Repeated control -> R needs to be always equal to the S of the next information msg
             // RR (ignore)
             return RR;
-        } else {
-            pR = r;
-            // SAVE (act upon the result)
-            return SAVE;
+        } else { // if it isREJ && new control (r == nextS)
+            // act upon the result
+            return isRR(buf[CTRL_IDX]) ? RR : REJ;
         }
     }
 
@@ -168,14 +178,12 @@ void constructSupervisionMessage(char * ret, char addr, char ctrl){
 }
 
 void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret size = 6 + dataSize OR NOT (if stuffing actually replaces bytes)
-    static int s = 0;
-    
     if(*dataSize == 0) return;
     char bcc = 0;
 
     ret[BEGIN_FLAG_IDX] = MSG_FLAG;
     ret[ADDR_IDX] = ADDR_SENT_EM;
-    ret[CTRL_IDX] = CTRL_S(s);
+    ret[CTRL_IDX] = CTRL_S(nextS);
     ret[BCC1_IDX] = BCC(ret[2], ret[1]);
 
     for(size_t i = 0; i < *dataSize; i++){
@@ -188,7 +196,7 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret
     ret[BCC1_IDX+*dataSize+2] = MSG_FLAG;
 
     *dataSize += 6;
-    s++;
+    nextS++;
 
     byteStuffing(ret, dataSize); // dataSize is updated in the byteStuffing function
 }
@@ -262,8 +270,21 @@ bool isI(enum stateMachine *state) {
 bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;
 }
-bool isRRorREJ(char ctrl) {
-    return ctrl == 0x85 || ctrl == 0x05 || ctrl == 0x81 || ctrl == 0x01;
+
+bool isRR(char ctrl) {
+    return ctrl == (char)0x85 || ctrl == 0x05;
+}
+
+bool isREJ(char ctrl) {
+    return ctrl == (char)0x81 || ctrl == 0x01;
+}
+
+int getS(unsigned char ctrl) {
+    return ctrl >> 6;
+}
+
+int getR(unsigned char ctrl) {
+    return ctrl >> 7;
 }
 
 bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount, int noFlag){

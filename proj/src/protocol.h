@@ -31,14 +31,14 @@ size_t writeToSP( char * message, size_t messageSize);
  * @param stringSize return variable (at end of execution, contains the string's size)
  * @param addressField the desired address value (ANY_VALUE if not specified)
  * @param controlField the desired control field (ANY_VALUE if not specified)
- * @return the string read
+ * @return 
  */
 enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField);
 
 void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
 /**
- * @param dataSize - the number of bytes in the data array (if it's a string, exclude \0)
+ * @param dataSize the number of bytes in the data array (if it's a string, exclude \0)
  */
 void constructInformationMessage(char* ret ,char* data, size_t * dataSize);
 
@@ -49,24 +49,30 @@ void byteDestuffing(char * ret, size_t * dataSize);
 int closeSP(struct termios *oldtio);
 
 /**
- * @param the state variable
+ * @param state the state variable
  * @return TRUE if is acceptance state
  */
 bool isAcceptanceState(enum stateMachine *state);
 
 /**
- * @param the state variable
+ * @param state the state variable
  * @return TRUE if is DONE_I
  */
 bool isI(enum stateMachine *state);
 
 /**
- * @param the state variable
+ * @param state the state variable
  * @return TRUE if is DONE_S_U
  */
 bool isSU(enum stateMachine *state);
 
-bool isRRorREJ(char ctrl);
+bool isRR(char ctrl);
+
+bool isREJ(char ctrl);
+
+int getS(unsigned char ctrl);
+
+int getR(unsigned char ctrl);
 
 bool checkDestuffedBCC(char* buf, char bcc, size_t bufSize, int noFlag);
 /**

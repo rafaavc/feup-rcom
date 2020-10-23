@@ -2,7 +2,9 @@
 
 extern unsigned stopAndWaitFlag;
 extern int fd;
+extern int nextS;
 extern enum stateMachine state;
+bool rejFlag = FALSE;
 
 bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t  *res) {
     unsigned counter = 0;
@@ -17,9 +19,12 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgTo
     while(counter < NO_TRIES) {
         if(stopAndWaitFlag) {
             stopAndWaitFlag = FALSE;
+            rejFlag = FALSE;
+
             counter++;
 
             alarm(TIME_OUT);
+            //printf("sending message with s = %d and size = %d\n", nextS, msgSize);
 
             #ifdef DEBUG
             stopTimer(&timer, TRUE);
@@ -29,9 +34,14 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgTo
                 alarm(0); // unset alarm
                 return TRUE;
             }
-            
+            if (rejFlag) counter--; // REJ é pedido de retransmissão, por isso sempre que recebe REJ envia outra vez.
+            // o NO_TRIES é apenas para as tentativas de retransmissão por timeout.
         }
     }
+
+    printError("Error sending message (tried %d times with no/invalid response)\n", NO_TRIES);
+    exit(EXIT_FAILURE);
+
     alarm(0);
     return FALSE;
 }
@@ -41,17 +51,19 @@ bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     char ret[MAX_I_MSG_SIZE];
 
     *res = writeToSP(msg, SUPERVISION_MSG_SIZE);
-
-    //verifies if it was written correctly
-    if (*res != SUPERVISION_MSG_SIZE) {
-        printf("Wrong message size\n");
+    if (*res == -1) {
+        perror("Error writing to SP");
+        return FALSE;
+    } else if (*res != msgSize) { //verifies if it was written correctly
+        printError("Error while writing to SP (size doesn't match)\n");
+        return FALSE;
     }
     
     enum stateMachine state;
     if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_UA) == READ_ERROR) return FALSE;
 
     if(isAcceptanceState(&state)) {
-        debugMessage("[LOGIC CONNECTION] SUCCESS\n");
+        debugMessage("[LOGIC CONNECTION] SUCCESS");
         return TRUE;
     }
     return FALSE;
@@ -76,8 +88,12 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     *res = writeToSP(msg, SUPERVISION_MSG_SIZE);//write DISC
     
     //verifies if it was written correctly
-    if (*res != SUPERVISION_MSG_SIZE) {
-        printf("Wrong message size\n");
+    if (*res == -1) {
+        perror("Error writing to SP");
+        return FALSE;
+    } else if (*res != msgSize) { 
+        printError("Error while writing to SP (size doesn't match)\n");
+        return FALSE;
     }
     
     enum stateMachine state;
@@ -111,9 +127,12 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     char ret[MAX_I_MSG_SIZE];
     
     *res = writeToSP(msg, msgSize);
-
-    if (*res != msgSize) { //verifies if it was written correctly
-        printf("Wrong message size\n");
+    if (*res == -1) {
+        perror("Error writing to SP");
+        return FALSE;
+    } else if (*res != msgSize) { //verifies if it was written correctly
+        printError("Error while writing to SP (size doesn't match)\n");
+        return FALSE;
     }
     
     enum stateMachine state;
@@ -128,6 +147,7 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     if(result == REJ){
         debugMessage("Received REJ\n");
         stopAndWaitFlag = TRUE;
+        rejFlag = TRUE;
         return FALSE;
     }
     
