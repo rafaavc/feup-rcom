@@ -1,6 +1,9 @@
 #ifndef _DEFINES_H_
 #define _DEFINES_H_
 
+#define TRANSMITTER     0
+#define RECEIVER        1
+
 #define BIT(n)      (0x01 << (n))
 
 #define MAX_DEBUG_MSG_LENGTH 100

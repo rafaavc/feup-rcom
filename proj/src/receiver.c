@@ -4,7 +4,7 @@ extern int fd;
 
 void receiver(int serialPort){    
 
-    if ((fd = llopen(serialPort, RECEIVER)) == -1) {// Establishes communication with transmitter
+    if ((fd = llopen(serialPort, RECEIVER_STRING)) == -1) {// Establishes communication with transmitter
         printError("Wasn't able to establish logic connection!\n");
         exit(EXIT_FAILURE); //provavelmente dar nomes signifcativos--LLOPENFAILED
     }

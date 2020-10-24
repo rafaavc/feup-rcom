@@ -35,7 +35,7 @@ void constructDataPacket(char * ret, char* data, size_t dataSize, int msgNr){
 
 void transmitter(int serialPort){
 
-    fd = llopen(serialPort, TRANSMITTER); // Establish communication with receiver
+    fd = llopen(serialPort, TRANSMITTER_STRING); // Establish communication with receiver
 
     if (fd == -1) {
         printError("Wasn't able to establish logic connection!");

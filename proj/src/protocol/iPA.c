@@ -4,7 +4,14 @@
 char role;
 struct termios oldtio;
 
-int llopen(int porta, char r){
+int llopen(int porta, char * r){
+    if (strcmp(r, "RECEIVER") == 0) role = RECEIVER;
+    else if (strcmp(r, "TRANSMITTER") == 0) role = TRANSMITTER;
+    else {
+        printError("Invalid role given to llopen\n");
+        return -1;
+    }
+
     char portString[12];
 
     sprintf(portString, "/dev/ttyS%d", porta);
@@ -12,8 +19,7 @@ int llopen(int porta, char r){
     int fd = openConfigureSP(portString, &oldtio); 
 
     if (fd == -1) return -1;
-
-    role = r;
+    
     if(role == RECEIVER){
         if (!receiverConnecting()) return -1; //establishing connection with TRANSMITTER
     }

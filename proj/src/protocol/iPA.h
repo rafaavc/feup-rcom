@@ -6,7 +6,7 @@
  * @param role -TRANSMITTER / RECEIVER
  * @return data link identifier, negative value in case of error
  */
-int llopen(int porta, char role);
+int llopen(int porta, char * role);
 /**
  * 
  * @param fd - data link identifier
