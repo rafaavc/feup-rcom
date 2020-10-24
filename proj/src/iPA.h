@@ -5,7 +5,7 @@
 /**
  * 
  * @param porta - serial port
- * @param role -EMITTER / RECEIVER
+ * @param role -TRANSMITTER / RECEIVER
  * @return data link identifier, negative value in case of error
  */
 int llopen(int porta, char role);

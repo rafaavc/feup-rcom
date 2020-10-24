@@ -1,4 +1,4 @@
-#include "emitterFuncs.h"
+#include "transmitterFuncs.h"
 
 /**
  * Reads information frames from the SP and acts accordingly to the frame received,like confirming the reception or asking for a resend

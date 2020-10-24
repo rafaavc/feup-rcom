@@ -1,8 +1,8 @@
 #ifndef _DEFINES_H_
 #define _DEFINES_H_
 
-#define EMITTER     0
-#define RECEIVER    1
+#define TRANSMITTER     0
+#define RECEIVER        1
 
 
 #define BIT(n)      (0x01 << (n) )
@@ -17,8 +17,8 @@
 
 
 /* Address */
-#define ADDR_SENT_EM    0x03 /*Commands sent by emitter and answers sent by receiver*/
-#define ADDR_SENT_RCV   0x01 /*Commands sent by receiver and answers sent by emitter*/
+#define ADDR_SENT_EM    0x03 /*Commands sent by transmitter and answers sent by receiver*/
+#define ADDR_SENT_RCV   0x01 /*Commands sent by receiver and answers sent by transmitter*/
 
 
 /* Control Protocol*/

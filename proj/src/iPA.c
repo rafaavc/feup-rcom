@@ -14,9 +14,9 @@ int llopen(int porta, char r){
 
     role = r;
     if(role == RECEIVER){
-        if (!receiverConnecting()) return -1; //establishing connection with EMITTER
+        if (!receiverConnecting()) return -1; //establishing connection with TRANSMITTER
     }
-    else if (role == EMITTER){
+    else if (role == TRANSMITTER){
         if (signal(SIGALRM, alarmHandler) < 0) {  // Instals the handler for the alarm interruption
             perror("Alarm handler wasn't installed"); 
             exit(EXIT_FAILURE);
@@ -46,8 +46,8 @@ int llread(int fd, char * buffer){
 } 
 
 int llclose(int fd){
-    if(role == EMITTER){
-        if(!establishDisconnection()) //disconnecting in the EMITTER side 
+    if(role == TRANSMITTER){
+        if(!establishDisconnection()) //disconnecting in the TRANSMITTER side 
             return -1;
     }
     else if(role == RECEIVER){ //disconnecting in the RECEIVER side 

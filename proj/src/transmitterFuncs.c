@@ -1,4 +1,4 @@
-#include "emitterFuncs.h"
+#include "transmitterFuncs.h"
 
 extern unsigned stopAndWaitFlag;
 extern int fd;
