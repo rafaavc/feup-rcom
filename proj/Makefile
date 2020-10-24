@@ -1,6 +1,6 @@
 CC=gcc
-_DEPS = protocol.h utilities.h defines.h iPA.h receiverFuncs.h transmitterFuncs.h transmitter.h receiver.h application.h applicationFunctions.h
-_mainOBJ = main.o application.o transmitter.o receiver.o iPA.o protocol.o transmitterFuncs.o receiverFuncs.o utilities.o applicationFunctions.o
+_DEPS = protocol/protocol.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/transmitterFuncs.h transmitter.h receiver.h application.h defines.h utilities/globalDefines.h
+_mainOBJ = main.o application.o transmitter.o receiver.o protocol/iPA.o protocol/protocol.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o
 #_EmitterOBJ = emitter.o protocol.o emitterFuncs.o receiverFuncs.o utilities.o iPA.o
 #_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o emitterFuncs.o utilities.o iPA.o
 OBJDIR = obj
@@ -18,6 +18,8 @@ DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR)/protocol
+	@mkdir -p $(OBJDIR)/utilities
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: all

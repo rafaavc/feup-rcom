@@ -7,6 +7,15 @@ void debugMessage(char * msg) {
     printf("- %s\n", msg);
 }
 
+bool isUnsignedNumber(char * str) {
+    for(int i = 0; str[i] != '\0'; i++) {
+        if(!(str[i] >= '0' && str[i] <= '9')) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void printCharArray(char * arr, size_t arrSize) {
     for (size_t i = 0; i < arrSize; i++) {
         printf("%x ", arr[i]);

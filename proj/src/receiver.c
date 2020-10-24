@@ -9,7 +9,7 @@ void receiver(int serialPort){
         exit(EXIT_FAILURE); //provavelmente dar nomes signifcativos--LLOPENFAILED
     }
 
-    bool endOfFile = FALSE;
+    bool endOfFile = false;
     char buffer[MAX_DATA_LENGTH];
     //char* fileData;
 
@@ -28,7 +28,7 @@ void receiver(int serialPort){
     Reads the data, until it receives a disconnect, when this happens sends back a disconect and the program hands
     */
    /* char buffer[MAX_DATA_LENGTH];
-    while (TRUE) {
+    while (true) {
         size_t dataLen = llread(fd, buffer);
         if (dataLen == 3 && buffer[0] == 'e' && buffer[1] == 'n' && buffer[2] == 'd') break;
         write(STDOUT_FILENO, buffer, dataLen);

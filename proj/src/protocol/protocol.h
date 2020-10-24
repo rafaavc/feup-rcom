@@ -6,7 +6,9 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <signal.h>
-#include "utilities.h"
+#include <stdbool.h>
+#include "defines.h"
+#include "../utilities/utilities.h"
 
 /**
  * Handler for signo signal
@@ -76,29 +78,29 @@ int closeSP(struct termios *oldtio);
 
 /**
  * @param state the state variable
- * @return TRUE if is acceptance state
+ * @return true if is acceptance state
  */
 bool isAcceptanceState(enum stateMachine *state);
 
 /**
  * @param state the state variable
- * @return TRUE if is DONE_I
+ * @return true if is DONE_I
  */
 bool isI(enum stateMachine *state);
 
 /**
  * @param state the state variable
- * @return TRUE if is DONE_S_U
+ * @return true if is DONE_S_U
  */
 bool isSU(enum stateMachine *state);
 /**
  * @param ctrl the ctrl variable
- * @return TRUE if is RR
+ * @return true if is RR
  */
 bool isRR(unsigned char ctrl);
 /**
  * @param ctrl the ctrl variable
- * @return TRUE if is REJ
+ * @return true if is REJ
  */
 bool isREJ(unsigned char ctrl);
 /**

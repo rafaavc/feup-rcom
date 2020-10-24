@@ -1,7 +1,7 @@
 #include "protocol.h"
 
-volatile int STOP = FALSE;
-unsigned stopAndWaitFlag = FALSE;
+volatile int STOP = false;
+unsigned stopAndWaitFlag = false;
 int fd = -1;
 char prevByte;
 char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
@@ -9,7 +9,7 @@ unsigned nextS = 0;
 
 void alarmHandler(int signo) {
     if (signo == SIGALRM) {
-        stopAndWaitFlag = TRUE;
+        stopAndWaitFlag = true;
         debugMessage("[SIG HANDLER] SIGALRM");
     }
 }
@@ -71,17 +71,17 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     static int sendREJ = 4;
     #endif
 
-    STOP = FALSE;
+    STOP = false;
     *state = Start;
 
     char bcc[2];
 
     static int pS = 1;
     //reads from the serial port
-    while(STOP == FALSE) {
+    while(STOP == false) {
         int readRet = read(fd, &reading, 1);
 
-        if (stopAndWaitFlag) STOP=TRUE; // if the alarm interrupts
+        if (stopAndWaitFlag) STOP=true; // if the alarm interrupts
         //printf("1\n");
         if (readRet < 0) {
             perror("Unsuccessful read");
@@ -102,7 +102,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 #ifdef DEBUG_STATE_MACHINE
                 debugMessage("DATA_INVALID");
                 #endif
-                STOP = TRUE;
+                STOP = true;
                 int s = getS(buf[CTRL_IDX]);
                 if(s == pS){//send RR, confirme reception
                     //printf("COUNTER/SiZE: %d\n", counter);
@@ -289,7 +289,7 @@ int getR(unsigned char ctrl) {
 
 bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount, int noFlag){
     char aux = 0;
-    if (dataCount == 0) return FALSE;
+    if (dataCount == 0) return false;
 
     // Can be done like this because dataCount is the number of data bytes received, and that will always be true
 
@@ -307,8 +307,8 @@ bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount, int noFlag){
     printf("\nCalculated BCC: %x, real BCC: %x\n", aux, bcc);
     #endif
 
-    if(aux == bcc) return TRUE;
-    else return FALSE;
+    if(aux == bcc) return true;
+    else return false;
     
 }
 

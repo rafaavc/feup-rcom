@@ -8,7 +8,7 @@
  * @param res -
  * @return 
  */
-bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t *res);
+bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t *res);
 /**
  * 
  * @param msg -

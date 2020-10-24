@@ -7,7 +7,7 @@ size_t receiverLoop(char * buffer) {
     enum stateMachine state;
     enum readFromSPRet res;
 
-    while (TRUE) {
+    while (true) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
 
         res = readFromSP(ret, &state, &size, ANY_VALUE, ANY_VALUE);
@@ -46,15 +46,15 @@ bool receiverConnecting() {
     enum stateMachine state;
     char buf[SUPERVISION_MSG_SIZE];
 
-    while (TRUE) {
+    while (true) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
         if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_SET) == READ_ERROR) break;
         debugMessage("RECEIVED SET");
         constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
         writeToSP(buf, SUPERVISION_MSG_SIZE);
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 
@@ -63,7 +63,7 @@ size_t receiverDisconnecting(){
     enum stateMachine state;
     char buf[SUPERVISION_MSG_SIZE];
 
-    while (TRUE) {
+    while (true) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
         if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_DISC) == READ_ERROR) return -1;
 

@@ -4,9 +4,9 @@ extern unsigned stopAndWaitFlag;
 extern int fd;
 extern int nextS;
 extern enum stateMachine state;
-bool rejFlag = FALSE;
+bool rejFlag = false;
 
-bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t  *res) {
+bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t  *res) {
     unsigned counter = 0;
 
     #ifdef DEBUG
@@ -14,12 +14,12 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgTo
     initTimer(&timer, "SIGALARM");
     #endif
 
-    stopAndWaitFlag = TRUE;
+    stopAndWaitFlag = true;
     
     while(counter < NO_TRIES) {
         if(stopAndWaitFlag) {
-            stopAndWaitFlag = FALSE;
-            rejFlag = FALSE;
+            stopAndWaitFlag = false;
+            rejFlag = false;
 
             counter++;
 
@@ -27,12 +27,12 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgTo
             //printf("sending message with s = %d and size = %d\n", nextS, msgSize);
 
             #ifdef DEBUG
-            stopTimer(&timer, TRUE);
+            stopTimer(&timer, true);
             startTimer(&timer);
             #endif
             if (functionToExec(msgToWrite, msgSize, res)) { // NEED TO FIND WAY TO HANDLE ERRORS IN THIS FUNCTION
                 alarm(0); // unset alarm
-                return TRUE;
+                return true;
             }
             /* REJ is a retransmission request, so everytime it receives a REJ resends the data
             NO_TRIES is only for retransmission tries due to timeout*/
@@ -53,20 +53,20 @@ bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     *res = writeToSP(msg, SUPERVISION_MSG_SIZE);
     if (*res == -1) {
         perror("Error writing to SP");
-        return FALSE;
+        return false;
     } else if (*res != msgSize) { //verifies if it was written correctly
         printError("Error while writing to SP (size doesn't match)\n");
-        return FALSE;
+        return false;
     }
     
     enum stateMachine state;
-    if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_UA) == READ_ERROR) return FALSE;
+    if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_UA) == READ_ERROR) return false;
 
     if(isAcceptanceState(&state)) {
         debugMessage("[LOGIC CONNECTION] SUCCESS");
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 bool establishLogicConnection() {
@@ -90,11 +90,11 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     //verifies if it was written correctly
     if (*res == -1) {
         perror("Error writing to SP");
-        return FALSE;
+        return false;
     } 
     else if (*res != msgSize) { 
         printError("Error while writing to SP (size doesn't match)\n");
-        return FALSE;
+        return false;
     }
     
     enum stateMachine state;
@@ -103,9 +103,9 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     readFromSP(ret, &state, &size, ADDR_SENT_RCV, CTRL_DISC);//read DISC
 
     if(isAcceptanceState(&state))
-        return TRUE;
+        return true;
 
-    return FALSE;
+    return false;
 }
 
 bool establishDisconnection() {
@@ -116,10 +116,10 @@ bool establishDisconnection() {
         constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_UA);
         writeToSP(buf, SUPERVISION_MSG_SIZE); //write UA
         debugMessage("[DISC] SUCCESS");
-        return TRUE;
+        return true;
     }
     
-    return FALSE;
+    return false;
 }
 
 bool informationExchange(char* msg, size_t msgSize, size_t *res ){
@@ -130,29 +130,29 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     *res = writeToSP(msg, msgSize);
     if (*res == -1) {
         perror("Error writing to SP");
-        return FALSE;
+        return false;
     } else if (*res != msgSize) { //verifies if it was written correctly
         printError("Error while writing to SP (size doesn't match)\n");
-        return FALSE;
+        return false;
     }
     
     enum stateMachine state;
     enum readFromSPRet result;
     result = readFromSP(ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
-    //if (result == READ_ERROR) return FALSE;
+    //if (result == READ_ERROR) return false;
     
     if(!isAcceptanceState(&state)) {
         debugMessage("[SENDING DATA] WRONG MESSAGE RECEIVED\n");
-        return FALSE;
+        return false;
     }
     if(result == REJ){
         debugMessage("Received REJ\n");
-        stopAndWaitFlag = TRUE;
-        rejFlag = TRUE;
-        return FALSE;
+        stopAndWaitFlag = true;
+        rejFlag = true;
+        return false;
     }
     
-    return TRUE;
+    return true;
 }
 
 //Rej reenvia, Rr termina alarme e envia a proxima

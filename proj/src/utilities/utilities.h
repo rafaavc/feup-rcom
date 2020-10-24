@@ -1,7 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
-#include "defines.h"
+#include <stdbool.h>
+#include "globalDefines.h"
 
 struct myTimer {
     clock_t startTime;
@@ -19,6 +20,12 @@ void debugMessage(char * msg);
  * @param arrSize
  */
 void printCharArray(char * arr, size_t arrSize);
+/**
+ * Checks if a string represents an unsigned number
+ * @param str the string to check
+ * @return true or false
+ */
+bool isUnsignedNumber(char * str);
 /**
  * 
  * @param timer

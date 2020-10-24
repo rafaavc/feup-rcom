@@ -1,4 +1,5 @@
 #include "iPA.h"
+#include "receiverFuncs.h"
 
 char role;
 struct termios oldtio;

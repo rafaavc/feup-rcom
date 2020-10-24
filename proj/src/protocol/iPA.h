@@ -1,7 +1,5 @@
 /* INTERFACE PROTOCOL-APPLICATION */
 
-#include "receiverFuncs.h"
-
 /**
  * 
  * @param porta - serial port
