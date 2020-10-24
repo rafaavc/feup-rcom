@@ -5,11 +5,12 @@ extern int fd;
 void receiver(int serialPort){
     // sum=0, speed=0;
 
-    // Establish communication with emitter
-    if ((fd = llopen(serialPort, RECEIVER)) == -1) {
+    
+    if ((fd = llopen(serialPort, RECEIVER)) == -1) {// Establishes communication with emitter
         printError("Wasn't able to establish logic connection!\n");
         exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLOPENFAILED
     }
+
     /*
     Reads the data, until it receives a disconnect, when this happens sends back a disconect and the program hands
     */

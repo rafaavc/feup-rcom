@@ -34,17 +34,17 @@ bool stopAndWait(unsigned (*functionToExec)(char*,size_t, size_t*), char * msgTo
                 alarm(0); // unset alarm
                 return TRUE;
             }
-            if (rejFlag) counter--; // REJ é pedido de retransmissão, por isso sempre que recebe REJ envia outra vez.
-            // o NO_TRIES é apenas para as tentativas de retransmissão por timeout.
+            /* REJ is a retransmission request, so everytime it receives a REJ resends the data
+            NO_TRIES is only for retransmission tries due to timeout*/
+            if (rejFlag) counter--; 
         }
     }
 
     printError("Error sending message (tried %d times with no/invalid response)\n", NO_TRIES);
-    exit(EXIT_FAILURE);
-
     alarm(0);
-    return FALSE;
-}
+
+    exit(EXIT_FAILURE);
+}    
 
 bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     ssize_t size; 
@@ -75,8 +75,7 @@ bool establishLogicConnection() {
 
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_SET);
     
-    // writes to the serial port, trying to connect
-    return stopAndWait(&logicConnectionFunction, buf, SUPERVISION_MSG_SIZE, &res);
+    return stopAndWait(&logicConnectionFunction, buf, SUPERVISION_MSG_SIZE, &res); // writes to the serial port, trying to connect
 }
 
 
@@ -85,13 +84,15 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     char ret[MAX_I_MSG_SIZE];
 
     //writes to serial port, trying to connect
+
     *res = writeToSP(msg, SUPERVISION_MSG_SIZE);//write DISC
     
     //verifies if it was written correctly
     if (*res == -1) {
         perror("Error writing to SP");
         return FALSE;
-    } else if (*res != msgSize) { 
+    } 
+    else if (*res != msgSize) { 
         printError("Error while writing to SP (size doesn't match)\n");
         return FALSE;
     }
@@ -161,13 +162,5 @@ bool sendMessage(char* msg, size_t msgSize) {
     if (!stopAndWait(&informationExchange, msg, msgSize, &bytesWritten)) return -1;
     return bytesWritten;
 }
-
-/*bool sendMessageArray(char ** msgs, size_t msgsSize) {
-    for (int i = 0; i < msgSize; i++) {
-        if (!sendMessage(msgs[i], ))
-            return FALSE
-    }
-    return TRUE;
-}*/
 
 

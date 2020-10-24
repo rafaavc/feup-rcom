@@ -5,7 +5,7 @@
 #define RECEIVER    1
 
 
-#define BIT(n)      (0x01 << (n-1) )
+#define BIT(n)      (0x01 << (n) )
 
 #define SOCAT
 #define DEBUG
@@ -21,13 +21,13 @@
 #define ADDR_SENT_RCV   0x01 /*Commands sent by receiver and answers sent by emitter*/
 
 
-/* Control */
-#define CTRL_SET        0x03
-#define CTRL_UA         0x07 
-#define CTRL_DISC       0x0B
+/* Control Protocol*/
+#define CTRL_SET        0x03 /*Set up control flag*/
+#define CTRL_UA         0x07 /*Unnumbered acknowledgment control flag*/
+#define CTRL_DISC       0x0B /*Disconnect control flag*/
 #define CTRL_S(s)       ((s%2)<<6) /*0S000000 S = N(s)*/
-#define CTRL_RR(r)      ((r%2)<<7) | BIT(3) | BIT(1)
-#define CTRL_REJ(r)      ((r%2)<<7) | BIT(1)
+#define CTRL_RR(r)      ((r%2)<<7) | BIT(2) | BIT(0) /*Receiver ready / positive ACK control flag*/
+#define CTRL_REJ(r)      ((r%2)<<7) | BIT(0) /*Reject / negative ACK control flag */
 
 
 
@@ -37,7 +37,7 @@
 #define CTRL_IDX        2
 #define BCC1_IDX        3
 
-#define BCC(a,c) (a^c)
+#define BCC(a,c) (a^c) /*Calculation of BCC = XOR*/
 
 
 /* Fixed Constants */

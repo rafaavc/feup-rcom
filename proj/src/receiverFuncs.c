@@ -16,7 +16,7 @@ size_t receiverLoop(char * buffer) {
         // readFromSP only returns acceptance state
         char buf[SUPERVISION_MSG_SIZE];
 
-        if (isI(&state)) {
+        if (isI(&state)) { // checks if it read from an information message, otherwise an error occurred
             int s = getS(ret[CTRL_IDX]);
             if(res == REJ) {
                 //debugMessage("Sending REJ");
@@ -49,7 +49,6 @@ bool receiverConnecting() {
     while (TRUE) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
         if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_SET) == READ_ERROR) break;
-        //printCharArray(ret, size);
         debugMessage("RECEIVED SET");
         constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
         writeToSP(buf, SUPERVISION_MSG_SIZE);
@@ -64,7 +63,6 @@ size_t receiverDisconnecting(){
     enum stateMachine state;
     char buf[SUPERVISION_MSG_SIZE];
 
-    //printCharArray(ret, size);
     while (TRUE) {
         char ret[MAX_I_MSG_SIZE] = {'\0'};
         if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_DISC) == READ_ERROR) return -1;

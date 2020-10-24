@@ -7,19 +7,21 @@ int llopen(int porta, char r){
     char portString[12];
 
     sprintf(portString, "/dev/ttyS%d", porta);
-    int fd = openConfigureSP(portString, &oldtio);
+    
+    int fd = openConfigureSP(portString, &oldtio); 
+
     if (fd == -1) return -1;
 
     role = r;
     if(role == RECEIVER){
-        if (!receiverConnecting()) return -1;
+        if (!receiverConnecting()) return -1; //establishing connection with EMITTER
     }
     else if (role == EMITTER){
-        if (signal(SIGALRM, alarmHandler) < 0) {
-            perror("Alarm handler wasn't installed");  // instala rotina que atende interrupcao
+        if (signal(SIGALRM, alarmHandler) < 0) {  // Instals the handler for the alarm interruption
+            perror("Alarm handler wasn't installed"); 
             exit(EXIT_FAILURE);
         }
-        if (!establishLogicConnection()) return -1;
+        if (!establishLogicConnection()) return -1; //establishing connection with RECEIVER
     } 
     else return -1;
 
@@ -40,20 +42,15 @@ int llwrite(int fd, char * buffer, int length){
 }
 
 int llread(int fd, char * buffer){
-    /* 
-    Tem de continuar a ler enquanto não ler 
-    uma trama de informação (E acionar as ações necessárias com as tramas de controlo)
-    Retorna os dados da trama de informação
-    */
     return receiverLoop(buffer);
 } 
 
 int llclose(int fd){
     if(role == EMITTER){
-        if(!establishDisconnection())
+        if(!establishDisconnection()) //disconnecting in the EMITTER side 
             return -1;
     }
-    else if(role == RECEIVER){
+    else if(role == RECEIVER){ //disconnecting in the RECEIVER side 
        if(receiverDisconnecting() == -1)//if there was an error sending/receiving the disconnection messages 
             return -1;;
     }
