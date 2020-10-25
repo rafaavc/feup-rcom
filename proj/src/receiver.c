@@ -34,10 +34,15 @@ void receiver(int serialPort){
             checkStateReception(state, buffer, &fileSize ,fileName, fileData);
             if(*state == CTRL_START){
                 printError("There was an error in transmission");
+                break;
             }
             else if(*state == END){ //it has received the end of the end control packry
                 printf("We've received the full file\n");
                 endOfFile = true; //nothing left to read
+            }
+            else if (*state == ERROR){
+                printError("There was an error in the reception, received invalid data. Terminating connection");
+                break;
             }
         }
 
@@ -53,6 +58,8 @@ void receiver(int serialPort){
         write(STDOUT_FILENO, buffer, dataLen);
     }
 */
+    free(fileData);
+    free(fileName);
     /* After receiving and end control packet, it has received the full file so it's going to disconnect from the transmitter*/
     if (llclose(fd) != 0) {
         printError("Wasn't able to disconnect!\n");
@@ -80,7 +87,7 @@ void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fil
                 *state = V;
            }
            else{
-               //error Ig
+               *state = ERROR;
            }
             break;
         case(L):
@@ -113,7 +120,7 @@ void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fil
                 }
             }
             else{
-                //error Ig
+                *state = ERROR;
             }
             break;
         case(RECEIVING_DATA_PACKETS):
@@ -126,7 +133,7 @@ void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fil
                 *state = CTRL_DATA;
             }
             else 
-                *state = CTRL_START;//error ig
+                *state = ERROR;
 
             break;
         case CTRL_DATA:
@@ -136,12 +143,12 @@ void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fil
                     *state = SEQUENCE_NUMBER;
                 }
                 else{
-                    //error Ig
+                    *state = ERROR;//sequence number not valid
                 }
                 
             }
             else{
-                //error ig
+                *state = ERROR;
             }
             break;
         case SEQUENCE_NUMBER:
@@ -157,7 +164,7 @@ void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fil
                 *state = DATA_PACKET_FINISH;
             }
             else{
-                //error ig
+                *state = ERROR;
             }
             break;
             
@@ -171,7 +178,7 @@ void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fil
                 idx = 0;
             }
             else{
-                //error Ig
+                *state = ERROR;
             }
             break;
         case END://so por causa do warning, nao é necessaria
