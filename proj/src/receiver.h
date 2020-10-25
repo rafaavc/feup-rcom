@@ -12,3 +12,5 @@
  */
 
 void receiver(int serialPort);
+
+void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fileSize, char*fileName, char*fileData);
