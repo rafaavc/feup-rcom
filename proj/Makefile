@@ -1,6 +1,6 @@
 CC=gcc
-_DEPS = protocol/protocol.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/transmitterFuncs.h transmitter.h receiver.h application.h defines.h utilities/globalDefines.h
-_mainOBJ = main.o application.o transmitter.o receiver.o protocol/iPA.o protocol/protocol.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o
+_DEPS = protocol/protocol.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/transmitterFuncs.h transmitter.h receiver.h application.h defines.h utilities/globalDefines.h ui.h
+_mainOBJ = main.o application.o transmitter.o receiver.o protocol/iPA.o protocol/protocol.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o ui.o
 #_EmitterOBJ = emitter.o protocol.o emitterFuncs.o receiverFuncs.o utilities.o iPA.o
 #_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o emitterFuncs.o utilities.o iPA.o
 OBJDIR = obj

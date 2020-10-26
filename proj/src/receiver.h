@@ -1,11 +1,9 @@
-#include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include "protocol/iPA.h"
 #include "defines.h"
-#include "utilities/utilities.h"
+#include "ui.h"
 /**
  * Deals with the receiver part of the application
  * @param serialPort 

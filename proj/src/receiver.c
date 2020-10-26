@@ -1,5 +1,4 @@
 #include "receiver.h"
-#include <unistd.h>
 
 extern int fd;
 
@@ -16,6 +15,8 @@ void receiver(int serialPort){
     char buffer[MAX_DATA_PACKET_LENGTH];//mudar isto
     char* fileName = NULL;
     size_t fileSize;
+
+    FILE * fileToSave;
    
     unsigned bytesReceived = 0;
     while(true){
@@ -31,11 +32,12 @@ void receiver(int serialPort){
             //printCharArray(buffer, dataRead);
             if(receptionRet == START_RECEIVED){
                 printf("Starting to receive file '%s' with %ld bytes.\n", fileName, fileSize);
+                fileToSave = fopen(fileName, "wb");
                 // check current receiver state (whether it has already received start, if it has, error)
             } else if(receptionRet == DATA_FINISHED){ //it has received the end of the end control packry
                 // check if receiver has received start, it it didn't, it's error
                 if (dataAmount > 0){
-                    fwrite(&buffer[4], sizeof(char), (size_t)dataAmount, stdout);
+                    fwrite(&buffer[4], sizeof(char), (size_t)dataAmount, fileToSave);
                     bytesReceived += dataAmount;
                 } else if (dataAmount == 0) {
                     printError("Amount of data received is 0.\n");
@@ -44,7 +46,9 @@ void receiver(int serialPort){
                     printError("Amount of data is negative.\n");
                     exit(EXIT_FAILURE);
                 }
+                printProgressBar(fileSize, bytesReceived);
             } else if (receptionRet == END_RECEIVED) {
+                fclose(fileToSave);
                 if (fileSize == bytesReceived) {
                     printf("\nFile received successfully!\n");
                     break;
@@ -52,7 +56,7 @@ void receiver(int serialPort){
                     printError("Specified file size (%ld) and received number of bytes (%d) do not match.\n", fileSize, bytesReceived);
                 }
             } else if (receptionRet == ERROR){
-                printError("There was an error in the reception, received invalid data. Terminating connection.\n");
+                printError("\nThere was an error in the reception, received invalid data. Terminating connection.\n");
                 exit(EXIT_FAILURE);
             } else {
                 printError("Received invalid data package! State: %d\n", receptionRet);

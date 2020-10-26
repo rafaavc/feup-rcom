@@ -12,7 +12,6 @@ size_t receiverLoop(char * buffer) {
 
         res = readFromSP(ret, &state, &size, ANY_VALUE, ANY_VALUE);
         if (res == READ_ERROR) return -1;
-        //printf("read from Sp\n");
         // readFromSP only returns acceptance state
         char buf[SUPERVISION_MSG_SIZE];
 
@@ -35,7 +34,8 @@ size_t receiverLoop(char * buffer) {
                 }
             }
         } else {
-            printError("Received invalid data while running llread.\n");
+
+            printError("Received invalid data while running llread. Protocol reader state: %u\n", state);
             return -1;
         }
     }

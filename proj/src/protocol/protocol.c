@@ -264,7 +264,7 @@ bool isAcceptanceState(enum stateMachine *state) {
 }
 
 bool isI(enum stateMachine *state) {
-    return *state == DONE_I ;
+    return *state == DONE_I;
 }
 bool isSU(enum stateMachine *state) {
     return *state == DONE_S_U;

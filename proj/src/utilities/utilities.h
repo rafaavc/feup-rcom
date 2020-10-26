@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "globalDefines.h"
 
 struct myTimer {

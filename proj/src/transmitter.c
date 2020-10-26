@@ -57,7 +57,8 @@ void transmitter(int serialPort){
     While there is info to write, writes with the stop&wait mechanism as in other situations*/
 
     char* filename = "fileToTransfer.txt";
-    FILE * file = fopen(filename, "r");
+    char* destFilename = "receivedFile.txt";
+    FILE * file = fopen(filename, "rb");
 
   
     struct stat st;
@@ -72,7 +73,7 @@ void transmitter(int serialPort){
         exit(EXIT_FAILURE);
     }
     else{//the file is not empty
-        int packetSize = constructControlPacket(ret, START_CTRL, filename, fileSize);
+        int packetSize = constructControlPacket(ret, START_CTRL, destFilename, fileSize);
         //printCharArray(ret, packetSize);
         if(llwrite(fd,ret, packetSize*sizeof(char)) == -1){  //sending start control packet
             printError("Error sending the start control packet");
@@ -99,7 +100,9 @@ void transmitter(int serialPort){
         msgNr++;    
     }
 
-    int endSize = constructControlPacket(ret, END_CTRL,filename, fileSize);
+    fclose(file);
+
+    int endSize = constructControlPacket(ret, END_CTRL,destFilename, fileSize);
 
     if(llwrite(fd,ret, endSize*sizeof(char)) == -1){ // sending end control packet, sends the same packet as start control packet with the difference in the control
         printError("Error sending the end control packet");

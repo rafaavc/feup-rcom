@@ -41,6 +41,8 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
     }
 
     printError("Error sending message (tried %d times with no/invalid response)\n", NO_TRIES);
+    fwrite(msgToWrite, sizeof(char), msgSize, stdout);
+    fwrite("\n", sizeof(char), 1, stdout);
     alarm(0);
 
     exit(EXIT_FAILURE);
