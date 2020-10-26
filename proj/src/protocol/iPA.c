@@ -40,8 +40,15 @@ int llwrite(int fd, char * buffer, int length){
     size_t s = length;
     
     constructInformationMessage(msg, buffer, &s);
+    /*printf("constructed I msg:\n");
+
+    fwrite(msg, sizeof(char), s, stdout);
+    printf("\n");*/
+
+
 
     int res = sendMessage(msg,s);
+    //printf("sent I msg\n");
 
     if (res < 0) return -1;// in case of error
     

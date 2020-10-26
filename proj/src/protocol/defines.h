@@ -1,6 +1,8 @@
 #ifndef _DEFINES_H_
 #define _DEFINES_H_
 
+typedef unsigned char charByte;
+
 #define TRANSMITTER     0
 #define RECEIVER        1
 
@@ -46,7 +48,7 @@
 #define printError(args...) fprintf(stderr, ##args)
 
 /* Changeable Constants */
-#define MAX_I_MSG_SIZE MAX_DATA_LENGTH + SUPERVISION_MSG_SIZE + 1 // the 1 is from the data bcc
+#define MAX_I_MSG_SIZE MAX_DATA_PACKET_LENGTH + SUPERVISION_MSG_SIZE + 1 // the 1 is from the data bcc
 #define MAX_I_BUFFER_SIZE MAX_I_MSG_SIZE*2 // needs to be this value due to the stuffing operation (worst case scenario)
 #define TIME_OUT    3   // time between tries
 #define NO_TRIES    3   // tries to send message 3 times

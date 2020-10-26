@@ -12,11 +12,12 @@ size_t receiverLoop(char * buffer) {
 
         res = readFromSP(ret, &state, &size, ANY_VALUE, ANY_VALUE);
         if (res == READ_ERROR) return -1;
-
+        //printf("read from Sp\n");
         // readFromSP only returns acceptance state
         char buf[SUPERVISION_MSG_SIZE];
 
         if (isI(&state)) { // checks if it read from an information message, otherwise an error occurred
+            //printf("Received I\n");
             int s = getS(ret[CTRL_IDX]);
             if(res == REJ) {
                 //debugMessage("Sending REJ");

@@ -1,14 +1,9 @@
 #include "receiver.h"
+#include <unistd.h>
 
 extern int fd;
 
-int length = 0;
-
-int idx = 0;
-int counter = 0;
-int fileIndex = 0;
 int sequenceNumber = 0;
-bool end = false;
 
 void receiver(int serialPort){    
 
@@ -17,48 +12,45 @@ void receiver(int serialPort){
         exit(EXIT_FAILURE); //provavelmente dar nomes signifcativos--LLOPENFAILED
     }
 
-    bool endOfFile = false;
-    char buffer[MAX_DATA_LENGTH];//mudar isto
-    char* fileData = NULL;
+
+    char buffer[MAX_DATA_PACKET_LENGTH];//mudar isto
     char* fileName = NULL;
     size_t fileSize;
-    enum checkReceptionState *state = CTRL_START;
    
 
-    while(!endOfFile){
-        if(llread(fd,buffer) < 0){
-            printError("Error in reading the file");
+    while(true){
+        int dataRead = llread(fd,buffer);
+        if( dataRead< 0){
+            printError("Error reading the file\n");
             exit(EXIT_FAILURE);
         }
         else{
-            checkStateReception(state, buffer, &fileSize ,fileName, fileData);
-            if(*state == CTRL_START){
+            int dataAmount = -1;
+            enum checkReceptionState state = checkStateReception(buffer, dataRead, &fileSize , &fileName, &dataAmount);
+            //printf("Checking the following buffer, with size %d.\n", dataRead);
+            //printCharArray(buffer, dataRead);
+            if (dataAmount > 0){
+                fwrite(&buffer[4], sizeof(char), (size_t)dataAmount, stdout);
+            }
+            if(state == CTRL){
                 printError("There was an error in transmission");
                 break;
             }
-            else if(*state == END){ //it has received the end of the end control packry
-                printf("We've received the full file\n");
-                endOfFile = true; //nothing left to read
+            else if(state == V || state == L){ //it has received the end of the end control packry
+                //printf("We've received the full file\n");
+                printf("We've received fileSize = %ld and fileName = %s\n", fileSize, fileName);
             }
-            else if (*state == ERROR){
+            else if (state == ERROR){
                 printError("There was an error in the reception, received invalid data. Terminating connection");
                 break;
+            } else if (state != RECEIVING_DATA) {
+                printf("EOOORRROORRO\n");
             }
+            bzero(buffer, MAX_DATA_PACKET_LENGTH);
         }
 
     }
     
-    /*
-    Reads the data, until it receives a disconnect, when this happens sends back a disconect and the program hands
-    */
-   /* char buffer[MAX_DATA_LENGTH];
-    while (true) {
-        size_t dataLen = llread(fd, buffer);
-        if (dataLen == 3 && buffer[0] == 'e' && buffer[1] == 'n' && buffer[2] == 'd') break;
-        write(STDOUT_FILENO, buffer, dataLen);
-    }
-*/
-    free(fileData);
     free(fileName);
     /* After receiving and end control packet, it has received the full file so it's going to disconnect from the transmitter*/
     if (llclose(fd) != 0) {
@@ -68,123 +60,136 @@ void receiver(int serialPort){
 }
 
 
-void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fileSize, char*fileName, char*fileData){
-
-    switch(*state){
-        case(CTRL_START):
-            if(*byte == START_CTRL){
-                *state = T;
-            }
-            break;
-        case(T):
-            if(*byte == APP_FILE_T_SIZE && idx == 0){
-                idx = 1;
-                *state = V;
-            }
-           else if (*byte == APP_FILE_T_NAME && idx == 1){
-             idx = 2;
-                fileData = (char*) malloc(sizeof(char) * (*fileSize));//we already know the size of the file so we can allocate memory for it's data
-                *state = V;
-           }
-           else{
-               *state = ERROR;
-           }
-            break;
-        case(L):
-            length = *byte;
-            if(idx == 2){
-                fileName = (char*) malloc(length * sizeof(char));//we now know the size of the fileName so we can allocate memory for storing it 
-            }
-            *state = V;
-            break;
-        case(V):
-            if(length > 0 && idx == 1){//fileSize
-                fileSize[counter++] = *byte;//provavelmente isto nao funciona IDK
-                length--;
-                if(length == 0){
-                    *state = T; //going to receive the fileName
-                    counter = 0; 
+enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size_t * fileSize, char ** fileName, int * dataAmount){
+    int totalAmountOfChars = -1;
+    int currentAmountOfChars = -1;
+    int idx = 1;
+    *fileSize = 0x0;
+    enum checkReceptionState state = CTRL;
+    for (int i = 0; i < bufferSize; i++) {
+        char parameterGetter = -1;
+        unsigned char byte = buffer[i];    
+        switch(state){
+            case(CTRL):
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("CTRL");
+                #endif
+                if(byte == START_CTRL){
+                    state = T;
                 }
-            }
-            else if(length > 0 && idx == 2){//fileName
-                fileName[counter++] = *byte;
-                length--;
-                if(length == 0){
-                    if(end == true){
-                        *state = END;
+                else if (byte == DATA_CTRL) {
+                    state = DATA_N;
+                } else {
+                    state = ERROR;
+                }
+                break;
+            case(T):
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("T");
+                #endif
+                //printf("Received %u in T\n", byte);
+                if ((byte == APP_FILE_T_SIZE && idx == 1) || (byte == APP_FILE_T_NAME && idx == 2)){
+                    state = L;
+                } else {
+                    state = ERROR;
+                }
+                break;
+            case(L):
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("L");
+                #endif
+                if ((idx == 1) || (idx == 2)){
+                    totalAmountOfChars = byte;
+                    currentAmountOfChars = 0;
+                    state = V;
+                    //printf("Receiving string with size %d\n", totalAmountOfChars);
+                    if (idx == 2) {//we already know the size of the file so we can allocate memory for it's data
+                        *fileName = (char*) malloc(sizeof(char) * (totalAmountOfChars + 1)); // the +1 is because of the \0 end character
                     }
-                    else{
-                        *state = RECEIVING_DATA_PACKETS; //end of the begin control packet, we're going to start to receive data packets
-                        counter = 0;
+                } else {
+                    state = ERROR;
+                }
+                break;
+            case(V):
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("V");
+                #endif
+                if(currentAmountOfChars < totalAmountOfChars && idx == 1){//fileSize
+                    *fileSize = (*fileSize << 8) | (unsigned char)byte;
+                    //printf("Value of byte: %x\n", (unsigned char) byte);
+                    //printf("Value of fileSize: %lx\n", (unsigned char) *fileSize);
+
+                    currentAmountOfChars++;
+
+                    if(currentAmountOfChars == totalAmountOfChars){
+                        state = T; //going to receive the fileName
+                        idx = 2;
                     }
                 }
-            }
-            else{
-                *state = ERROR;
-            }
-            break;
-        case(RECEIVING_DATA_PACKETS):
-           /* if(*byte == END_CTRL && sequenceNumber > 0){//to make sure we receive at least one data packet, this means we're receiving the end control packet
-                *state = T;
-                end = true;
-             idx = 0;
-            }*/
-            if(*byte == DATA_CTRL){
-                *state = CTRL_DATA;
-            }
-            else 
-                *state = ERROR;
-
-            break;
-        case CTRL_DATA:
-            if(*byte >= 0 && *byte <= 255){
-                if(*byte == sequenceNumber){
-                    sequenceNumber++;
-                    *state = SEQUENCE_NUMBER;
+                else if(currentAmountOfChars < totalAmountOfChars && idx == 2){//fileName
+                    (*fileName)[currentAmountOfChars++] = byte;
+                    /*printf("Current string: ");
+                    fwrite(*fileName, sizeof(char), currentAmountOfChars-1, stdout);
+                    printf("\n");*/
+                    if(currentAmountOfChars == totalAmountOfChars){
+                        (*fileName)[currentAmountOfChars] = '\0';
+                        return V;
+                    }
                 }
                 else{
-                    *state = ERROR;//sequence number not valid
+                    state = ERROR;
                 }
+                break;
+            case DATA_N:
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("CTRL_DATA");
+                #endif
+                if((unsigned)byte >= 0 && (unsigned)byte < 255){
+                    if((unsigned)byte == sequenceNumber){
+                        sequenceNumber = (sequenceNumber+1) % 255;
+                        state = DATA_L2;
+                    }
+                    else{
+                        state = ERROR;//sequence number not valid
+                    }
+                    
+                }
+                else{
+                    state = ERROR;
+                }
+                break;
+            case DATA_L2:
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("SEQUENCE_NUMBER");
+                #endif
+                totalAmountOfChars = (unsigned)((byte << 8) & (unsigned)0xFF00);//number of bytes to read to complete the data 
+                state = DATA_L1;
+                break;
+            case DATA_L1:
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("L_DATA");
+                #endif
+                totalAmountOfChars |= (byte & 0x000FF);
+                currentAmountOfChars = 0;
+                //printf("Receiving %x bytes of data\n", totalAmountOfChars);
+                if(totalAmountOfChars >= 0){ // we store the data
+                    state = RECEIVING_DATA;
+                }
+                else{
+                    state = ERROR;
+                }
+                break;
                 
-            }
-            else{
-                *state = ERROR;
-            }
-            break;
-        case SEQUENCE_NUMBER:
-            counter = *byte;//number of bytes to read to complete the data 
-            *state = L_DATA;
-            break;
-        case L_DATA:
-            if(counter > 0){ // we store the data
-                fileData[fileIndex++] = *byte;
-                counter --;
-            }
-            else if (counter == 0){// no more data to store, we expect to receive the end control packet
-                *state = DATA_PACKET_FINISH;
-            }
-            else{
-                *state = ERROR;
-            }
-            break;
-            
-        case DATA_PACKET_FINISH:
-            if(*byte == DATA_CTRL){ //means we're going to receive another data packet 
-                *state = CTRL_DATA;
-            }
-            else if(*byte == END_CTRL){ //means we're starting to receive the end control packet
-                *state = T;
-                end = true; 
-                idx = 0;
-            }
-            else{
-                *state = ERROR;
-            }
-            break;
-        case ERROR:
-        case END://so por causa do warning, nao é necessaria
-            break;
+            case RECEIVING_DATA:
+                #ifdef DEBUG_APP_STATE_MACHINE
+                debugMessage("DATA_PACKET_FINISH");
+                #endif
+                *dataAmount = totalAmountOfChars;
+                return RECEIVING_DATA;
+                break;
+            case ERROR:
+                return ERROR;
+        }
     }
-
-
+    return ERROR;
 }

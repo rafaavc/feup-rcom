@@ -187,7 +187,6 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret
     ret[BCC1_IDX] = BCC(ret[2], ret[1]);
 
     for(size_t i = 0; i < *dataSize; i++){
-        if (data[i] == '\0') debugMessage("data string brings \\0 character");
         bcc = BCC(bcc, data[i]);
         ret[BCC1_IDX+1+i] = data[i];
     }
@@ -425,7 +424,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     case DATA:
         if(!receivedMessageFlag(byte, destuffing)){
             dataCount++;
-            if (dataCount >= MAX_DATA_LENGTH) { *state = DATA_OK;}
+            if (dataCount >= MAX_DATA_PACKET_LENGTH) { *state = DATA_OK;}
             break;
         } else {
             dataCount--; // discounts the BCC from the data count

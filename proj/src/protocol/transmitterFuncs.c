@@ -139,6 +139,9 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     enum stateMachine state;
     enum readFromSPRet result;
     result = readFromSP(ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
+    /*printf("Returned message: ");
+    fwrite(ret, sizeof(char), size, stdout);
+    printf("\n");*/
     //if (result == READ_ERROR) return false;
     
     if(!isAcceptanceState(&state)) {
