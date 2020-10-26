@@ -15,7 +15,10 @@ size_t receiverLoop(char * buffer) {
         // readFromSP only returns acceptance state
         char buf[SUPERVISION_MSG_SIZE];
 
-        if (isI(&state)) { // checks if it read from an information message, otherwise an error occurred
+        // checks if it read from a valid information message
+        // OR has an RR or REJ to send (SAVE only happens if msg is valid, so it is implicit)
+        // otherwise an error occurred
+        if (isI(&state) || res == RR || res == REJ) { 
             //printf("Received I\n");
             int s = getS(ret[CTRL_IDX]);
             if(res == REJ) {
@@ -33,9 +36,9 @@ size_t receiverLoop(char * buffer) {
                     return dataLength;
                 }
             }
-        } else {
-
-            printError("Received invalid data while running llread. Protocol reader state: %u\n", state);
+            // (REJ == STOPPED_OR_SU)
+        } else { // in this case it means that we received an SU msg
+            printError("Received invalid data (SU message) while running llread. Protocol reader state: %u\n", state);
             return -1;
         }
     }

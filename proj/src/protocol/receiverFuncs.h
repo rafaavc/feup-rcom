@@ -7,12 +7,12 @@
  */
 size_t receiverLoop(char * buffer);
 /**
- * Conects to the Emitter
+ * Conects to the transmitter
  * @return true if it received a SET message and sent an UA message, false otherwise
  */
 bool receiverConnecting();
 /**
- * Disconnects from the Emitter
+ * Disconnects from the transmitter
  * @return true if it received a DISC message, sent an DISC message and received an UA message, false otherwise
  */
 size_t receiverDisconnecting();

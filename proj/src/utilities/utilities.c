@@ -17,9 +17,12 @@ bool isUnsignedNumber(char * str) {
 }
 
 void printCharArray(char * arr, size_t arrSize) {
+    int count = 0;
     for (size_t i = 0; i < arrSize; i++) {
-        printf("%x ", arr[i]);
+        count++;
+        printf("%x ", (unsigned char)arr[i]);
     }
+    printf("\ntotal: %d, dados: %d\n", count, count-6);
     printf("\n");
 }
 

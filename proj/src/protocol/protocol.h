@@ -11,14 +11,14 @@
 
 /**
  * Handler for signo signal
- * @param signo - signal to be handled 
+ * @param signo  signal to be handled 
  */
 void alarmHandler(int signo);
 
 /**
  * Opens and configures the serial port
- * @param port -
- * @param oldtio - 
+ * @param port  port string /dev/ttySx
+ * @param oldtio  old termios struct
  * @return the SP's file descriptor
  */
 int openConfigureSP(char* port, struct termios *oldtio);
@@ -26,26 +26,26 @@ int openConfigureSP(char* port, struct termios *oldtio);
 
 /**
  * Writes the serial port
- * @param message -
- * @param messageSize -
+ * @param message  Message to write 
+ * @param messageSize  Size of the message 
  */
 size_t writeToSP( char * message, size_t messageSize);
 
 /**
  * Reads from the serial port using the state machine implementation
- * @param buf 
+ * @param buf where the read data is stored
  * @param state return variable (at end of execution, contains the final state)
  * @param stringSize return variable (at end of execution, contains the string's size)
  * @param addressField the desired address value (ANY_VALUE if not specified)
  * @param controlField the desired control field (ANY_VALUE if not specified)
- * @return 
+ * @return The answer to give the transmitter accordingly to what was received
  */
 enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField);
 /**
  * Contructs the supervision message with the necessary flags
  * @param ret buffer where the supervision message will be stored
- * @param addressField the desired address value 
- * @param controlField the desired control field 
+ * @param addr the desired address value 
+ * @param ctrl the desired control field 
  */
 void constructSupervisionMessage(char * ret, char addr, char ctrl);
 
@@ -70,8 +70,8 @@ void byteStuffing(char * ret, size_t * dataSize);
 void byteDestuffing(char * ret, size_t * dataSize);
 /**
  * 
- * @param oldtio 
- * @return
+ * @param oldtio old termios struct
+ * @return 0 is ok, -1 in case of error
  */
 int closeSP(struct termios *oldtio);
 
@@ -113,28 +113,43 @@ int getS(unsigned char ctrl);
  */
 int getR(unsigned char ctrl);
 /**
- * 
+ * Calculates the BCC with the destuffed data and checks if it is equal to the BCC received
  * @param state the state variable
- * @param buf -
+ * @param buf  buffer with the frame received
  * @param bcc an array of two chars, the first is the address field and the second is the control field. They are used to calculate the bcc
- * @param bufSize -
- * @param noFlag -
- * @return 0 if OK, 1 if this byte doesn't count
+ * @param bufSize size of the buffer
+ * @return True if it equal, false otherwise
  */
 
-bool checkDestuffedBCC(char* buf, char bcc, size_t bufSize, int noFlag);
+bool checkDestuffedBCC(char* buf, char bcc, size_t bufSize);
 /**
  * Deals with the state transitions
  * @param state the state variable
  * @param bcc an array of two chars, the first is the address field and the second is the control field. They are used to calculate the bcc
  * @param byte the byte received
- * @param data
+ * @param buf buffer with the frame received
  * @param addressField the desired address value (ANY_VALUE if not specified)
  * @param controlField the desired control field (ANY_VALUE if not specified)
- * @return 0 if OK, 1 if this byte doesn't count
+ * @return 
  */
-enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*data, char addressField, char controlField);
+enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte, char*buf, char addressField, char controlField);
 
-/*void checkState_end(enum stateMachine_S_U *state, char *bcc, char byte);
-void checkState_begin(enum stateMachine_S_U *state, char *bcc, char byte, int transmitter);
-void checkState_data(enum stateMachine_I *state, char *bcc, char byte, int transmitter);*/
+/**
+ * Checks if it has received the Message flag and if the frame has been destuffed
+ * @param byte the byte received
+ * @param destuffing state of destuffing the frame is currently
+ * @return true if it is, false otherwise
+ */
+bool receivedMessageFlag(char * byte, enum destuffingState destuffing);
+/**
+ * Does the necessary things to go back to the start state
+ * @param state current state
+ * @param destuffing state of destuffing the frame is currently
+ */
+void goBackToStart(enum stateMachine * state, enum destuffingState * destuffing);
+/**
+ * Does the necessary things to go back to the flag received state
+ * @param state current state
+ * @param destuffing state of destuffing the frame is currently
+ */
+void goBackToFLAG_RCV(enum stateMachine * state, enum destuffingState * destuffing);

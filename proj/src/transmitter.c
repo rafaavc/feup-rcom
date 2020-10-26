@@ -56,8 +56,8 @@ void transmitter(int serialPort){
     /*Starts to write all information frames, keeping in mind the need to resend, etc.
     While there is info to write, writes with the stop&wait mechanism as in other situations*/
 
-    char* filename = "fileToTransfer.txt";
-    char* destFilename = "receivedFile.txt";
+    char* filename = "pinguim.gif";
+    char* destFilename = "receivedFile.gif";
     FILE * file = fopen(filename, "rb");
 
   

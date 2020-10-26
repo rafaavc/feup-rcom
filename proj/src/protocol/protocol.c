@@ -58,7 +58,6 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 }
 
 size_t writeToSP(char* message, size_t messageSize) {
-    message[messageSize]='\0';
 
     return write(fd, message, messageSize*sizeof(message[0]));
 }
@@ -68,7 +67,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     int counter = 0;
 
     #ifdef DEBUG
-    static int sendREJ = 4;
+    static int sendREJ = 0;
     #endif
 
     STOP = false;
@@ -82,13 +81,11 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         int readRet = read(fd, &reading, 1);
 
         if (stopAndWaitFlag) STOP=true; // if the alarm interrupts
-        //printf("1\n");
         if (readRet < 0) {
             perror("Unsuccessful read");
             return READ_ERROR;
         } 
         else if (readRet == 0) continue; // if didn't read anything
-        //printf("2\n");
 
         // if read is successful
         switch (checkState(state, bcc, &reading, buf, addressField, controlField)) {
@@ -104,12 +101,10 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 #endif
                 STOP = true;
                 int s = getS(buf[CTRL_IDX]);
-                if(s == pS){//send RR, confirme reception
-                    //printf("COUNTER/SiZE: %d\n", counter);
+                if(s == pS){  //send RR, confirm reception
                     return RR;
                 }
-                else{//send REJ,needs retransmission
-                    //printf("COUNTER/SiZE: %d\n", counter);
+                else{  //send REJ, needs retransmission
                     return REJ;
                 }
             case IGNORE_CHAR:
@@ -117,7 +112,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 debugMessage("IGNORE_CHAR");
                 #endif
                 continue;
-            case StateOK:
+            case StateOK:   // adds the byte to the buffer
                 #ifdef DEBUG_STATE_MACHINE
                 debugMessage("StateOK");
                 #endif
@@ -137,23 +132,23 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         int s = getS(buf[CTRL_IDX]);
         //printf("Received s: %d, pS: %d\n", s, pS);
             
-        if(s == pS){// send RR & discard
-            //printf("COUNTER/SiZE S == PS: %d\n", counter);
+        if(s == pS){  // s == previousS -> send RR & discard
+            //printf("COUNTER/SIZE S == PS: %d\n", counter);
             return RR;
         }
-        else{// send RR and accept data
-            //printf("COUNTER/SiZE ELSE: %d\n", counter);
-            //printf("COUNTER/SiZE: %d\n", counter);
-            #ifdef DEBUG
+        else{ // send RR and accept data
+            //printf("COUNTER/SIZE ELSE: %d\n", counter);
+            //printf("COUNTER/SIZE: %d\n", counter);
+            #ifdef DEBUG   // simulates REJ
             if (sendREJ > 0) {
                 sendREJ--;
                 return REJ;
             }
             #endif
-            pS = s; 
+            pS = s; // updates s
             return SAVE; 
         }
-    } else if (isSU(state) && (isRR(buf[CTRL_IDX])|| isREJ(buf[CTRL_IDX]))) {
+    } else if (isSU(state) && (isRR(buf[CTRL_IDX])|| isREJ(buf[CTRL_IDX]))) {   // Received ack / nack  -> this is the transmitter instance
         int r = getR(buf[CTRL_IDX]);
         //printf("Received r: %d, nextS: %d\n", r, nextS%2);
 
@@ -166,10 +161,11 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         }
     }
 
-    return SAVE; // This means it was stopped by the stop and wait alarm OR it is either UA, SET or DISC
+    // This means it was stopped by the stop and wait alarm OR it is either UA, SET or DISC
+    return STOPPED_OR_SU; 
 }
 
-void constructSupervisionMessage(char * ret, char addr, char ctrl){
+void constructSupervisionMessage(char * ret, char addr, char ctrl) {
     ret[BEGIN_FLAG_IDX] = MSG_FLAG;
     ret[ADDR_IDX] = addr;
     ret[CTRL_IDX] = ctrl;
@@ -177,8 +173,11 @@ void constructSupervisionMessage(char * ret, char addr, char ctrl){
     ret[BCC1_IDX+1] = MSG_FLAG;
 }
 
-void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret size = 6 + dataSize OR NOT (if stuffing actually replaces bytes)
-    if(*dataSize == 0) return;
+void constructInformationMessage(char* ret ,char* data, size_t * dataSize) {//ret size = 6 + dataSize OR NOT (if stuffing actually replaces bytes)
+    if(*dataSize == 0) {
+        printError("Tried to construct an information message without any data.\n"); 
+        return;
+    }
     char bcc = 0;
 
     ret[BEGIN_FLAG_IDX] = MSG_FLAG;
@@ -186,7 +185,7 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret
     ret[CTRL_IDX] = CTRL_S(nextS);
     ret[BCC1_IDX] = BCC(ret[2], ret[1]);
 
-    for(size_t i = 0; i < *dataSize; i++){
+    for (size_t i = 0; i < *dataSize; i++) {  // calculates the data bcc (between all data bytes)
         bcc = BCC(bcc, data[i]);
         ret[BCC1_IDX+1+i] = data[i];
     }
@@ -200,19 +199,18 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize){//ret
     byteStuffing(ret, dataSize); // dataSize is updated in the byteStuffing function
 }
 
-void byteStuffing(char * ret, size_t * retSize){//confirmar estes andamentos de um para a frente
-/*Provavelmente ha uma maneira melhor de fazer isto com shifts mas por agora isto faz sentido na minha cabeça*/
+void byteStuffing(char * ret, size_t * retSize){
     char buf[MAX_I_BUFFER_SIZE];
 
     buf[0] = MSG_FLAG;
     unsigned bufferIdx = 1;
 
     for (unsigned i = bufferIdx; i < (*retSize)-1; i++){
-        if(ret[i] == 0x7E){// caso de ser igual ao padrão que corresponde a uma flag
+        if(ret[i] == 0x7E){// case it is equal to the flag pattern
             buf[bufferIdx++] = 0x7D;
             buf[bufferIdx++] = 0x5E;
         }
-        else if (ret[i] == 0x7D){//caso de ser igual ao padrao que corresponde ao octeto de escape
+        else if (ret[i] == 0x7D){// case it is equal to the escape pattern
             buf[bufferIdx++] = 0x7D;
             buf[bufferIdx++] = 0x5D;
         } else {
@@ -223,27 +221,6 @@ void byteStuffing(char * ret, size_t * retSize){//confirmar estes andamentos de 
     *retSize = bufferIdx+1;
     memcpy(ret, buf, *retSize);
 }
-
-// this function is not needed, but is here for reference
-void byteDestuffing(char * ret, size_t * retSize){// dataSize = tamanho do array recebido - 6-->2flag, addr, ctr, bcc1, bcc2
-    unsigned amountOfDestuffedChars = 0;
-    for(int i = 0; i < (*retSize); i++){
-        char val = ret[i];
-        ret[i] = '\0';
-        if(val == 0x7D){
-            if(ret[i+1] == 0x5E || ret[i+1] == 0x5D){
-                ret[i-amountOfDestuffedChars] =  ret[i+1] == 0x5E ? 0x7E : 0x7D;
-                ret[i+1] = '\0';
-                i++;
-                amountOfDestuffedChars++;
-                continue;
-            }
-        }
-        ret[i-amountOfDestuffedChars] = val;
-    }
-    *retSize -= amountOfDestuffedChars;
-}
-
 
 
 int closeSP(struct termios *oldtio) {
@@ -271,11 +248,11 @@ bool isSU(enum stateMachine *state) {
 }
 
 bool isRR(unsigned char ctrl) {
-    return ctrl == 0x85 || ctrl == 0x05;
+    return ctrl == 0x85 || ctrl == 0x05;  // depending on the value of r
 }
 
 bool isREJ(unsigned char ctrl) {
-    return ctrl == 0x81 || ctrl == 0x01;
+    return ctrl == 0x81 || ctrl == 0x01;  // depending on the value of r
 }
 
 int getS(unsigned char ctrl) {
@@ -286,20 +263,20 @@ int getR(unsigned char ctrl) {
     return ctrl >> 7;
 }
 
-bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount, int noFlag){
-    char aux = 0;
+bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount){
+    char aux = 0x0;
     if (dataCount == 0) return false;
 
-    // Can be done like this because dataCount is the number of data bytes received, and that will always be true
+    // Can be done like this because dataCount is the number of data bytes received and that will always be true
 
     #ifdef DEBUG_STATE_MACHINE
     printf("BCC calculated with: ");
     #endif
     for(size_t i = 4; i < dataCount + 4; i++){
         #ifdef DEBUG_STATE_MACHINE
-        printf("%x ", buf[i]);
+        printf("%x ", (unsigned char)buf[i]);
         #endif
-        aux ^= buf[i];
+        aux ^= (unsigned char)buf[i];
     }
 
     #ifdef DEBUG_STATE_MACHINE
@@ -333,6 +310,9 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     //enum stateMachine prevState = *state;
 
     switch (destuffing) {
+        case ViewingDestuffedByte:
+            destuffing = DestuffingOK;
+            // break is missing intentionally
         case DestuffingOK:
             if (*byte == 0x7D){
                 destuffing = WaitingForSecondByte;
@@ -349,8 +329,6 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             }
             destuffing = ViewingDestuffedByte;
             break;
-        case ViewingDestuffedByte:
-            destuffing = DestuffingOK;
         default: 
             break;
     }
@@ -428,7 +406,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             break;
         } else {
             dataCount--; // discounts the BCC from the data count
-            dataBCC = checkDestuffedBCC(buf, prevByte, dataCount, 0);    
+            dataBCC = checkDestuffedBCC(buf, prevByte, dataCount);    
             if (dataBCC){
                 *state = DONE_I;
             }
@@ -441,7 +419,9 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     case DATA_OK:
         // verify BCC
         if (!receivedMessageFlag(byte, destuffing)) {
-            dataBCC = checkDestuffedBCC(buf, *byte, dataCount, 1);
+            //printf("ERROR. datacount: %d, byte: %x, prevByte: %x\n", dataCount, (unsigned char) *byte, (unsigned char) prevByte);
+            dataBCC = checkDestuffedBCC(buf, *byte, dataCount);
+           
             if(dataBCC){
                 *state = BCC_DATA_OK;   
             }
@@ -450,8 +430,14 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 return DATA_INVALID;
             }
         } else {
-            goBackToStart(state, &destuffing);
-            return DATA_INVALID;
+            dataBCC = checkDestuffedBCC(buf, prevByte, dataCount);    
+            if (dataBCC){
+                *state = DONE_I;
+            }
+            else {
+                goBackToStart(state, &destuffing);
+                return DATA_INVALID;
+            }
         }
         break;
 
