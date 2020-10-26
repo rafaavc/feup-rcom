@@ -17,8 +17,6 @@ void constructControlPacket(char * ret, char ctrl, char* fileName, size_t fileSi
     ret[APP_FILE_T_NAME_IDX] = APP_FILE_T_NAME;
     ret[APP_FILE_L_NAME_IDX] = strlen(fileName) + 1;
     ret[APP_FILE_V_NAME_IDX ] = *fileName;
-
-    return;
 }
 
 //K = 256*L2 +L1 = 2⁸ * L2 + L1 = L2<<8 +L1, L2 is the most significant byte of dataSize and L1 the least signifcant byte
@@ -29,8 +27,6 @@ void constructDataPacket(char * ret, char* data, size_t dataSize, int msgNr){
     ret[APP_L1_IDX] = (dataSize & 0xFF00) >> 8;
 
     memcpy(ret + APP_DATA_START_IDX, data, dataSize);//inserts the data in the DataPacket at it's right index
-
-    return;
 }   
 
 void transmitter(int serialPort){

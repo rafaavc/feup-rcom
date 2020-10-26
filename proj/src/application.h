@@ -1,17 +1,16 @@
 #include "transmitter.h"
 
 /**
- * 
- * @param ports - 
+ * Prints usage
  */
-void printUsage(int * ports);
+void printUsage();
+
 /**
- * 
  * @param argc 
  * @param argv 
  */
-
 void checkCmdArgs(int argc, char ** argv);
+
 /**
  * Constructs the control packet for the application
  * @param ret array of characters where the packet will be stored
@@ -20,6 +19,7 @@ void checkCmdArgs(int argc, char ** argv);
  * @param fileSize size of the file to include in the packet
  */
 void constructControlPacket(char * ret,char ctrl, char* fileName, size_t fileSize);
+
 /**
  * Constructs the data packet for the application
  * @param ret array of characters where the packet will be stored

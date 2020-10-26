@@ -19,7 +19,7 @@
 #define APP_L1_IDX               3
 #define APP_DATA_START_IDX       4     
 
-/* Data Packet*/
+/* Data Packet */
 #define DATA_CTRL       0x01
 
 

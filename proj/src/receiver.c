@@ -181,6 +181,7 @@ void checkStateReception(enum checkReceptionState *state,char* byte, size_t *fil
                 *state = ERROR;
             }
             break;
+        case ERROR:
         case END://so por causa do warning, nao é necessaria
             break;
     }
