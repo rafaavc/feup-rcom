@@ -17,34 +17,46 @@ void receiver(int serialPort){
     char* fileName = NULL;
     size_t fileSize;
    
-
+    unsigned bytesReceived = 0;
     while(true){
         int dataRead = llread(fd,buffer);
-        if( dataRead< 0){
-            printError("Error reading the file\n");
+        if (dataRead < 0){
+            printError("Error reading the file.\n");
             exit(EXIT_FAILURE);
         }
         else{
             int dataAmount = -1;
-            enum checkReceptionState state = checkStateReception(buffer, dataRead, &fileSize , &fileName, &dataAmount);
+            enum checkReceptionState receptionRet = checkStateReception(buffer, dataRead, &fileSize, &fileName, &dataAmount);
             //printf("Checking the following buffer, with size %d.\n", dataRead);
             //printCharArray(buffer, dataRead);
-            if (dataAmount > 0){
-                fwrite(&buffer[4], sizeof(char), (size_t)dataAmount, stdout);
-            }
-            if(state == CTRL){
-                printError("There was an error in transmission");
-                break;
-            }
-            else if(state == V || state == L){ //it has received the end of the end control packry
-                //printf("We've received the full file\n");
-                printf("We've received fileSize = %ld and fileName = %s\n", fileSize, fileName);
-            }
-            else if (state == ERROR){
-                printError("There was an error in the reception, received invalid data. Terminating connection");
-                break;
-            } else if (state != RECEIVING_DATA) {
-                printf("EOOORRROORRO\n");
+            if(receptionRet == START_RECEIVED){
+                printf("Starting to receive file '%s' with %ld bytes.\n", fileName, fileSize);
+                // check current receiver state (whether it has already received start, if it has, error)
+            } else if(receptionRet == DATA_FINISHED){ //it has received the end of the end control packry
+                // check if receiver has received start, it it didn't, it's error
+                if (dataAmount > 0){
+                    fwrite(&buffer[4], sizeof(char), (size_t)dataAmount, stdout);
+                    bytesReceived += dataAmount;
+                } else if (dataAmount == 0) {
+                    printError("Amount of data received is 0.\n");
+                    exit(EXIT_FAILURE);
+                } else if (dataAmount < 0) {
+                    printError("Amount of data is negative.\n");
+                    exit(EXIT_FAILURE);
+                }
+            } else if (receptionRet == END_RECEIVED) {
+                if (fileSize == bytesReceived) {
+                    printf("\nFile received successfully!\n");
+                    break;
+                } else {
+                    printError("Specified file size (%ld) and received number of bytes (%d) do not match.\n", fileSize, bytesReceived);
+                }
+            } else if (receptionRet == ERROR){
+                printError("There was an error in the reception, received invalid data. Terminating connection.\n");
+                exit(EXIT_FAILURE);
+            } else {
+                printError("Received invalid data package! State: %d\n", receptionRet);
+                exit(EXIT_FAILURE);
             }
             bzero(buffer, MAX_DATA_PACKET_LENGTH);
         }
@@ -64,10 +76,12 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
     int totalAmountOfChars = -1;
     int currentAmountOfChars = -1;
     int idx = 1;
-    *fileSize = 0x0;
+    bool end = false;
+    size_t auxFileSize = 0x0;
+    char * auxFileName = NULL;
     enum checkReceptionState state = CTRL;
+
     for (int i = 0; i < bufferSize; i++) {
-        char parameterGetter = -1;
         unsigned char byte = buffer[i];    
         switch(state){
             case(CTRL):
@@ -79,7 +93,12 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                 }
                 else if (byte == DATA_CTRL) {
                     state = DATA_N;
-                } else {
+                } 
+                else if(byte == END_CTRL){
+                    end = true;
+                    state = T;
+                }
+                else {
                     state = ERROR;
                 }
                 break;
@@ -89,6 +108,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                 #endif
                 //printf("Received %u in T\n", byte);
                 if ((byte == APP_FILE_T_SIZE && idx == 1) || (byte == APP_FILE_T_NAME && idx == 2)){
+                    if (!end && idx == 1) *fileSize = 0x0;
                     state = L;
                 } else {
                     state = ERROR;
@@ -104,7 +124,10 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                     state = V;
                     //printf("Receiving string with size %d\n", totalAmountOfChars);
                     if (idx == 2) {//we already know the size of the file so we can allocate memory for it's data
-                        *fileName = (char*) malloc(sizeof(char) * (totalAmountOfChars + 1)); // the +1 is because of the \0 end character
+                        if (!end)
+                            *fileName = (char*) malloc(sizeof(char) * (totalAmountOfChars + 1)); // the +1 is because of the \0 end character
+                        else
+                            auxFileName = (char*) malloc(sizeof(char) * (totalAmountOfChars + 1));
                     }
                 } else {
                     state = ERROR;
@@ -115,25 +138,54 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                 debugMessage("V");
                 #endif
                 if(currentAmountOfChars < totalAmountOfChars && idx == 1){//fileSize
-                    *fileSize = (*fileSize << 8) | (unsigned char)byte;
+                    if(!end){
+                        *fileSize = (*fileSize << 8) | (unsigned char)byte;
+                    }
+                    else{
+                        auxFileSize = (auxFileSize << 8) | (unsigned char)byte;
+                    }
                     //printf("Value of byte: %x\n", (unsigned char) byte);
                     //printf("Value of fileSize: %lx\n", (unsigned char) *fileSize);
-
                     currentAmountOfChars++;
-
                     if(currentAmountOfChars == totalAmountOfChars){
-                        state = T; //going to receive the fileName
-                        idx = 2;
+                        //printf("Received file size\n");
+                        if(!end){
+                            state = T; //going to receive the fileName
+                            idx = 2;
+                        }
+                        else{
+                            //printf("Received file size - end. %ld, %ld\n", auxFileSize, *fileSize);
+                            if(auxFileSize != *fileSize){
+                                state = ERROR;
+                            }
+                            else {
+                                //printf("changed to t\n");
+                                state = T;
+                                idx = 2;
+                            }
+                        }
                     }
                 }
-                else if(currentAmountOfChars < totalAmountOfChars && idx == 2){//fileName
-                    (*fileName)[currentAmountOfChars++] = byte;
+                else if(currentAmountOfChars < totalAmountOfChars && idx == 2){//fileName                 
+                    if(!end)
+                        (*fileName)[currentAmountOfChars++] = byte;
+                    else 
+                        auxFileName[currentAmountOfChars++]= byte;
                     /*printf("Current string: ");
                     fwrite(*fileName, sizeof(char), currentAmountOfChars-1, stdout);
                     printf("\n");*/
                     if(currentAmountOfChars == totalAmountOfChars){
-                        (*fileName)[currentAmountOfChars] = '\0';
-                        return V;
+                        if(!end){
+                            (*fileName)[currentAmountOfChars] = '\0';
+                            state = START_RECEIVED;
+                        }
+                        else{
+                            if(strcmp(*fileName, auxFileName) != 0){
+                                state = ERROR;
+                            }
+                            else 
+                                state = END_RECEIVED;
+                        }
                     }
                 }
                 else{
@@ -185,11 +237,12 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                 debugMessage("DATA_PACKET_FINISH");
                 #endif
                 *dataAmount = totalAmountOfChars;
-                return RECEIVING_DATA;
+                state = DATA_FINISHED;
                 break;
+            case DATA_FINISHED: case END_RECEIVED: case START_RECEIVED:
             case ERROR:
-                return ERROR;
+                break;
         }
     }
-    return ERROR;
+    return state;
 }

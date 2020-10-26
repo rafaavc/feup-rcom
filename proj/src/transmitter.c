@@ -99,9 +99,9 @@ void transmitter(int serialPort){
         msgNr++;    
     }
 
-    constructControlPacket(ret, END_CTRL,filename, fileSize);
+    int endSize = constructControlPacket(ret, END_CTRL,filename, fileSize);
 
-    if(llwrite(fd,ret, CTRL_PACKET_SIZE*sizeof(char)) == -1){ // sending end control packet, sends the same packet as start control packet with the difference in the control
+    if(llwrite(fd,ret, endSize*sizeof(char)) == -1){ // sending end control packet, sends the same packet as start control packet with the difference in the control
         printError("Error sending the end control packet");
         exit(EXIT_FAILURE);
     }
