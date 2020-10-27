@@ -7,6 +7,15 @@ void debugMessage(char * msg) {
     printf("- %s\n", msg);
 }
 
+void * myMalloc(size_t size) {
+    void * ret = malloc(size);
+    if (ret == NULL) {
+        perror("Error alocating memory.");
+        exit(EXIT_FAILURE);
+    }
+    return ret;
+}
+
 bool isUnsignedNumber(char * str) {
     for(int i = 0; str[i] != '\0'; i++) {
         if(!(str[i] >= '0' && str[i] <= '9')) {
@@ -35,7 +44,7 @@ void startTimer(struct myTimer * timer) {
     timer->startTime = clock();
 }
 
-double stopTimer(struct myTimer * timer, unsigned verbose) {
+double stopTimer(struct myTimer * timer, bool verbose) {
     if (timer->startTime == -1) return -1;
 
     clock_t endTime = clock();

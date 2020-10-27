@@ -2,11 +2,11 @@
 
 /**
  * 
- * @param functionToExec 
- * @param msgToWrite 
- * @param msgSize 
- * @param res 
- * @return 
+ * @param functionToExec function pointer to the function that will be timed out (the function returns true when everything goes right, false when it doesn't get a response or an error occurs)
+ * @param msgToWrite buffer with the message (that will be sent to the functionToExec)
+ * @param msgSize buffer with the message (that will be sent to the functionToExec)
+ * @param res amount of bytes written (by the functionToExec)
+ * @return true if is able to get a response, exits the program otherwise
  */
 bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t *res);
 /**

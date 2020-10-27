@@ -36,12 +36,14 @@ int llopen(int porta, char * r){
 }
 
 int llwrite(int fd, char * buffer, int length){
-    char msg[MAX_I_BUFFER_SIZE] = {'\0'};
+    char * msg = myMalloc(MAX_I_BUFFER_SIZE);
+    bzero(msg, MAX_I_BUFFER_SIZE);
     size_t s = length;
     
     constructInformationMessage(msg, buffer, &s);
 
     int res = sendMessage(msg,s);
+    free(msg);
     if (res < 0) return -1;// in case of error
     
     return res;

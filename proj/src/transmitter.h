@@ -14,7 +14,7 @@ void transmitter(int serialPort);
  * @param ctrl  controlo byte for the packet
  * @param fileName name of the file to include in the packet
  * @param fileSize size of the file to include in the packet
- * @return 
+ * @return the size of the control packet
  */
 int constructControlPacket(char * ret,char ctrl, char* fileName, size_t fileSize);
 

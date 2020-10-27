@@ -8,14 +8,14 @@ void receiver(int serialPort){
 
     if ((fd = llopen(serialPort, RECEIVER_STRING)) == -1) {// Establishes communication with transmitter
         printError("Wasn't able to establish logic connection!\n");
-        exit(EXIT_FAILURE); //provavelmente dar nomes signifcativos--LLOPENFAILED
+        exit(EXIT_FAILURE); 
     }
 
 
-    char buffer[MAX_DATA_PACKET_LENGTH];//mudar isto
+    char *buffer = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));//mudar isto
     char* fileName = NULL;
     size_t fileSize;
-
+    bool receivedStart = false;
     FILE * fileToSave;
    
     unsigned bytesReceived = 0;
@@ -30,24 +30,25 @@ void receiver(int serialPort){
             enum checkReceptionState receptionRet = checkStateReception(buffer, dataRead, &fileSize, &fileName, &dataAmount);
             //printf("Checking the following buffer, with size %d.\n", dataRead);
             //printCharArray(buffer, dataRead);
-            if(receptionRet == START_RECEIVED){
+            if(receptionRet == START_RECEIVED && !receivedStart){
                 printf("Starting to receive file '%s' with %ld bytes.\n", fileName, fileSize);
                 fileToSave = fopen(fileName, "wb");
+                receivedStart = true;
                 // check current receiver state (whether it has already received start, if it has, error)
-            } else if(receptionRet == DATA_FINISHED){ //it has received the end of the end control packry
+            } else if(receptionRet == DATA_FINISHED && receivedStart){ //it has received the end of the end control packry
                 // check if receiver has received start, it it didn't, it's error
                 if (dataAmount > 0){
                     fwrite(&buffer[4], sizeof(char), (size_t)dataAmount, fileToSave);
                     bytesReceived += dataAmount;
                 } else if (dataAmount == 0) {
-                    printError("Amount of data received is 0.\n");
+                    printError("Amount of data received is 0.\n"); 
                     exit(EXIT_FAILURE);
                 } else if (dataAmount < 0) {
                     printError("Amount of data is negative.\n");
                     exit(EXIT_FAILURE);
                 }
                 printProgressBar(fileSize, bytesReceived);
-            } else if (receptionRet == END_RECEIVED) {
+            } else if (receptionRet == END_RECEIVED && receivedStart) {
                 fclose(fileToSave);
                 if (fileSize == bytesReceived) {
                     printf("\nFile received successfully!\n");
@@ -60,18 +61,21 @@ void receiver(int serialPort){
                 exit(EXIT_FAILURE);
             } else {
                 printError("Received invalid data package! State: %d\n", receptionRet);
+                
                 exit(EXIT_FAILURE);
             }
             bzero(buffer, MAX_DATA_PACKET_LENGTH);
         }
 
     }
-    
+
+    free(buffer);
     free(fileName);
+
     /* After receiving and end control packet, it has received the full file so it's going to disconnect from the transmitter*/
     if (llclose(fd) != 0) {
         printError("Wasn't able to disconnect!\n");
-        exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLCLOSEFAILED
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -129,9 +133,9 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                     //printf("Receiving string with size %d\n", totalAmountOfChars);
                     if (idx == 2) {//we already know the size of the file so we can allocate memory for it's data
                         if (!end)
-                            *fileName = (char*) malloc(sizeof(char) * (totalAmountOfChars + 1)); // the +1 is because of the \0 end character
+                            *fileName = (char*) myMalloc(sizeof(char) * (totalAmountOfChars + 1)); // the +1 is because of the \0 end character
                         else
-                            auxFileName = (char*) malloc(sizeof(char) * (totalAmountOfChars + 1));
+                            auxFileName = (char*) myMalloc(sizeof(char) * (totalAmountOfChars + 1));
                     }
                 } else {
                     state = ERROR;

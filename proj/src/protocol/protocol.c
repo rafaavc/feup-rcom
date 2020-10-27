@@ -200,8 +200,7 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize) {//re
 }
 
 void byteStuffing(char * ret, size_t * retSize){
-    char buf[MAX_I_BUFFER_SIZE];
-
+    char * buf = myMalloc(MAX_I_BUFFER_SIZE*sizeof(char));
     buf[0] = MSG_FLAG;
     unsigned bufferIdx = 1;
 
@@ -220,6 +219,7 @@ void byteStuffing(char * ret, size_t * retSize){
     buf[bufferIdx] = MSG_FLAG;
     *retSize = bufferIdx+1;
     memcpy(ret, buf, *retSize);
+    free(buf);
 }
 
 
@@ -307,8 +307,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     static bool dataBCC = 0;
     static enum destuffingState destuffing = DestuffingOK;
 
-    //enum stateMachine prevState = *state;
-
+    // Destuffs the message while it's reading it
     switch (destuffing) {
         case ViewingDestuffedByte:
             destuffing = DestuffingOK;
@@ -366,7 +365,6 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             (*byte == controlField || controlField == ANY_VALUE)) {
             *state = C_RCV;
             bcc[1] = *byte;
-            //printf("control ok\n");
         }
         else { // INVALID
             receivedMessageFlag(byte, destuffing) ? 
@@ -402,15 +400,16 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     case DATA:
         if(!receivedMessageFlag(byte, destuffing)){
             dataCount++;
-            if (dataCount >= MAX_DATA_PACKET_LENGTH) { *state = DATA_OK;}
+            if (dataCount >= MAX_DATA_PACKET_LENGTH) { *state = DATA_OK;} 
+            // if it doesn't receive a flag, then it only looks for the bcc when the max data packet length has been used
             break;
-        } else {
+        } else {  // receives a flag; the bcc is the previous byte
             dataCount--; // discounts the BCC from the data count
             dataBCC = checkDestuffedBCC(buf, prevByte, dataCount);    
             if (dataBCC){
                 *state = DONE_I;
             }
-            else {
+            else {  // BCC is wrong
                 goBackToStart(state, &destuffing);
                 return DATA_INVALID;
             }
@@ -429,12 +428,13 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 goBackToStart(state, &destuffing);
                 return DATA_INVALID;
             }
-        } else {
+        } else {   // if it receives a flag when dataOk, it meas that the bcc is the previous byte
             dataBCC = checkDestuffedBCC(buf, prevByte, dataCount);    
+            dataCount--;  // removes the bcc from the dataCount
             if (dataBCC){
                 *state = DONE_I;
             }
-            else {
+            else {  // BCC is wrong
                 goBackToStart(state, &destuffing);
                 return DATA_INVALID;
             }
@@ -442,7 +442,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
         break;
 
     case BCC_DATA_OK:
-        if (receivedMessageFlag(byte, destuffing)) {
+        if (receivedMessageFlag(byte, destuffing)) {  // receives the end flag
             *state = DONE_I;
         } else {
             goBackToStart(state, &destuffing);

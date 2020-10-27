@@ -1,6 +1,9 @@
 #include "ui.h"
 
 void printProgressBar(size_t goal, size_t current) {
+    #ifndef LOADING_UI
+    return;
+    #endif
     struct winsize size;
     ioctl(1, TIOCGWINSZ, &size);
 

@@ -47,7 +47,7 @@ void transmitter(int serialPort){
 
     if (fd == -1) {
         printError("Wasn't able to establish logic connection!");
-        exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLOPENFAILED
+        exit(EXIT_FAILURE);
     }
     
     debugMessage("Connection established successfully!");
@@ -56,8 +56,8 @@ void transmitter(int serialPort){
     /*Starts to write all information frames, keeping in mind the need to resend, etc.
     While there is info to write, writes with the stop&wait mechanism as in other situations*/
 
-    char* filename = "pinguim.gif";
-    char* destFilename = "receivedFile.gif";
+    char* filename = "awesome.jpg";
+    char* destFilename = "receivedFile.jpg";
     FILE * file = fopen(filename, "rb");
 
   
@@ -65,8 +65,8 @@ void transmitter(int serialPort){
     stat(filename, &st);
     size_t fileSize = st.st_size;
 
-    char buffer[MAX_DATA_PACKET_LENGTH];
-    char ret[MAX_DATA_PACKET_LENGTH]; 
+    char *buffer = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));
+    char *ret = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char)); 
 
     if(feof(file)){
         printError("The file is empty, nothing to send");
@@ -80,9 +80,10 @@ void transmitter(int serialPort){
             exit(EXIT_FAILURE);
         }
     }
+    
 
     int msgNr = 0;
-    char dataPacket[MAX_DATA_PACKET_LENGTH]; //se calhar aumentar MAX_DATA_PACKET_LENGTH ? 
+    char *dataPacket = (char*) myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));
 
     while (!feof(file)) {
         size_t amount = fread(buffer, sizeof(char), MAX_DATA_PACKET_DATA_LENGTH, file);
@@ -109,6 +110,9 @@ void transmitter(int serialPort){
         exit(EXIT_FAILURE);
     }
 
+    free(ret);
+    free(buffer);
+    free(dataPacket);
     /*
         When there is no more information to write, it's going to disconnect: sends a DISC frame, receives a DISC frame
         and sends back an UA frame, ending the program execution
@@ -117,10 +121,6 @@ void transmitter(int serialPort){
  
     if (llclose(fd) != 0) {
         printError("Wasn't able to disconnect!");
-        exit(EXIT_FAILURE);//provavelmente dar nomes signifcativos--LLCLOSEFAILED
+        exit(EXIT_FAILURE);
     }
 }
-
-/*
-! FAZER TRATAMENTOS DE ERROS NAS ESCRITAS E LEITURAS!
-*/

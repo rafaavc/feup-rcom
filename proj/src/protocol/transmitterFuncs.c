@@ -14,9 +14,9 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
     initTimer(&timer, "SIGALARM");
     #endif
 
-    stopAndWaitFlag = true;
+    stopAndWaitFlag = true;   // used by the alarm
     
-    while(counter < NO_TRIES) {
+    while(counter < NO_TRIES) { // sends the message NO_TRIES times
         if(stopAndWaitFlag) {
             stopAndWaitFlag = false;
             rejFlag = false;
@@ -30,7 +30,7 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
             stopTimer(&timer, true);
             startTimer(&timer);
             #endif
-            if (functionToExec(msgToWrite, msgSize, res)) { // NEED TO FIND WAY TO HANDLE ERRORS IN THIS FUNCTION
+            if (functionToExec(msgToWrite, msgSize, res)) { // RR, sends the next one
                 alarm(0); // unset alarm
                 return true;
             }
@@ -49,7 +49,7 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
 
 bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     ssize_t size; 
-    char ret[MAX_I_MSG_SIZE];
+    char *ret = (char*)myMalloc(MAX_I_MSG_SIZE*sizeof(char));
 
     *res = writeToSP(msg, SUPERVISION_MSG_SIZE);
     if (*res == -1) {
@@ -63,6 +63,8 @@ bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     enum stateMachine state;
     if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_UA) == READ_ERROR) return false;
 
+    free(ret);
+
     if(isAcceptanceState(&state)) {
         debugMessage("[LOGIC CONNECTION] SUCCESS");
         return true;
@@ -71,7 +73,7 @@ bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
 }
 
 bool establishLogicConnection() {
-    char buf[SUPERVISION_MSG_SIZE]; // the message to send
+    char *buf = (char*)myMalloc(sizeof(char)*SUPERVISION_MSG_SIZE); // the message to send
     size_t res; 
 
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_SET);
@@ -82,7 +84,7 @@ bool establishLogicConnection() {
 
 bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     ssize_t size; 
-    char ret[MAX_I_MSG_SIZE];
+    char *ret = (char*)myMalloc(MAX_I_MSG_SIZE*sizeof(char));
 
     //writes to serial port, trying to connect
 
@@ -103,6 +105,7 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     //tries to read the message back from the serialPort
     readFromSP(ret, &state, &size, ADDR_SENT_RCV, CTRL_DISC);//read DISC
 
+    free(ret);
     if(isAcceptanceState(&state))
         return true;
 
@@ -110,12 +113,13 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
 }
 
 bool establishDisconnection() {
-    char buf[SUPERVISION_MSG_SIZE];
+    char *buf = (char*) myMalloc(SUPERVISION_MSG_SIZE*sizeof(char));
     size_t res;
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_DISC);
     if (stopAndWait(&disconnectionFunction, buf, SUPERVISION_MSG_SIZE, &res)) {
         constructSupervisionMessage(buf, ADDR_SENT_RCV, CTRL_UA);
         writeToSP(buf, SUPERVISION_MSG_SIZE); //write UA
+        free(buf);
         debugMessage("[DISC] SUCCESS");
         return true;
     }
@@ -124,9 +128,8 @@ bool establishDisconnection() {
 }
 
 bool informationExchange(char* msg, size_t msgSize, size_t *res ){
-    //need to check errors
     ssize_t size; 
-    char ret[MAX_I_MSG_SIZE];
+    char *ret = (char*)myMalloc(MAX_I_MSG_SIZE*sizeof(char));
     
     *res = writeToSP(msg, msgSize);
     if (*res == -1) {
@@ -143,8 +146,10 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     /*printf("Returned message: ");
     fwrite(ret, sizeof(char), size, stdout);
     printf("\n");*/
-    //if (result == READ_ERROR) return false;
+    if (result == READ_ERROR) return false;
     
+    free(ret);
+
     if(!isAcceptanceState(&state)) {
         debugMessage("[SENDING DATA] WRONG MESSAGE RECEIVED\n");
         return false;
@@ -158,8 +163,6 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     
     return true;
 }
-
-//Rej reenvia, Rr termina alarme e envia a proxima
 
 bool sendMessage(char* msg, size_t msgSize) {
     size_t bytesWritten;
