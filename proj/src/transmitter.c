@@ -41,7 +41,7 @@ void constructDataPacket(char * ret, char* data, size_t dataSize, int msgNr){
 
 }   
 
-void transmitter(int serialPort){
+void transmitter(int serialPort, char * fileToSend, char * destFile){
 
     fd = llopen(serialPort, TRANSMITTER_STRING); // Establish communication with receiver
 
@@ -56,8 +56,8 @@ void transmitter(int serialPort){
     /*Starts to write all information frames, keeping in mind the need to resend, etc.
     While there is info to write, writes with the stop&wait mechanism as in other situations*/
 
-    char* filename = "awesome.jpg";
-    char* destFilename = "receivedFile.jpg";
+    char* filename = fileToSend != NULL ? fileToSend : "awesome.jpg";
+    char* destFilename = destFile != NULL ? destFile : "receivedFile.jpg";
     FILE * file = fopen(filename, "rb");
 
   

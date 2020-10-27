@@ -3,9 +3,11 @@
 /**
  * Deals with the transmitter part of the application
  * @param serialPort 
+ * @param fileToSend the file to send (NULL if not specified)
+ * @param destFile the name of the destination file (NULL if not specified)
  */
 
-void transmitter(int serialPort);
+void transmitter(int serialPort, char * fileToSend, char * destFile);
 
 
 /**
