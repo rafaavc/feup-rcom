@@ -44,14 +44,14 @@ void receiver(int serialPort){
                     printError("Amount of data received is 0.\n"); 
                     exit(EXIT_FAILURE);
                 } else if (dataAmount < 0) {
-                    printError("Amount of data is negative.\n");
+                    printError("Amount of data received is negative.\n");
                     exit(EXIT_FAILURE);
                 }
                 printProgressBar(fileSize, bytesReceived);
             } else if (receptionRet == END_RECEIVED && receivedStart) {
                 fclose(fileToSave);
                 if (fileSize == bytesReceived) {
-                    printf("\nFile received successfully!\n");
+                    printf("File received successfully!\n");
                     break;
                 } else {
                     printError("Specified file size (%ld) and received number of bytes (%d) do not match.\n", fileSize, bytesReceived);

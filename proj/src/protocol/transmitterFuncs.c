@@ -164,7 +164,7 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     return true;
 }
 
-bool sendMessage(char* msg, size_t msgSize) {
+size_t sendMessage(char* msg, size_t msgSize) {
     size_t bytesWritten;
     if (!stopAndWait(&informationExchange, msg, msgSize, &bytesWritten)) return -1;
     return bytesWritten;

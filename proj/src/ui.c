@@ -25,5 +25,9 @@ void printProgressBar(size_t goal, size_t current) {
     }
     printf("]\r");
 
+    if (ratio == 1) {
+        printf("\n");
+    }
+
 }
 

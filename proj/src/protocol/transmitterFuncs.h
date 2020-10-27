@@ -50,4 +50,4 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res );
  * @param msgSize message size
  * @return number of bytes written
  */
-bool sendMessage(char* msg, size_t msgSize);
+size_t sendMessage(char* msg, size_t msgSize);

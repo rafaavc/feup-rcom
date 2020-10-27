@@ -49,8 +49,6 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
         printError("Wasn't able to establish logic connection!");
         exit(EXIT_FAILURE);
     }
-    
-    debugMessage("Connection established successfully!");
 
 
     /*Starts to write all information frames, keeping in mind the need to resend, etc.
@@ -81,9 +79,11 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
         }
     }
     
+    printf("Starting to send file '%s' (destination: '%s') with %ld bytes.\n", filename, destFilename, fileSize);
 
     int msgNr = 0;
     char *dataPacket = (char*) myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));
+    size_t amountTransfered = 0;
 
     while (!feof(file)) {
         size_t amount = fread(buffer, sizeof(char), MAX_DATA_PACKET_DATA_LENGTH, file);
@@ -98,7 +98,15 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
             perror("Error reading file");
             exit(EXIT_FAILURE);
         }
-        msgNr++;    
+        msgNr++;
+        amountTransfered += amount;
+        printProgressBar(fileSize, amountTransfered);   
+    }
+
+    if (amountTransfered == fileSize) {
+        printf("File transfered successfully!\n");
+    } else {
+        printError("Was supposed to transfer %ld bytes, only transfered %ld\n", fileSize, amountTransfered);
     }
 
     fclose(file);
