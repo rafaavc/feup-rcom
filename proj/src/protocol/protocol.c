@@ -21,7 +21,7 @@ int openConfigureSP(char* port, struct termios *oldtio) {
     */
     struct termios newtio; 
 
-    fd = open(port, O_RDWR | O_NOCTTY );
+    fd = open(port, O_RDWR | O_NOCTTY);
 
     if (fd < 0) { perror(port); return -1; }
 
@@ -224,6 +224,7 @@ void byteStuffing(char * ret, size_t * retSize){
 
 
 int closeSP(struct termios *oldtio) {
+    sleep(1);
     if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
       perror("Error on tcsetattr");
       return -1;
