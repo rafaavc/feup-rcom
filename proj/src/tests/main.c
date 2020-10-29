@@ -6,16 +6,16 @@
 
 int testReceiver(int fd) {
     char *buffer = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));//mudar isto
-    while(true) {
+    //while(true) {
         int n;
-        if (n = llread(fd, buffer) == -1) {
+        if ((n = llread(fd, buffer)) == -1) {
             return -1;
         } else {
-            printf("Just received: ");
+            printf("Just received %d bytes: ", n);
             fwrite(buffer, sizeof(char), n, stdout);
             printf("\n");
         }
-    }
+    //}
 
     free(buffer);
 }

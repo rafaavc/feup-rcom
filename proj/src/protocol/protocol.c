@@ -123,7 +123,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         }
 
         #ifdef DEBUG_STATE_MACHINE
-        printf("state after checkstate: %s\n", stateNames[*state]);
+        printf("state after checkstate: %s, counter: %d\n", stateNames[*state], counter);
         #endif
         buf[counter++] = reading;
         if (isAcceptanceState(state)) break;
@@ -328,7 +328,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 *byte = 0x7D;
             } else {
                 printf("Error while destuffing in checkstate!\n");
-                exit(EXIT_FAILURE);
+                //exit(EXIT_FAILURE);
             }
             destuffing = ViewingDestuffedByte;
             break;
@@ -360,6 +360,8 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
         else if(!receivedMessageFlag(byte, destuffing)){ // If it receives a flag, it doesn't change state
             goBackToStart(state, &destuffing);
             return HEAD_INVALID;
+        } else {
+            return IGNORE_CHAR; // Ignores the flag in case it had received one imediately before
         }
         break;
         
