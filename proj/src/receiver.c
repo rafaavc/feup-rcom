@@ -3,21 +3,33 @@
 extern int fd;
 
 int sequenceNumber = 0;
-
-void receiver(int serialPort){    
+void recAlarmHandler(int signo) {
+    if (signo == SIGALRM) {
+        printError("Turning off due to inactivity\n");
+        exit(EXIT_FAILURE);
+    }
+}
+void receiver(int serialPort){  
+        
+    if (signal(SIGALRM, recAlarmHandler) < 0) {  // Instals the handler for the alarm interruption
+            perror("Alarm handler wasn't installed"); 
+            exit(EXIT_FAILURE);
+    }
+    alarm(INACTIVITY_TIME);
 
     if ((fd = llopen(serialPort, RECEIVER_STRING)) == -1) {// Establishes communication with transmitter
         printError("Wasn't able to establish logic connection!\n");
         exit(EXIT_FAILURE); 
     }
 
-
+    
     char *buffer = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));//mudar isto
     char* fileName = NULL;
     size_t fileSize;
     bool receivedStart = false;
     FILE * fileToSave;
-   
+    
+
     unsigned bytesReceived = 0;
     while(true){
         int dataRead = llread(fd,buffer);
@@ -26,6 +38,7 @@ void receiver(int serialPort){
             exit(EXIT_FAILURE);
         }
         else{
+            alarm(INACTIVITY_TIME);
             int dataAmount = -1;
             enum checkReceptionState receptionRet = checkStateReception(buffer, dataRead, &fileSize, &fileName, &dataAmount);
             //printf("Checking the following buffer, with size %d.\n", dataRead);
@@ -107,6 +120,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                     state = T;
                 }
                 else {
+                    printError("Error in package SM: Received invalid CTRL\n");
                     state = ERROR;
                 }
                 break;
@@ -119,6 +133,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                     if (!end && idx == 1) *fileSize = 0x0;
                     state = L;
                 } else {
+                    printError("Error in package SM: Received invalid T\n");
                     state = ERROR;
                 }
                 break;
@@ -138,6 +153,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                             auxFileName = (char*) myMalloc(sizeof(char) * (totalAmountOfChars + 1));
                     }
                 } else {
+                    printError("Error in package SM: Received invalid L\n");
                     state = ERROR;
                 }
                 break;
@@ -164,6 +180,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                         else{
                             //printf("Received file size - end. %ld, %ld\n", auxFileSize, *fileSize);
                             if(auxFileSize != *fileSize){
+                                printError("Error in package SM: Received invalid file size in end package\n");
                                 state = ERROR;
                             }
                             else {
@@ -190,6 +207,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                         else{
                             if(strcmp(*fileName, auxFileName) != 0){
                                 state = ERROR;
+                                printError(" V: End packet with wrong filename\n");
                             }
                             else 
                                 state = END_RECEIVED;
@@ -198,6 +216,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                 }
                 else{
                     state = ERROR;
+                    printError("V: Not filename or filesize\n");
                 }
                 break;
             case DATA_N:
@@ -211,11 +230,13 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                     }
                     else{
                         state = ERROR;//sequence number not valid
+                        printError("DataN: Sequence number not valid 1 \n");
                     }
                     
                 }
                 else{
                     state = ERROR;
+                    printError("Data N: Sequence number not valid 2 \n");
                 }
                 break;
             case DATA_L2:
@@ -237,6 +258,7 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                 }
                 else{
                     state = ERROR;
+                     printError("Data L1: Invalid total amount of chars\n");
                 }
                 break;
                 

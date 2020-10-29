@@ -7,7 +7,7 @@ size_t receiverLoop(char * buffer) {
     enum stateMachine state;
     enum readFromSPRet res;
 
-    while (true) {
+    while (true) { // acho que este while pode ser removido
         char * ret = myMalloc(MAX_I_MSG_SIZE);
 
 

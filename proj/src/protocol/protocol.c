@@ -102,9 +102,11 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 STOP = true;
                 int s = getS(buf[CTRL_IDX]);
                 if(s == pS){  //send RR, confirm reception
+                    printf("S == pS (RR): %d == %d\n", s, pS);
                     return RR;
                 }
                 else{  //send REJ, needs retransmission
+                    printf("S != pS (REJ): %d == %d\n", s, pS);
                     return REJ;
                 }
             case IGNORE_CHAR:
@@ -326,6 +328,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 *byte = 0x7D;
             } else {
                 printf("Error while destuffing in checkstate!\n");
+                exit(EXIT_FAILURE);
             }
             destuffing = ViewingDestuffedByte;
             break;
@@ -411,7 +414,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 *state = DONE_I;
             }
             else {  // BCC is wrong
-                goBackToStart(state, &destuffing);
+                goBackToFLAG_RCV(state, &destuffing);
                 return DATA_INVALID;
             }
         }
@@ -436,7 +439,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 *state = DONE_I;
             }
             else {  // BCC is wrong
-                goBackToStart(state, &destuffing);
+                goBackToFLAG_RCV(state, &destuffing);
                 return DATA_INVALID;
             }
         }
@@ -450,7 +453,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             return DATA_INVALID;
         }
         break;
-
+    
     case DONE_I:
     case DONE_S_U:
         destuffing = DestuffingOK;
