@@ -22,6 +22,8 @@
 /* Data Packet */
 #define DATA_CTRL       0x01
 
+#define INACTIVITY_TIME 15
+
 
 #define MAX_DATA_PACKET_DATA_LENGTH  MAX_DATA_PACKET_LENGTH-4
 

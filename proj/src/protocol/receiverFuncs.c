@@ -7,7 +7,7 @@ size_t receiverLoop(char * buffer) {
     enum stateMachine state;
     enum readFromSPRet res;
 
-    while (true) {
+    while (true) { // acho que este while pode ser removido
         char * ret = myMalloc(MAX_I_MSG_SIZE);
 
 
@@ -35,6 +35,8 @@ size_t receiverLoop(char * buffer) {
                 writeToSP(buf, SUPERVISION_MSG_SIZE);
                 free(buf);
                 if(res == SAVE) {
+                    //debugMessage("Saving Message");
+                    //printf("Saving message, size: %ld\n", size);
                     size_t dataLength = size - 6;
                     memcpy(buffer, &ret[BCC1_IDX+1], dataLength);
                     free(ret);

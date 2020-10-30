@@ -8,6 +8,7 @@ bool rejFlag = false;
 
 bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t  *res) {
     unsigned counter = 0;
+    bool first = true;
 
     #ifdef DEBUG
     struct myTimer timer;
@@ -15,8 +16,13 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
     #endif
 
     stopAndWaitFlag = true;   // used by the alarm
-    
-    while(counter < NO_TRIES) { // sends the message NO_TRIES times
+
+    /*unsigned char ctrlByte = msgToWrite[CTRL_IDX];
+    unsigned char headBCC = msgToWrite[BCC1_IDX];
+    msgToWrite[CTRL_IDX] = 0x40;
+    msgToWrite[BCC1_IDX] = msgToWrite[ADDR_IDX] ^ 0x40;*/
+
+    while(counter < NO_RETRIES) { // sends the message NO_TRIES times
         if(stopAndWaitFlag) {
             stopAndWaitFlag = false;
             rejFlag = false;
@@ -34,13 +40,18 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
                 alarm(0); // unset alarm
                 return true;
             }
+
+            /*msgToWrite[CTRL_IDX] = ctrlByte;
+            msgToWrite[BCC1_IDX] = headBCC;*/
+
             /* REJ is a retransmission request, so everytime it receives a REJ resends the data
             NO_TRIES is only for retransmission tries due to timeout*/
-            if (rejFlag) counter--; 
+            if (rejFlag || first) counter--; // if it's sending the first time or because of REJ
+            first = false;
         }
     }
 
-    printError("Error sending message (tried %d times with no/invalid response)\n", NO_TRIES);
+    printError("Error sending message (retried %d times with no/invalid response)\n", NO_RETRIES);
     printCharArray(msgToWrite, msgSize);
     alarm(0);
 
@@ -151,11 +162,11 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     free(ret);
 
     if(!isAcceptanceState(&state)) {
-        debugMessage("[SENDING DATA] WRONG MESSAGE RECEIVED\n");
+        debugMessage("[SENDING DATA] Didn't receiver a valid response.\n");
         return false;
     }
     if(result == REJ){
-        debugMessage("Received REJ\n");
+        debugMessage("[SENDING DATA] Received REJ.\n");
         stopAndWaitFlag = true;
         rejFlag = true;
         return false;

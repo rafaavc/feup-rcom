@@ -51,7 +51,7 @@ typedef unsigned char charByte;
 #define MAX_I_MSG_SIZE (MAX_DATA_PACKET_LENGTH + SUPERVISION_MSG_SIZE + 1) // the 1 is from the data bcc
 #define MAX_I_BUFFER_SIZE MAX_I_MSG_SIZE*2 // needs to be this value due to the stuffing operation (worst case scenario)
 #define TIME_OUT    3   // time between tries
-#define NO_TRIES    3   // tries to send message 3 times
+#define NO_RETRIES    3   // tries to send message 3 times
 
 enum stateMachine { Start, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
 enum programState { WaitingForLC, LogicallyConnected, WaitingForDISC, WaitingForUA, WaitingForRR };

@@ -102,9 +102,11 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 STOP = true;
                 int s = getS(buf[CTRL_IDX]);
                 if(s == pS){  //send RR, confirm reception
+                    printf("S == pS (RR): %d == %d\n", s, pS);
                     return RR;
                 }
                 else{  //send REJ, needs retransmission
+                    printf("S != pS (REJ): %d == %d\n", s, pS);
                     return REJ;
                 }
             case IGNORE_CHAR:
@@ -121,7 +123,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         }
 
         #ifdef DEBUG_STATE_MACHINE
-        printf("state after checkstate: %s\n", stateNames[*state]);
+        printf("state after checkstate: %s, counter: %d\n", stateNames[*state], counter);
         #endif
         buf[counter++] = reading;
         if (isAcceptanceState(state)) break;
@@ -326,6 +328,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 *byte = 0x7D;
             } else {
                 printf("Error while destuffing in checkstate!\n");
+                //exit(EXIT_FAILURE);
             }
             destuffing = ViewingDestuffedByte;
             break;
@@ -357,6 +360,8 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
         else if(!receivedMessageFlag(byte, destuffing)){ // If it receives a flag, it doesn't change state
             goBackToStart(state, &destuffing);
             return HEAD_INVALID;
+        } else {
+            return IGNORE_CHAR; // Ignores the flag in case it had received one imediately before
         }
         break;
         
@@ -411,7 +416,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 *state = DONE_I;
             }
             else {  // BCC is wrong
-                goBackToStart(state, &destuffing);
+                goBackToFLAG_RCV(state, &destuffing);
                 return DATA_INVALID;
             }
         }
@@ -436,7 +441,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 *state = DONE_I;
             }
             else {  // BCC is wrong
-                goBackToStart(state, &destuffing);
+                goBackToFLAG_RCV(state, &destuffing);
                 return DATA_INVALID;
             }
         }
@@ -450,7 +455,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             return DATA_INVALID;
         }
         break;
-
+    
     case DONE_I:
     case DONE_S_U:
         destuffing = DestuffingOK;
