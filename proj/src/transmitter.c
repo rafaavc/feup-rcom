@@ -59,10 +59,7 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     FILE * file = fopen(filename, "rb");
 
     if(file == NULL){
-        char * str = (char*)malloc(sizeof(char)*512);
-        sprintf(str,"\nFile %s does not exist \n", filename);
-        printError(str);
-        free(str);
+        printError("\nFile %s does not exist \n", filename);
         exit(EXIT_FAILURE);
     }
   
