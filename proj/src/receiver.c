@@ -66,7 +66,7 @@ void receiver(int serialPort){
                 if (fileSize == bytesReceived) {
                     printf("File received successfully!\n");
                     break;
-                } else {
+                } else {    
                     printError("Specified file size (%ld) and received number of bytes (%d) do not match.\n", fileSize, bytesReceived);
                 }
             } else if (receptionRet == ERROR){
