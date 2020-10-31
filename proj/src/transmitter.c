@@ -58,6 +58,13 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     char* destFilename = destFile != NULL ? destFile : "receivedFile.jpg";
     FILE * file = fopen(filename, "rb");
 
+    if(file == NULL){
+        char * str = (char*)malloc(sizeof(char)*512);
+        sprintf(str,"\nFile %s does not exist \n", filename);
+        printError(str);
+        free(str);
+        exit(EXIT_FAILURE);
+    }
   
     struct stat st;
     stat(filename, &st);

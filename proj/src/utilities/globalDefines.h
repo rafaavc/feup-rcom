@@ -1,4 +1,4 @@
-#define MAX_DATA_PACKET_LENGTH 500
+#define MAX_DATA_PACKET_LENGTH 5000
   // unstuffed max information field size in I msgs
 
 #define DEBUG
