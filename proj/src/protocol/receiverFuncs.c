@@ -1,6 +1,7 @@
 #include "receiverFuncs.h"
 
 extern int fd;
+bool receivedDataFlag = false;
 
 size_t receiverLoop(char * buffer) {
     ssize_t size;
@@ -11,7 +12,7 @@ size_t receiverLoop(char * buffer) {
         char * ret = myMalloc(MAX_I_MSG_SIZE);
 
 
-        res = readFromSP(ret, &state, &size, ANY_VALUE, ANY_VALUE);
+        res = readFromSP(ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
 
         if (res == READ_ERROR) return -1;
         // readFromSP only returns acceptance state
@@ -22,6 +23,7 @@ size_t receiverLoop(char * buffer) {
         // otherwise an error occurred
         if (isI(&state) || res == RR || res == REJ) { 
             //printf("Received I\n");
+            if (!receivedDataFlag) receivedDataFlag = true;
             int s = getS(ret[CTRL_IDX]);
             if(res == REJ) {
                 //debugMessage("Sending REJ");
@@ -46,9 +48,15 @@ size_t receiverLoop(char * buffer) {
             free(ret);
             // (REJ == STOPPED_OR_SU)
         } else { // in this case it means that we received an SU msg
-            printError("Received invalid data (SU message) while running llread. Protocol reader state: %u\n", state);
-            free(ret);
-            return -1;
+            if (isSU(state) && ret[CTRL_IDX] == CTRL_SET && !receivedDataFlag) { // it means that the ack of the SET in llopen (sent by the receiver) didn't reach the transmitter
+                constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
+                writeToSP(buf, SUPERVISION_MSG_SIZE);
+                free(buf);
+            } else {
+                printError("Received invalid data (SU message) while running llread. Protocol reader state: %u\n", state);
+                free(ret);
+                return -1;
+            }
         }
     }
 }

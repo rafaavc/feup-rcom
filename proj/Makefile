@@ -24,7 +24,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 
 
 .PHONY: all
-all: $(MainName) tests
+all: $(MainName)
 	@echo done
 
 $(MainName): $(mainOBJ)
