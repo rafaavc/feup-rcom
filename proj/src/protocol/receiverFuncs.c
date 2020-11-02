@@ -30,6 +30,7 @@ size_t receiverLoop(char * buffer) {
                 constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_REJ((s+1)%2));
                 writeToSP(buf, SUPERVISION_MSG_SIZE);
                 free(buf);
+                return 0;
             }
             else { // SAVE or RR
                 //debugMessage("Sending RR");
@@ -43,12 +44,14 @@ size_t receiverLoop(char * buffer) {
                     memcpy(buffer, &ret[BCC1_IDX+1], dataLength);
                     free(ret);
                     return dataLength;
+                } else { // case of repeated packet
+                    return 0;
                 }
             }
             free(ret);
             // (REJ == STOPPED_OR_SU)
         } else { // in this case it means that we received an SU msg
-            if (isSU(&state) && ret[CTRL_IDX] == CTRL_SET && !receivedDataFlag) { // it means that the ack of the SET in llopen (sent by the receiver) didn't reach the transmitter
+            if (!receivedDataFlag && isSU(&state) && ret[CTRL_IDX] == CTRL_SET) { // it means that the ack of the SET in llopen (sent by the receiver) didn't reach the transmitter
                 constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_UA);
                 writeToSP(buf, SUPERVISION_MSG_SIZE);
                 free(buf);

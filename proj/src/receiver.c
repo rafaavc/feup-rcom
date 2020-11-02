@@ -33,11 +33,12 @@ void receiver(int serialPort){
     unsigned bytesReceived = 0;
     while(true){
         int dataRead = llread(fd,buffer);
-        if (dataRead < 0){
+        if (dataRead < 0) { //case of error
             printError("Error reading the file.\n");
             exit(EXIT_FAILURE);
         }
-        else{
+        else if (dataRead == 0) continue; //case of REJ sent or repeated data received
+        else {
             alarm(INACTIVITY_TIME);
             int dataAmount = -1;
             enum checkReceptionState receptionRet = checkStateReception(buffer, dataRead, &fileSize, &fileName, &dataAmount);

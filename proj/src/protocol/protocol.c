@@ -102,11 +102,11 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
                 STOP = true;
                 int s = getS(buf[CTRL_IDX]);
                 if(s == pS){  //send RR, confirm reception
-                    printf("S == pS (RR): %d == %d\n", s, pS);
+                    //printf("S == pS (RR): %d == %d\n", s, pS);
                     return RR;
                 }
                 else{  //send REJ, needs retransmission
-                    printf("S != pS (REJ): %d == %d\n", s, pS);
+                    //printf("S != pS (REJ): %d == %d\n", s, pS);
                     return REJ;
                 }
             case IGNORE_CHAR:
@@ -157,7 +157,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         if (r != (nextS%2)) { // Repeated control -> R needs to be always equal to the S of the next information msg
             // RR (ignore)
             return RR;
-        } else { // if it isREJ && new control (r == nextS)
+        } else { // if it isREJ or RR && new control (r == nextS)
             // act upon the result
             return isRR(buf[CTRL_IDX]) ? RR : REJ;
         }
