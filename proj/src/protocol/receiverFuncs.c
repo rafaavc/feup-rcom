@@ -3,7 +3,7 @@
 extern int fd;
 bool receivedDataFlag = false;
 
-size_t receiverLoop(char * buffer) {
+size_t receiverRead(char * buffer) {
     ssize_t size;
     enum stateMachine state;
     enum readFromSPRet res;
@@ -65,7 +65,7 @@ size_t receiverLoop(char * buffer) {
 }
 
 
-bool receiverConnecting() {
+bool receiverConnect() {
     ssize_t size;
     enum stateMachine state;
     char *buf = (char*)myMalloc(SUPERVISION_MSG_SIZE*sizeof(char));
@@ -84,7 +84,7 @@ bool receiverConnecting() {
 }
 
 
-size_t receiverDisconnecting(){
+size_t receiverDisconnect() {
     ssize_t size;
     enum stateMachine state;
     char *buf = (char*)myMalloc(SUPERVISION_MSG_SIZE*sizeof(char));

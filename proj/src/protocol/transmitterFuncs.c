@@ -25,15 +25,15 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
     while(counter < NO_RETRIES) { // sends the message NO_TRIES times
         if(stopAndWaitFlag) {
             stopAndWaitFlag = false;
-            rejFlag = false;
-
             counter++;
 
             alarm(TIME_OUT);
             //printf("sending message with s = %d and size = %d\n", nextS, msgSize);
 
             #ifdef DEBUG
-            stopTimer(&timer, true);
+            stopTimer(&timer, !rejFlag);
+            rejFlag = false;
+            
             startTimer(&timer);
             #endif
             if (functionToExec(msgToWrite, msgSize, res)) { // RR, sends the next one
@@ -83,7 +83,7 @@ bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     return false;
 }
 
-bool establishLogicConnection() {
+bool transmitterConnect() {
     char *buf = (char*)myMalloc(sizeof(char)*SUPERVISION_MSG_SIZE); // the message to send
     size_t res; 
 
@@ -123,7 +123,7 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     return false;
 }
 
-bool establishDisconnection() {
+bool transmitterDisconnect() {
     char *buf = (char*) myMalloc(SUPERVISION_MSG_SIZE*sizeof(char));
     size_t res;
     constructSupervisionMessage(buf, ADDR_SENT_EM, CTRL_DISC);
@@ -162,7 +162,7 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     free(ret);
 
     if(!isAcceptanceState(&state)) {
-        debugMessage("[SENDING DATA] Didn't receiver a valid response.\n");
+        debugMessage("[SENDING DATA] Didn't receive a valid response.\n");
         return false;
     }
     if(result == REJ){
@@ -175,7 +175,7 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
     return true;
 }
 
-size_t sendMessage(char* msg, size_t msgSize) {
+size_t transmitterWrite(char* msg, size_t msgSize) {
     size_t bytesWritten;
     if (!stopAndWait(&informationExchange, msg, msgSize, &bytesWritten)) return -1;
     return bytesWritten;

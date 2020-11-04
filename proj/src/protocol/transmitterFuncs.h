@@ -22,7 +22,7 @@ bool logicConnectionFunction(char * msg, size_t msgSize,size_t *res );
  * Writes the supervision message and makes sure the all process of connection went well
  * @return true if it was able to connect, false otherwise
  */
-bool establishLogicConnection();
+bool transmitterConnect();
 /**
  * Sends the disconnection message and waits for the answer
  * @param msg message to write
@@ -35,7 +35,7 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res);
  * 
  * @return  true if it was able to disconnect, false otherwise
  */
-bool establishDisconnection();
+bool transmitterDisconnect();
 /**
  * Reads the messages from the SP and sends the ACK/NACK messages accordingly
  * @param msg message to send
@@ -50,4 +50,4 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res );
  * @param msgSize message size
  * @return number of bytes written
  */
-size_t sendMessage(char* msg, size_t msgSize);
+size_t transmitterWrite(char* msg, size_t msgSize);

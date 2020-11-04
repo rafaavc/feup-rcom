@@ -5,14 +5,14 @@
  * @param buffer array of received chars 
  * @return Number of characters read, negative value in case of error
  */
-size_t receiverLoop(char * buffer);
+size_t receiverRead(char * buffer);
 /**
  * Conects to the transmitter
  * @return true if it received a SET message and sent an UA message, false otherwise
  */
-bool receiverConnecting();
+bool receiverConnect();
 /**
  * Disconnects from the transmitter
  * @return true if it received a DISC message, sent an DISC message and received an UA message, false otherwise
  */
-size_t receiverDisconnecting();
+size_t receiverDisconnect();

@@ -5,10 +5,11 @@ extern int fd;
 int sequenceNumber = 0;
 void recAlarmHandler(int signo) {
     if (signo == SIGALRM) {
-        printError("Turning off due to inactivity\n");
+        printError("Turning off due to inactivity.\n");
         exit(EXIT_FAILURE);
     }
 }
+
 void receiver(int serialPort){  
         
     if (signal(SIGALRM, recAlarmHandler) < 0) {  // Instals the handler for the alarm interruption

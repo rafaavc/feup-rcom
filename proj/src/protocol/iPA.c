@@ -21,14 +21,14 @@ int llopen(int porta, char * r){
     if (fd == -1) return -1;
     
     if(role == RECEIVER){
-        if (!receiverConnecting()) return -1; //establishing connection with TRANSMITTER
+        if (!receiverConnect()) return -1; //establishing connection with TRANSMITTER
     }
     else if (role == TRANSMITTER){
         if (signal(SIGALRM, alarmHandler) < 0) {  // Instals the handler for the alarm interruption
             perror("Alarm handler wasn't installed"); 
             exit(EXIT_FAILURE);
         }
-        if (!establishLogicConnection()) return -1; //establishing connection with RECEIVER
+        if (!transmitterConnect()) return -1; //establishing connection with RECEIVER
     } 
     else return -1;
 
@@ -42,7 +42,7 @@ int llwrite(int fd, char * buffer, int length){
     
     constructInformationMessage(msg, buffer, &s);
 
-    int res = sendMessage(msg,s);
+    int res = transmitterWrite(msg,s);
     free(msg);
     if (res < 0) return -1;// in case of error
     
@@ -50,16 +50,16 @@ int llwrite(int fd, char * buffer, int length){
 }
 
 int llread(int fd, char * buffer){
-    return receiverLoop(buffer);
+    return receiverRead(buffer);
 } 
 
 int llclose(int fd){
     if(role == TRANSMITTER){
-        if(!establishDisconnection()) //disconnecting in the TRANSMITTER side 
+        if(!transmitterDisconnect()) //disconnecting in the TRANSMITTER side 
             return -1;
     }
     else if(role == RECEIVER){ //disconnecting in the RECEIVER side 
-       if(receiverDisconnecting() == -1)//if there was an error sending/receiving the disconnection messages 
+       if(receiverDisconnect() == -1)//if there was an error sending/receiving the disconnection messages 
             return -1;;
     }
     else return -1;
