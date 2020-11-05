@@ -1,6 +1,6 @@
 CC=gcc
-_DEPS = protocol/protocol.h protocol/stateMachine.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/transmitterFuncs.h transmitter.h receiver.h application.h defines.h utilities/globalDefines.h ui.h tests/tests.h
-_mainOBJ = main.o application.o transmitter.o receiver.o protocol/iPA.o protocol/protocol.o protocol/stateMachine.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o ui.o
+_DEPS = protocol/protocol.h protocol/stateMachine.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/transmitterFuncs.h application/transmitter.h application/receiver.h application/application.h application/defines.h application/stateMachine.h utilities/globalDefines.h utilities/ui.h tests/tests.h
+_mainOBJ = main.o application/application.o application/transmitter.o application/receiver.o application/stateMachine.o protocol/iPA.o protocol/protocol.o protocol/stateMachine.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o utilities/ui.o
 #_EmitterOBJ = emitter.o protocol.o emitterFuncs.o receiverFuncs.o utilities.o iPA.o
 #_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o emitterFuncs.o utilities.o iPA.o
 OBJDIR = obj
@@ -20,6 +20,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@mkdir -p $(OBJDIR)
 	@mkdir -p $(OBJDIR)/protocol
 	@mkdir -p $(OBJDIR)/utilities
+	@mkdir -p $(OBJDIR)/application
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 

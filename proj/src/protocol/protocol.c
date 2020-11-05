@@ -165,6 +165,20 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     return STOPPED_OR_SU; 
 }
 
+int closeSP(struct termios *oldtio) {
+    sleep(1);
+    if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
+      perror("Error on tcsetattr");
+      return -1;
+    }
+
+    if(close(fd) != 0){
+        perror("Error on close");
+        return -1;
+    }
+    return 0;
+}
+
 void constructSupervisionMessage(char * ret, char addr, char ctrl) {
     ret[BEGIN_FLAG_IDX] = MSG_FLAG;
     ret[ADDR_IDX] = addr;
@@ -223,17 +237,5 @@ void byteStuffing(char * ret, size_t * retSize){
 }
 
 
-int closeSP(struct termios *oldtio) {
-    sleep(1);
-    if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
-      perror("Error on tcsetattr");
-      return -1;
-    }
 
-    if(close(fd) != 0){
-        perror("Error on close");
-        return -1;
-    }
-    return 0;
-}
 

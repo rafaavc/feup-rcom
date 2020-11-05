@@ -1,5 +1,7 @@
 #include <sys/stat.h>
 #include "receiver.h"
+
+
 /**
  * Deals with the transmitter part of the application
  * @param serialPort 
@@ -8,7 +10,6 @@
  */
 
 void transmitter(int serialPort, char * fileToSend, char * destFile);
-
 
 /**
  * Constructs the control packet for the application
@@ -28,3 +29,4 @@ int constructControlPacket(char * ret,char ctrl, char* fileName, size_t fileSize
  * @param msgNr number of sequence of this data packet
  */
 void constructDataPacket(char * ret, char* data, size_t dataSize, int msgNr);
+

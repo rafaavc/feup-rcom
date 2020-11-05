@@ -47,7 +47,7 @@ bool transmitterDisconnect();
  * @param res 
  * @return true if no error occurred in the message transmission and the data is valid, false otherwise
  */
-bool informationExchange(char* msg, size_t msgSize, size_t *res );
+bool sendDataFunction(char* msg, size_t msgSize, size_t *res );
 
 /**
  * Calls the function that will deal with the stop&wait process of reading

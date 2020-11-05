@@ -11,4 +11,3 @@ void printUsage();
  * @param argv argv that comes from main
  */
 void checkCmdArgs(int argc, char ** argv);
-

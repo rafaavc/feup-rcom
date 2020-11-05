@@ -2,15 +2,10 @@
 #include <signal.h>
 #include <string.h>
 #include <stdbool.h>
-#include "protocol/iPA.h"
+#include "../protocol/iPA.h"
 #include "defines.h"
-#include "ui.h"
+#include "../utilities/ui.h"
 
-/**
- * Deals with the receiver part of the application
- * @param serialPort 
- */
-void receiver(int serialPort);
 
 /**
  * Checks the state of valid data the currently read packet gets

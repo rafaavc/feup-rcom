@@ -1,4 +1,4 @@
-#include "application.h"
+#include "application/application.h"
 
 void applicationLoop(int argc, char ** argv) {
     checkCmdArgs(argc, argv);

@@ -138,7 +138,7 @@ bool transmitterDisconnect() {
     return false;
 }
 
-bool informationExchange(char* msg, size_t msgSize, size_t *res ){
+bool sendDataFunction(char* msg, size_t msgSize, size_t *res ){
     ssize_t size; 
     char *ret = (char*)myMalloc(MAX_I_MSG_SIZE*sizeof(char));
     
@@ -177,8 +177,9 @@ bool informationExchange(char* msg, size_t msgSize, size_t *res ){
 
 size_t transmitterWrite(char* msg, size_t msgSize) {
     size_t bytesWritten;
-    if (!stopAndWait(&informationExchange, msg, msgSize, &bytesWritten)) return -1;
+    if (!stopAndWait(&sendDataFunction, msg, msgSize, &bytesWritten)) return -1;
     return bytesWritten;
 }
+
 
 

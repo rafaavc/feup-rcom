@@ -1,5 +1,5 @@
 #include <sys/ioctl.h> //ioctl() and TIOCGWINSZ
-#include "utilities/utilities.h"
+#include "utilities.h"
 
 /**
  * Draws a loading progress bar on the screen

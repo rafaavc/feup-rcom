@@ -10,7 +10,8 @@ void printUsage() {
 void checkCmdArgs(int argc, char ** argv) {
     if (argc < 3) {
         printUsage();
-    } else {
+    } 
+    else {
         bool isValidSP = isUnsignedNumber(argv[1]);
         if ((strcmp(argv[2], TRANSMITTER_STRING) != 0 && strcmp(argv[2], RECEIVER_STRING) != 0) || !isValidSP) {
             printUsage();
@@ -43,3 +44,5 @@ void checkCmdArgs(int argc, char ** argv) {
 
     }
 }
+
+

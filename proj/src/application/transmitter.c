@@ -3,44 +3,6 @@
 extern unsigned stopAndWaitFlag;
 extern int fd;
 
-
-int constructControlPacket(char * ret, char ctrl, char* fileName, size_t fileSize){
-    size_t fileNameSize = strlen(fileName)+1;
-    if(fileNameSize > 255){
-        printError("Size name can not be larger than 255 characters!\n");
-        exit(EXIT_FAILURE);
-    }
-    ret[APP_CTRL_IDX] = ctrl;
-    ret[APP_FILE_T_SIZE_IDX] = APP_FILE_T_SIZE;
-    int fileSizeLength = sizeof(size_t);
-    ret[APP_FILE_L_SIZE_IDX] = (unsigned char)fileSizeLength;
-    for (int i = fileSizeLength-1; i >= 0; i--) {
-        ret[APP_FILE_V_SIZE_IDX + ((fileSizeLength-1) - i)] = (unsigned char)((fileSize >> i*8) & 0x0FF);
-        //printf("File size: %lx; File size current: %x\n", fileSize, ((unsigned char)fileSize) >> i);
-    }
-    unsigned nameTPosition = APP_FILE_T_NAME_IDX + fileSizeLength-1;
-    ret[nameTPosition] = APP_FILE_T_NAME;
-
-    unsigned nameLPosition = APP_FILE_L_NAME_IDX + fileSizeLength-1;
-    ret[nameLPosition] = (unsigned char)strlen(fileName);
-    for (int i = 0; i < strlen(fileName); i++) {
-        ret[nameLPosition + 1 + i] = (unsigned char)fileName[i];
-    }
-
-    return CTRL_PACKET_SIZE + fileSizeLength-1 + strlen(fileName);
-}
-
-//K = 256*L2 +L1 = 2⁸ * L2 + L1 = L2<<8 +L1, L2 is the most significant byte of dataSize and L1 the least signifcant byte
-void constructDataPacket(char * ret, char* data, size_t dataSize, int msgNr){
-    ret[APP_CTRL_IDX] = DATA_CTRL;
-    ret[APP_SEQUENCE_NUM_IDX] = msgNr % 255;
-    ret[APP_L2_IDX] = (dataSize & 0x0FF00) >> 8;
-    ret[APP_L1_IDX] = dataSize & 0x00FF;
-
-    memcpy(ret + APP_DATA_START_IDX, data, dataSize);//inserts the data in the DataPacket at its right index
-
-}   
-
 void transmitter(int serialPort, char * fileToSend, char * destFile){
 
     fd = llopen(serialPort, TRANSMITTER_STRING); // Establish communication with receiver
@@ -125,6 +87,7 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     free(ret);
     free(buffer);
     free(dataPacket);
+
     /*
         When there is no more information to write, it's going to disconnect: sends a DISC frame, receives a DISC frame
         and sends back an UA frame, ending the program execution
@@ -136,3 +99,46 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
         exit(EXIT_FAILURE);
     }
 }
+
+
+int constructControlPacket(char * ret, char ctrl, char* fileName, size_t fileSize){
+    size_t fileNameSize = strlen(fileName)+1;
+    int fileSizeLength = sizeof(size_t);
+
+    if(fileNameSize > 255){
+        printError("Size name can not be larger than 255 characters!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    ret[APP_CTRL_IDX] = ctrl;
+    ret[APP_FILE_T_SIZE_IDX] = APP_FILE_T_SIZE;
+    ret[APP_FILE_L_SIZE_IDX] = (unsigned char)fileSizeLength;
+
+    for (int i = fileSizeLength-1; i >= 0; i--) {
+        ret[APP_FILE_V_SIZE_IDX + ((fileSizeLength-1) - i)] = (unsigned char)((fileSize >> i*8) & 0x0FF);
+        //printf("File size: %lx; File size current: %x\n", fileSize, ((unsigned char)fileSize) >> i);
+    }
+
+    unsigned nameTPosition = APP_FILE_T_NAME_IDX + fileSizeLength-1;
+    unsigned nameLPosition = APP_FILE_L_NAME_IDX + fileSizeLength-1;
+
+    ret[nameTPosition] = APP_FILE_T_NAME;
+    ret[nameLPosition] = (unsigned char)strlen(fileName);
+
+    for (int i = 0; i < strlen(fileName); i++) {
+        ret[nameLPosition + 1 + i] = (unsigned char)fileName[i];
+    }
+
+    return CTRL_PACKET_SIZE + fileSizeLength-1 + strlen(fileName);
+}
+
+//K = 256*L2 +L1 = 2⁸ * L2 + L1 = L2<<8 +L1, L2 is the most significant byte of dataSize and L1 the least signifcant byte
+void constructDataPacket(char * ret, char* data, size_t dataSize, int msgNr){
+    ret[APP_CTRL_IDX] = DATA_CTRL;
+    ret[APP_SEQUENCE_NUM_IDX] = msgNr % 255;
+    ret[APP_L2_IDX] = (dataSize & 0x0FF00) >> 8;
+    ret[APP_L1_IDX] = dataSize & 0x00FF;
+
+    memcpy(ret + APP_DATA_START_IDX, data, dataSize);//inserts the data in the DataPacket at its right index
+
+}   
