@@ -232,13 +232,13 @@ enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size
                     }
                     else{
                         state = ERROR;//sequence number not valid
-                        printError("DataN: Sequence number not valid 1 \n");
+                        printError("DataN: Sequence number not valid 1\n");
                     }
                     
                 }
                 else{
                     state = ERROR;
-                    printError("Data N: Sequence number not valid 2 \n");
+                    printError("Data N: Sequence number not valid 2\n");
                 }
                 break;
             case DATA_L2:

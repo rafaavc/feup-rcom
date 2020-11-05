@@ -7,7 +7,7 @@ extern int fd;
 int constructControlPacket(char * ret, char ctrl, char* fileName, size_t fileSize){
     size_t fileNameSize = strlen(fileName)+1;
     if(fileNameSize > 255){
-        printError("Size name can not be larger than 255 characters!");
+        printError("Size name can not be larger than 255 characters!\n");
         exit(EXIT_FAILURE);
     }
     ret[APP_CTRL_IDX] = ctrl;
@@ -46,7 +46,7 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     fd = llopen(serialPort, TRANSMITTER_STRING); // Establish communication with receiver
 
     if (fd == -1) {
-        printError("Wasn't able to establish logic connection!");
+        printError("Wasn't able to establish logic connection!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -54,12 +54,12 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     /*Starts to write all information frames, keeping in mind the need to resend, etc.
     While there is info to write, writes with the stop&wait mechanism as in other situations*/
 
-    char* filename = fileToSend != NULL ? fileToSend : "awesome.jpg";
+    char* filename = fileToSend != NULL ? fileToSend : "littleLambs.jpg";
     char* destFilename = destFile != NULL ? destFile : "receivedFile.jpg";
     FILE * file = fopen(filename, "rb");
 
     if(file == NULL){
-        printError("\nFile %s does not exist \n", filename);
+        printError("File %s does not exist.\n", filename);
         exit(EXIT_FAILURE);
     }
   
@@ -71,14 +71,14 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     char *ret = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char)); 
 
     if(feof(file)){
-        printError("The file is empty, nothing to send");
+        printError("The file is empty, nothing to send.\n");
         exit(EXIT_FAILURE);
     }
     else{//the file is not empty
         int packetSize = constructControlPacket(ret, START_CTRL, destFilename, fileSize);
         //printCharArray(ret, packetSize);
         if(llwrite(fd,ret, packetSize*sizeof(char)) == -1){  //sending start control packet
-            printError("Error sending the start control packet");
+            printError("Error sending the start control packet.\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -118,7 +118,7 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     int endSize = constructControlPacket(ret, END_CTRL,destFilename, fileSize);
 
     if(llwrite(fd,ret, endSize*sizeof(char)) == -1){ // sending end control packet, sends the same packet as start control packet with the difference in the control
-        printError("Error sending the end control packet");
+        printError("Error sending the end control packet\n");
         exit(EXIT_FAILURE);
     }
 
@@ -132,7 +132,7 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     debugMessage("SENDING DISC...");
  
     if (llclose(fd) != 0) {
-        printError("Wasn't able to disconnect!");
+        printError("Wasn't able to disconnect!\n");
         exit(EXIT_FAILURE);
     }
 }
