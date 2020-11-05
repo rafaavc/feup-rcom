@@ -38,6 +38,9 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     }
     else{//the file is not empty
         int packetSize = constructControlPacket(ret, START_CTRL, destFilename, fileSize);
+        if(packetSize == -1){
+            exit(EXIT_FAILURE);
+        }
         //printCharArray(ret, packetSize);
         if(llwrite(fd,ret, packetSize*sizeof(char)) == -1){  //sending start control packet
             printError("Error sending the start control packet.\n");
@@ -105,9 +108,14 @@ int constructControlPacket(char * ret, char ctrl, char* fileName, size_t fileSiz
     size_t fileNameSize = strlen(fileName)+1;
     int fileSizeLength = sizeof(size_t);
 
+    if(((fileSizeLength + fileNameSize + 5) * sizeof(char)) > MAX_DATA_PACKET_LENGTH*sizeof(char)) {
+        printError("File name size too large for the defined MAX_DATA_PACKET_LENGTH!\n");
+        return -1;
+    }
+
     if(fileNameSize > 255){
-        printError("Size name can not be larger than 255 characters!\n");
-        exit(EXIT_FAILURE);
+        printError("File name size can not be larger than 255 characters!\n");
+        return -1;
     }
 
     ret[APP_CTRL_IDX] = ctrl;

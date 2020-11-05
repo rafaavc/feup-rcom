@@ -63,7 +63,7 @@ void receiver(int serialPort){
                     sprintf(fileNameAux, "%s%d", fileName,tries);
                     printf("%s\n", fileNameAux);
                     tries++;
-                    }
+                }
                 
                 fileToSave = fopen(fileNameAux, "wb");
                 if (ferror(fileToSave)) {
