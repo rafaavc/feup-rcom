@@ -1,10 +1,14 @@
 #include "protocol.h"
 #include <errno.h>
 
+
+#ifdef DEBUG_STATE_MACHINE
+static char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
+#endif
+
 volatile int STOP = false;
 unsigned stopAndWaitFlag = false;
 int fd = -1;
-static char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
 unsigned nextS = 0;
 
 struct termios oldtio;
