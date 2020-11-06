@@ -1,10 +1,13 @@
 #include "protocol.h"
+#include <errno.h>
 
 volatile int STOP = false;
 unsigned stopAndWaitFlag = false;
 int fd = -1;
 char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
 unsigned nextS = 0;
+
+struct termios oldtio;
 
 void alarmHandler(int signo) {
     if (signo == SIGALRM) {
@@ -13,7 +16,7 @@ void alarmHandler(int signo) {
     }
 }
 
-int openConfigureSP(char* port, struct termios *oldtio) {
+int openConfigureSP(char* port) {
     /*
     Open serial port device for reading and writing and not as controlling tty
     because we don't want to get killed if linenoise sends CTRL-C.
@@ -24,10 +27,12 @@ int openConfigureSP(char* port, struct termios *oldtio) {
 
     if (fd < 0) { perror(port); return -1; }
 
-    if (tcgetattr(fd, oldtio) == -1) { /* save current port settings */
+    if (tcgetattr(fd, &oldtio) == -1) { /* save current port settings */
         perror("Error on tcgetattr");
         return -1;
     }
+
+    atexit((void *)&closeSP); //resets configuration when program terminates with exit(EXIT_FAILURE)
 
     bzero(&newtio, sizeof(newtio));
     newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
@@ -165,9 +170,10 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     return STOPPED_OR_SU; 
 }
 
-int closeSP(struct termios *oldtio) {
+int closeSP() {
+    if (fcntl(fd, F_GETFD) != 0 && errno == EBADF) return -1; // verifies if fd is valid
     sleep(1);
-    if (tcsetattr(fd, TCSANOW, oldtio) == -1) {
+    if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
       perror("Error on tcsetattr");
       return -1;
     }

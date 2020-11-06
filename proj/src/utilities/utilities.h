@@ -59,3 +59,11 @@ void startTimer(struct myTimer * timer);
  */
 double stopTimer(struct myTimer * timer, bool verbose);
 
+/**
+ * Adds the given integer ('tries') to the end of a filename (right before the extension)
+ * @param fileNameNext the output
+ * @param fileName the fileName source
+ * @param tries the number to insert
+ */
+void addIntToFilename(char * fileNameNext, char * fileName, int tries);
+

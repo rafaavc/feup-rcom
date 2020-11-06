@@ -9,10 +9,9 @@ void alarmHandler(int signo);
 /**
  * Opens and configures the serial port
  * @param port  port string /dev/ttySx
- * @param oldtio  old termios struct
  * @return the SP's file descriptor
  */
-int openConfigureSP(char* port, struct termios *oldtio);
+int openConfigureSP(char* port);
 
 /**
  * Writes the serial port
@@ -56,8 +55,6 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize);
 void byteStuffing(char * ret, size_t * dataSize);
 
 /**
- * 
- * @param oldtio old termios struct
  * @return 0 is ok, -1 in case of error
  */
-int closeSP(struct termios *oldtio);
+int closeSP();

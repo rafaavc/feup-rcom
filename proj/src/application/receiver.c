@@ -49,23 +49,24 @@ void receiver(int serialPort){
                 printf("Starting to receive file '%s' with %ld bytes.\n", fileName, fileSize);
                 FILE * aux;
                 unsigned tries = 1;
-                char fileNameAux[260];
+                char fileNameCurrent[256];
+                char fileNameNext[257]; // the added 1 is in case the received string has exactly 256 characters (counting \0)
             
-                strcpy(fileNameAux, fileName);
+                strcpy(fileNameCurrent, fileName);
                 
-                while ((aux = fopen(fileNameAux, "rb")) != NULL){
+                while ((aux = fopen(fileNameCurrent, "rb")) != NULL){
                     fclose(aux);
                     if (tries > 3) {
                         printError("Conflicts with destination filename! Tried to find an unused name 3 times.\n");
                         exit(EXIT_FAILURE);
                     }
-                    printError("Received filename '%s' exists, trying with '%s'.\n", fileName, fileNameAux);
-                    sprintf(fileNameAux, "%s%d", fileName,tries);
-                    printf("%s\n", fileNameAux);
+                    addIntToFilename(fileNameNext, fileName, tries);
+                    printError("Filename '%s' exists, trying with '%s'.\n", fileNameCurrent, fileNameNext);
+                    strcpy(fileNameCurrent, fileNameNext);
                     tries++;
                 }
                 
-                fileToSave = fopen(fileNameAux, "wb");
+                fileToSave = fopen(fileNameCurrent, "wb");
                 if (ferror(fileToSave)) {
                     perror("Error opening file");
                     exit(EXIT_FAILURE);

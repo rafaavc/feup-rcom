@@ -8,7 +8,7 @@ SRCDIR = src
 MainName = app
 #EmitterName = emitter
 #ReceiverName = receiver
-CFLAGS = -Wall #-pthread -lrt -lm
+CFLAGS = -Wall -lm#-pthread -lrt -lm
 
 #EmitterOBJ = $(patsubst %,$(OBJDIR)/%,$(_EmitterOBJ))
 #ReceiverOBJ = $(patsubst %,$(OBJDIR)/%,$(_ReceiverOBJ))

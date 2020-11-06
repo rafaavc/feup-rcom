@@ -1,4 +1,5 @@
 #include "utilities.h"
+#include <math.h>
 
 void debugMessage(char * msg) {
     #ifndef DEBUG
@@ -57,6 +58,32 @@ double stopTimer(struct myTimer * timer, bool verbose) {
     }
 
     return timeInSeconds;
+}
+
+
+void addIntToFilename(char * fileNameNext, char * fileName, int tries) {
+    unsigned numberOfDigits = floor(log10(abs((double) tries)) + 1);
+    int fileNameSize = strlen(fileName);
+    int lastDotIdx = -1;
+    for (unsigned i = 0; i < fileNameSize; i++) {
+        if (fileName[i] == '.') {
+            lastDotIdx = i;
+        }
+    }
+    if (lastDotIdx != -1) {
+        char * fileNameHolder = malloc(strlen(fileName)*sizeof(char));
+        strcpy(fileNameHolder, fileName);
+        fileNameHolder[lastDotIdx] = '\0';
+        sprintf(fileNameNext, "%s%d", fileNameHolder, tries);
+        for (int i = lastDotIdx; i < fileNameSize; i++) {
+            fileNameNext[i + numberOfDigits] = fileName[i];
+        }
+        fileNameNext[fileNameSize+numberOfDigits] = '\0';
+        free(fileNameHolder);
+    } else {
+        sprintf(fileNameNext, "%s%d", fileName, tries);
+    }
+
 }
 
 

@@ -2,7 +2,6 @@
 #include "receiverFuncs.h"
 
 char role;
-struct termios oldtio;
 
 int llopen(int porta, char * r){
     if (strcmp(r, "RECEIVER") == 0) role = RECEIVER;
@@ -16,7 +15,7 @@ int llopen(int porta, char * r){
 
     sprintf(portString, "/dev/ttyS%d", porta);
     
-    int fd = openConfigureSP(portString, &oldtio); 
+    int fd = openConfigureSP(portString); 
 
     if (fd == -1) return -1;
     
@@ -66,7 +65,7 @@ int llclose(int fd){
 
     sleep(1);
     
-    if(closeSP(&oldtio)!=0){
+    if(closeSP() != 0){ 
         return -1;
     }
 
