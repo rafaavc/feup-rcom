@@ -23,10 +23,6 @@
 #define DATA_CTRL       0x01
 
 #define INACTIVITY_TIME 15
-
-
-#define MAX_DATA_PACKET_DATA_LENGTH  MAX_DATA_PACKET_LENGTH-4
-
     
 #define CTRL_PACKET_SIZE    7
 #define APP_SEQ_NUM_SIZE    256

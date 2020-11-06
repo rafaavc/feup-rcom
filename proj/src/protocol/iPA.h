@@ -31,3 +31,11 @@ int llread(int fd, char * buffer);
  * @return positive number in case of success, negative value in case of error
  */
 int llclose(int fd);
+
+
+/**
+ * Sets the baudrate and the frameSize; done to help evaluate eficiency
+ * @param baudrateArg the baudrate
+ * @param frameSizeArg the frame size
+ */
+void llset(int baudrateArg, int frameSizeArg);

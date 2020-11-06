@@ -1,6 +1,6 @@
 CC=gcc
-_DEPS = protocol/protocol.h protocol/stateMachine.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/transmitterFuncs.h application/transmitter.h application/receiver.h application/application.h application/defines.h application/stateMachine.h utilities/globalDefines.h utilities/ui.h tests/tests.h
-_mainOBJ = main.o application/application.o application/transmitter.o application/receiver.o application/stateMachine.o protocol/iPA.o protocol/protocol.o protocol/stateMachine.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o utilities/ui.o
+_DEPS = protocol/protocol.h protocol/stateMachine.h tests/efficiency.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/transmitterFuncs.h application/transmitter.h application/receiver.h application/application.h application/defines.h application/stateMachine.h utilities/globalDefines.h utilities/ui.h tests/tests.h
+_mainOBJ = main.o application/application.o tests/efficiency.o application/transmitter.o application/receiver.o application/stateMachine.o protocol/iPA.o protocol/protocol.o protocol/stateMachine.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o utilities/ui.o
 #_EmitterOBJ = emitter.o protocol.o emitterFuncs.o receiverFuncs.o utilities.o iPA.o
 #_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o emitterFuncs.o utilities.o iPA.o
 OBJDIR = obj
@@ -21,6 +21,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	@mkdir -p $(OBJDIR)/protocol
 	@mkdir -p $(OBJDIR)/utilities
 	@mkdir -p $(OBJDIR)/application
+	@mkdir -p $(OBJDIR)/tests
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 
@@ -38,7 +39,7 @@ clean:
 
 .PHONY: tests
 tests: $(DEPS)
-	gcc -o test src/tests/main.c src/tests/tests.c src/protocol/iPA.c src/protocol/protocol.c src/protocol/receiverFuncs.c src/protocol/transmitterFuncs.c src/application.c src/receiver.c src/transmitter.c src/ui.c src/utilities/utilities.c
+	gcc -o test src/tests/main.c src/tests/tests.c src/protocol/iPA.c src/protocol/protocol.c src/protocol/receiverFuncs.c src/protocol/transmitterFuncs.c src/application/application.c src/application/receiver.c src/application/stateMachine.c src/protocol/stateMachine.c src/application/transmitter.c src/utilities/ui.c src/utilities/utilities.c -lm
 
 
 .PHONY: cable

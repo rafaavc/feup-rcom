@@ -9,6 +9,12 @@ unsigned nextS = 0;
 
 struct termios oldtio;
 
+int FRAME_SIZE = 500;
+int MAX_DATA_PACKET_SIZE;
+int MAX_FRAME_BUFFER_SIZE;
+int MAX_DATA_PACKET_DATA_SIZE;
+speed_t BAUDRATE = B38400;
+
 void alarmHandler(int signo) {
     if (signo == SIGALRM) {
         stopAndWaitFlag = true;
@@ -16,11 +22,17 @@ void alarmHandler(int signo) {
     }
 }
 
+void setConstants() {
+    MAX_DATA_PACKET_SIZE = FRAME_SIZE - SUPERVISION_MSG_SIZE - 1;
+    MAX_FRAME_BUFFER_SIZE = FRAME_SIZE * 2;
+}
+
 int openConfigureSP(char* port) {
     /*
     Open serial port device for reading and writing and not as controlling tty
     because we don't want to get killed if linenoise sends CTRL-C.
     */
+
     struct termios newtio; 
 
     fd = open(port, O_RDWR | O_NOCTTY);
@@ -220,7 +232,7 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize) {//re
 }
 
 void byteStuffing(char * ret, size_t * retSize){
-    char * buf = myMalloc(MAX_I_BUFFER_SIZE*sizeof(char));
+    char * buf = myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
     buf[0] = MSG_FLAG;
     unsigned bufferIdx = 1;
 

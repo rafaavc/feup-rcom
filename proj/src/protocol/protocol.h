@@ -6,6 +6,12 @@
  */
 void alarmHandler(int signo);
 
+
+/**
+ * Sets the constants
+ */
+void setConstants();
+
 /**
  * Opens and configures the serial port
  * @param port  port string /dev/ttySx

@@ -2,6 +2,7 @@
 
 extern int fd;
 bool receivedDataFlag = false;
+extern int MAX_FRAME_BUFFER_SIZE;
 
 size_t receiverRead(char * buffer) {
     ssize_t size;
@@ -9,7 +10,7 @@ size_t receiverRead(char * buffer) {
     enum readFromSPRet res;
 
     while (true) { // acho que este while pode ser removido
-        char * ret = myMalloc(MAX_I_MSG_SIZE);
+        char * ret = myMalloc(MAX_FRAME_BUFFER_SIZE);
 
 
         res = readFromSP(ret, &state, &size, ADDR_SENT_EM, ANY_VALUE);
@@ -71,7 +72,7 @@ bool receiverConnect() {
     char *buf = (char*)myMalloc(SUPERVISION_MSG_SIZE*sizeof(char));
 
     while (true) {
-        char * ret = myMalloc(MAX_I_MSG_SIZE);
+        char * ret = myMalloc(MAX_FRAME_BUFFER_SIZE);
         if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_SET) == READ_ERROR) break;
         debugMessage("RECEIVED SET");
         free(ret);
@@ -90,7 +91,7 @@ size_t receiverDisconnect() {
     char *buf = (char*)myMalloc(SUPERVISION_MSG_SIZE*sizeof(char));
 
     while (true) {
-        char * ret = myMalloc(MAX_I_MSG_SIZE);
+        char * ret = myMalloc(MAX_FRAME_BUFFER_SIZE);
         if (readFromSP(ret, &state, &size, ADDR_SENT_EM, CTRL_DISC) == READ_ERROR) return -1;
 
         if (isAcceptanceState(&state)) {

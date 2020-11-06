@@ -1,6 +1,7 @@
 #include "receiver.h"
 
 extern int fd;
+extern int MAX_DATA_PACKET_SIZE;
 
 
 void recAlarmHandler(int signo) {
@@ -24,7 +25,7 @@ void receiver(int serialPort){
     }
 
     
-    char *buffer = (char*) myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));//mudar isto
+    char *buffer = (char*) myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));//mudar isto
     char* fileName = NULL;
     size_t fileSize;
     bool receivedStart = false;
@@ -103,7 +104,7 @@ void receiver(int serialPort){
                 
                 exit(EXIT_FAILURE);
             }
-            bzero(buffer, MAX_DATA_PACKET_LENGTH);
+            bzero(buffer, MAX_DATA_PACKET_SIZE);
         }
 
     }

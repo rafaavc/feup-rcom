@@ -4,6 +4,7 @@ extern unsigned stopAndWaitFlag;
 extern int fd;
 extern int nextS;
 extern enum stateMachine state;
+extern int MAX_FRAME_BUFFER_SIZE;
 bool rejFlag = false;
 
 bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t  *res) {
@@ -60,7 +61,7 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
 
 bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     ssize_t size; 
-    char *ret = (char*)myMalloc(MAX_I_MSG_SIZE*sizeof(char));
+    char *ret = (char*)myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
 
     *res = writeToSP(msg, SUPERVISION_MSG_SIZE);
     if (*res == -1) {
@@ -95,7 +96,7 @@ bool transmitterConnect() {
 
 bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     ssize_t size; 
-    char *ret = (char*)myMalloc(MAX_I_MSG_SIZE*sizeof(char));
+    char *ret = (char*)myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
 
     //writes to serial port, trying to connect
 
@@ -140,7 +141,7 @@ bool transmitterDisconnect() {
 
 bool sendDataFunction(char* msg, size_t msgSize, size_t *res ){
     ssize_t size; 
-    char *ret = (char*)myMalloc(MAX_I_MSG_SIZE*sizeof(char));
+    char *ret = (char*)myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
     
     *res = writeToSP(msg, msgSize);
     if (*res == -1) {

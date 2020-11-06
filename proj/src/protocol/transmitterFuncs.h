@@ -41,7 +41,7 @@ bool disconnectionFunction(char * msg, size_t msgSize, size_t *res);
 bool transmitterDisconnect();
 
 /**
- * Reads the messages from the SP and sends the ACK/NACK messages accordingly
+ * Writes the message to the SP and reads the ACK/NACK messages, reacting accordingly
  * @param msg message to send
  * @param msgSize size of the message 
  * @param res 

@@ -1,6 +1,11 @@
 #include "iPA.h"
 #include "receiverFuncs.h"
 
+extern speed_t BAUDRATE;
+extern int FRAME_SIZE;
+extern int MAX_DATA_PACKET_SIZE;
+extern int MAX_FRAME_BUFFER_SIZE;
+
 char role;
 
 int llopen(int porta, char * r){
@@ -35,8 +40,8 @@ int llopen(int porta, char * r){
 }
 
 int llwrite(int fd, char * buffer, int length){
-    char * msg = myMalloc(MAX_I_BUFFER_SIZE);
-    bzero(msg, MAX_I_BUFFER_SIZE);
+    char * msg = myMalloc(MAX_FRAME_BUFFER_SIZE);
+    bzero(msg, MAX_FRAME_BUFFER_SIZE);
     size_t s = length;
     
     constructInformationMessage(msg, buffer, &s);
@@ -70,4 +75,41 @@ int llclose(int fd){
     }
 
     return 0;
+}
+
+void llset(int baudrateArg, int frameSizeArg) {
+    if (baudrateArg != -1) {
+        switch(baudrateArg) {
+            case 4800:
+                BAUDRATE = B4800;
+                break;
+            case 9600:
+                BAUDRATE = B9600;
+                break;
+            case 19200:
+                BAUDRATE = B19200;
+                break;
+            case 38400:
+                BAUDRATE = B38400;
+                break;
+            case 57600:
+                BAUDRATE = B57600;
+                break;
+            case 115200:
+                BAUDRATE = B115200;
+                break;
+            case 230400:
+                BAUDRATE = B230400;
+                break;
+            default:
+                printError("The specified baudrate isn't valid. Using default. Available:\n4800\n9600\n19200\n38400\n57600\n115200\n230400\n");
+                break;
+        }
+    }
+
+    if (frameSizeArg != -1) {
+        FRAME_SIZE = frameSizeArg;
+    }
+
+    setConstants();
 }

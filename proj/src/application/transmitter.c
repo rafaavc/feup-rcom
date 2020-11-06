@@ -1,6 +1,8 @@
 #include "transmitter.h"
 
 extern unsigned stopAndWaitFlag;
+extern int MAX_DATA_PACKET_SIZE;
+extern int MAX_DATA_PACKET_DATA_SIZE;
 extern int fd;
 
 void transmitter(int serialPort, char * fileToSend, char * destFile){
@@ -29,8 +31,8 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     stat(filename, &st);
     size_t fileSize = st.st_size;
 
-    char *buffer = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));
-    char *ret = (char*)myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char)); 
+    char *buffer = (char*)myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));
+    char *ret = (char*)myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char)); 
 
     if(feof(file)){
         printError("The file is empty, nothing to send.\n");
@@ -51,14 +53,14 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     printf("Starting to send file '%s' (destination: '%s') with %ld bytes.\n", filename, destFilename, fileSize);
 
     int msgNr = 0;
-    char *dataPacket = (char*) myMalloc(MAX_DATA_PACKET_LENGTH*sizeof(char));
+    char *dataPacket = (char*) myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));
     size_t amountTransfered = 0;
 
     while (!feof(file)) {
-        size_t amount = fread(buffer, sizeof(char), MAX_DATA_PACKET_DATA_LENGTH, file);
+        size_t amount = fread(buffer, sizeof(char), MAX_DATA_PACKET_DATA_SIZE, file);
         constructDataPacket(dataPacket, buffer, amount, msgNr);
         //printCharArray(dataPacket, amount+4);
-        size_t ret = llwrite(fd, dataPacket, amount+4); // second arg has a maximum size of MAX_DATA_PACKET_LENGTH
+        size_t ret = llwrite(fd, dataPacket, amount+4); // second arg has a maximum size of MAX_DATA_PACKET_SIZE
         if (ret == -1) {
             printError("Error in llwrite\n");
             exit(EXIT_FAILURE);
@@ -108,8 +110,8 @@ int constructControlPacket(char * ret, char ctrl, char* fileName, size_t fileSiz
     size_t fileNameSize = strlen(fileName)+1;
     int fileSizeLength = sizeof(size_t);
 
-    if(((fileSizeLength + fileNameSize + 5) * sizeof(char)) > MAX_DATA_PACKET_LENGTH*sizeof(char)) {
-        printError("File name size too large for the defined MAX_DATA_PACKET_LENGTH!\n");
+    if(((fileSizeLength + fileNameSize + 5) * sizeof(char)) > MAX_DATA_PACKET_SIZE*sizeof(char)) {
+        printError("File name size too large for the defined MAX_DATA_PACKET_SIZE!\n");
         return -1;
     }
 

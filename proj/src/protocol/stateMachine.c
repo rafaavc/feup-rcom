@@ -1,5 +1,7 @@
 #include "stateMachine.h"
 
+extern int MAX_DATA_PACKET_SIZE;
+
 char prevByte;
 
 bool isAcceptanceState(enum stateMachine *state) {
@@ -31,6 +33,11 @@ int getR(unsigned char ctrl) {
 }
 
 bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount){
+    #ifdef EFFICIENCY_TEST
+    generateDataError(buf,dataCount);
+    #endif
+
+    
     char aux = 0x0;
     if (dataCount == 0) return false;
 
@@ -146,6 +153,9 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
 
     case C_RCV:
         // Only advances if BCC is correct
+        #ifdef EFFICIENCY_TEST
+            generateHeadError(bcc);
+        #endif
         if (*byte == BCC(bcc[0], bcc[1]) && !receivedMessageFlag(byte, destuffing)) {
             *state = BCC_HEAD_OK;
         }
@@ -170,11 +180,12 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     case DATA:
         if(!receivedMessageFlag(byte, destuffing)){
             dataCount++;
-            if (dataCount >= MAX_DATA_PACKET_LENGTH) { *state = DATA_OK;} 
+            if (dataCount >= MAX_DATA_PACKET_SIZE) { *state = DATA_OK;} 
             // if it doesn't receive a flag, then it only looks for the bcc when the max data packet length has been used
             break;
         } else {  // receives a flag; the bcc is the previous byte
             dataCount--; // discounts the BCC from the data count
+            
             dataBCC = checkDestuffedBCC(buf, prevByte, dataCount);    
             if (dataBCC){
                 *state = DONE_I;
@@ -189,6 +200,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
         // verify BCC
         if (!receivedMessageFlag(byte, destuffing)) {
             //printf("ERROR. datacount: %d, byte: %x, prevByte: %x\n", dataCount, (unsigned char) *byte, (unsigned char) prevByte);
+
             dataBCC = checkDestuffedBCC(buf, *byte, dataCount);
            
             if(dataBCC){
@@ -198,10 +210,13 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
                 goBackToStart(state, &destuffing);
                 return DATA_INVALID;
             }
-        } else {   // if it receives a flag when dataOk, it meas that the bcc is the previous byte
+        } else {   // if it receives a flag when dataOk, it means that the bcc is the previous byte
             dataBCC = checkDestuffedBCC(buf, prevByte, dataCount);    
             dataCount--;  // removes the bcc from the dataCount
             if (dataBCC){
+                #ifdef EFFICIENCY_TEST
+                    delayGenerator();
+                #endif
                 *state = DONE_I;
             }
             else {  // BCC is wrong
