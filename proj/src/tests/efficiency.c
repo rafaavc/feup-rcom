@@ -1,5 +1,24 @@
 #include "efficiency.h"
 
+double n_Packets = 0;
+double averageSum = 0;
+
+extern speed_t BAUDRATE;
+
+
+void rateValuesUpdate(size_t packetSize, double time){
+    n_Packets++;
+    averageSum += (packetSize * sizeof(char)) / time;
+}
+
+double getAverageRate(){
+    return averageSum / n_Packets;
+}
+
+double calculateEfficiency(){
+    return getAverageRate()/(double) BAUDRATE;
+}
+
 void delayGenerator(){
     sleep(DELAY);
 }
@@ -33,3 +52,4 @@ void generateHeadError(char *buffer){
 
     }
 }
+

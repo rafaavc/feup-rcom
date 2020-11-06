@@ -1,4 +1,5 @@
 #include "transmitter.h"
+#include "../tests/efficiency.h"
 
 extern unsigned stopAndWaitFlag;
 extern int MAX_DATA_PACKET_SIZE;
@@ -56,10 +57,20 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     char *dataPacket = (char*) myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));
     size_t amountTransfered = 0;
 
+    #ifdef EFFICIENCY_TEST
+    struct myTimer timer;
+    initTimer(&timer, "Efficiency timer");
+    #endif
+
     while (!feof(file)) {
         size_t amount = fread(buffer, sizeof(char), MAX_DATA_PACKET_DATA_SIZE, file);
         constructDataPacket(dataPacket, buffer, amount, msgNr);
         //printCharArray(dataPacket, amount+4);
+        
+        #ifdef EFFICIENCY_TEST
+        startTimer(&timer);
+        #endif
+
         size_t ret = llwrite(fd, dataPacket, amount+4); // second arg has a maximum size of MAX_DATA_PACKET_SIZE
         if (ret == -1) {
             printError("Error in llwrite\n");
@@ -69,10 +80,22 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
             perror("Error reading file");
             exit(EXIT_FAILURE);
         }
+
+        #ifdef EFFICIENCY_TEST
+        double elapsedTime = stopTimer(&timer, false);
+        rateValuesUpdate(ret, elapsedTime);
+        #endif
+
+
         msgNr++;
         amountTransfered += amount;
         printProgressBar(fileSize, amountTransfered);   
     }
+
+    #ifdef EFFICIENCY_TEST
+    printf("Average rate: %lf\n", getAverageRate());
+    printf("Efficiency: %lf\n", calculateEfficiency());
+    #endif
 
     if (amountTransfered == fileSize) {
         printf("File transfered successfully!\n");

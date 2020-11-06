@@ -16,6 +16,8 @@ int llopen(int porta, char * r){
         return -1;
     }
 
+    setConstants();
+
     char portString[12];
 
     sprintf(portString, "/dev/ttyS%d", porta);
