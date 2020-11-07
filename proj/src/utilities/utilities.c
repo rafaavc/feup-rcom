@@ -67,7 +67,7 @@ double stopTimer(struct myTimer * timer, bool verbose) {
 
 
 void addIntToFilename(char * fileNameNext, char * fileName, int tries) {
-    unsigned numberOfDigits = floor(log10(abs((double) tries)) + 1);
+    unsigned numberOfDigits = floor(log10(abs(tries)) + 1);
     int fileNameSize = strlen(fileName);
     int lastDotIdx = -1;
     for (unsigned i = 0; i < fileNameSize; i++) {

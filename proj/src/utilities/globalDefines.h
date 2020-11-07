@@ -1,4 +1,4 @@
-#define DEBUG
+//#define DEBUG
 #define LOADING_UI
 //#define DEBUG_STATE_MACHINE
 //#define DEBUG_APP_STATE_MACHINE

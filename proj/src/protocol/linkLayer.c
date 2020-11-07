@@ -1,4 +1,4 @@
-#include "defines.h"  // incluidos aqui de forma à aplicação não ter acesso aos defines do protocolo
+#include "defines.h"  // incluidos aqui de forma à aplicação não ter acesso aos defines do protocolo (porque o linkLayer é incluído pelo iPA.h)
 #include "linkLayer.h"
 
 struct linkLayer { // put here so other files don't know anything about this struct

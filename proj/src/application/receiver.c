@@ -55,8 +55,8 @@ void receiver(int serialPort){
                 
                 while ((aux = fopen(fileNameCurrent, "rb")) != NULL){
                     fclose(aux);
-                    if (tries > 3) {
-                        printError("Conflicts with destination filename! Tried to find an unused name 3 times.\n");
+                    if (tries > 5) {
+                        printError("Conflicts with destination filenames! Tried to find an unused name 5 times.\n");
                         exit(EXIT_FAILURE);
                     }
                     addIntToFilename(fileNameNext, fileName, tries);
