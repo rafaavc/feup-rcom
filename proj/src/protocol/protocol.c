@@ -46,8 +46,8 @@ int openConfigureSP(char* port) {
         leitura do(s) pr�ximo(s) caracter(es)
         t = TIME * 0.1s
     */
-    newtio.c_cc[VTIME]    = 0;   // if read only blocks for VTIME seconds, or until a character is received
-    newtio.c_cc[VMIN]     = 0;   
+    newtio.c_cc[VTIME]    = 0;   // if read only blocks for VTIME*0.1 seconds, or until a character is received
+    newtio.c_cc[VMIN]     = 1;   // blocks until a character is read
 
     tcflush(getFD(), TCIOFLUSH);   // discards from the queue data received but not read and data written but not transmitted
 
@@ -84,7 +84,7 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         int readRet = read(getFD(), &reading, 1);
 
         if (stopAndWaitFlag) STOP = true; // if the alarm interrupts
-        if (readRet < 0) {
+        if (readRet < 0 && errno != EINTR) {
             perror("Unsuccessful read");
             return READ_ERROR;
         } 

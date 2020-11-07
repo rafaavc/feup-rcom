@@ -14,11 +14,6 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
 
     stopAndWaitFlag = true;   // used by the alarm
 
-    /*unsigned char ctrlByte = msgToWrite[CTRL_IDX];
-    unsigned char headBCC = msgToWrite[BCC1_IDX];
-    msgToWrite[CTRL_IDX] = 0x40;
-    msgToWrite[BCC1_IDX] = msgToWrite[ADDR_IDX] ^ 0x40;*/
-
     while(counter < getNumTransmissions()) { // sends the message NO_TRIES times
         if(stopAndWaitFlag) {
             stopAndWaitFlag = false;
@@ -37,9 +32,6 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
                 alarm(0); // unset alarm
                 return true;
             }
-
-            /*msgToWrite[CTRL_IDX] = ctrlByte;
-            msgToWrite[BCC1_IDX] = headBCC;*/
 
             /* REJ is a retransmission request, so everytime it receives a REJ resends the data
             NO_TRIES is only for retransmission tries due to timeout*/

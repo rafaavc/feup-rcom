@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdbool.h>
+#include <errno.h>
 #include "../protocol/iPA.h"
 #include "defines.h"
 #include "../utilities/ui.h"

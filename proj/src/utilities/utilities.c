@@ -37,21 +37,26 @@ void printCharArray(char * arr, size_t arrSize) {
 }
 
 void initTimer(struct myTimer * timer, char * name) {
-    timer->startTime = -1;
+    timer->started = false;
     timer->timerName = name;
 }
 
 void startTimer(struct myTimer * timer) {
-    timer->startTime = clock();
+    timer->started = true;
+    clock_gettime(CLOCK_REALTIME, &(timer->startTime));
 }
 
 double stopTimer(struct myTimer * timer, bool verbose) {
-    if (timer->startTime == -1) return -1;
+    if (!timer->started) return -1;
 
-    clock_t endTime = clock();
-    clock_t timeItTook = endTime - timer->startTime;
+    struct timespec endTime;
+    clock_gettime(CLOCK_REALTIME, &endTime);
 
-    double timeInSeconds = ((double)timeItTook)/CLOCKS_PER_SEC;
+
+    time_t sElapsed  = endTime.tv_sec - timer->startTime.tv_sec;
+    time_t nsElapsed = endTime.tv_nsec - timer->startTime.tv_nsec;
+
+    double timeInSeconds = sElapsed + nsElapsed/1.0e9;
 
     if (verbose) {
         printf("Timer %s took %lf seconds\n", timer->timerName, timeInSeconds);

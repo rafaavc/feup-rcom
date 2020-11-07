@@ -7,7 +7,8 @@
 #include "globalDefines.h"
 
 struct myTimer {
-    clock_t startTime;
+    bool started;
+    struct timespec startTime;
     char * timerName;
 };
 

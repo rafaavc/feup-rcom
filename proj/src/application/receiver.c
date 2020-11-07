@@ -14,6 +14,7 @@ void receiver(int serialPort){
             perror("Alarm handler wasn't installed"); 
             exit(EXIT_FAILURE);
     }
+    siginterrupt(SIGALRM, true);  // SIGALARM interrupts system calls (returns -1 and errno is se to EINTR)
     alarm(INACTIVITY_TIME);
     int fd;
     if ((fd = llopen(serialPort, RECEIVER_STRING)) == -1) {// Establishes communication with transmitter
@@ -32,7 +33,7 @@ void receiver(int serialPort){
     unsigned bytesReceived = 0;
     while(true){
         int dataRead = llread(fd,buffer);
-        if (dataRead < 0) { //case of error
+        if (dataRead < 0 && errno != EINTR) { //case of error
             printError("Error reading the file.\n");
             exit(EXIT_FAILURE);
         }

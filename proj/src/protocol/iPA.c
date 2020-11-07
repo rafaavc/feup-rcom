@@ -26,10 +26,11 @@ int llopen(int porta, char * r){
         if (!receiverConnect()) return -1; //establishing connection with TRANSMITTER
     }
     else if (role == TRANSMITTER){
-        if (signal(SIGALRM, alarmHandler) < 0) {  // Instals the handler for the alarm interruption
+        if (signal(SIGALRM, alarmHandler) < 0) {  // Installs the handler for the alarm interruption
             perror("Alarm handler wasn't installed"); 
             exit(EXIT_FAILURE);
         }
+        siginterrupt(SIGALRM, true);  // SIGALARM interrupts system calls (returns -1 and errno is se to EINTR)
         if (!transmitterConnect()) return -1; //establishing connection with RECEIVER
     } 
     else return -1;
