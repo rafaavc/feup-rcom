@@ -1,9 +1,7 @@
 #include "efficiency.h"
 
-double n_Packets = 0;
-double averageSum = 0;
-
-extern speed_t BAUDRATE;
+static double n_Packets = 0;
+static double averageSum = 0;
 
 
 void rateValuesUpdate(size_t packetSize, double time){
@@ -16,7 +14,7 @@ double getAverageRate(){
 }
 
 double calculateEfficiency(){
-    return getAverageRate()/(double) BAUDRATE;
+    return getAverageRate()/(double) getBaudrate();
 }
 
 void delayGenerator(){

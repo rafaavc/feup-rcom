@@ -6,29 +6,13 @@
 static char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_OK", "DATA", "DATA_OK", "BCC_DATA_OK", "DONE_S_U", "DONE_I" };
 #endif
 
-volatile int STOP = false;
-unsigned stopAndWaitFlag = false;
-int fd = -1;
-unsigned nextS = 0;
-
-struct termios oldtio;
-
-int FRAME_SIZE = 500;
-int MAX_DATA_PACKET_SIZE;
-int MAX_FRAME_BUFFER_SIZE;
-int MAX_DATA_PACKET_DATA_SIZE;
-speed_t BAUDRATE = B38400;
+volatile bool stopAndWaitFlag = false;
 
 void alarmHandler(int signo) {
     if (signo == SIGALRM) {
         stopAndWaitFlag = true;
         debugMessage("[SIG HANDLER] SIGALRM");
     }
-}
-
-void setConstants() {
-    MAX_DATA_PACKET_SIZE = FRAME_SIZE - SUPERVISION_MSG_SIZE - 1;
-    MAX_FRAME_BUFFER_SIZE = FRAME_SIZE * 2;
 }
 
 int openConfigureSP(char* port) {
@@ -39,11 +23,11 @@ int openConfigureSP(char* port) {
 
     struct termios newtio; 
 
-    fd = open(port, O_RDWR | O_NOCTTY);
+    setFD(open(port, O_RDWR | O_NOCTTY));
 
-    if (fd < 0) { perror(port); return -1; }
+    if (getFD() < 0) { perror(port); return -1; }
 
-    if (tcgetattr(fd, &oldtio) == -1) { /* save current port settings */
+    if (tcgetattr(getFD(), getOldTIO()) == -1) { /* save current port settings */
         perror("Error on tcgetattr");
         return -1;
     }
@@ -51,7 +35,7 @@ int openConfigureSP(char* port) {
     atexit((void *)&closeSP); //resets configuration when program terminates with exit(EXIT_FAILURE)
 
     bzero(&newtio, sizeof(newtio));
-    newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
+    newtio.c_cflag = getBaudrate() | CS8 | CLOCAL | CREAD;
     newtio.c_iflag = IGNPAR;
     newtio.c_oflag = 0;
 
@@ -65,20 +49,20 @@ int openConfigureSP(char* port) {
     newtio.c_cc[VTIME]    = 0;   // if read only blocks for VTIME seconds, or until a character is received
     newtio.c_cc[VMIN]     = 0;   
 
-    tcflush(fd, TCIOFLUSH);   // discards from the queue data received but not read and data written but not transmitted
+    tcflush(getFD(), TCIOFLUSH);   // discards from the queue data received but not read and data written but not transmitted
 
-    if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
+    if (tcsetattr(getFD(), TCSANOW, &newtio) == -1) {
         perror("tcsetattr");
         return -1;
     }
 
     debugMessage("[SP] OPENED AND CONFIGURED");
 
-    return fd;
+    return getFD();
 }
 
 size_t writeToSP(char* message, size_t messageSize) {
-    return write(fd, message, messageSize*sizeof(message[0]));
+    return write(getFD(), message, messageSize*sizeof(message[0]));
 }
 
 enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * stringSize, char addressField, char controlField) {
@@ -89,15 +73,15 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
     static int sendREJ = 0;   // Simulates sending REJ (if > 0, sends REJ)
     #endif
 
-    STOP = false;
+    bool STOP = false;
     *state = START;
 
     char bcc[2];
 
     static int pS = 1;
     //reads from the serial port
-    while(STOP == false) {
-        int readRet = read(fd, &reading, 1);
+    while(!STOP) {
+        int readRet = read(getFD(), &reading, 1);
 
         if (stopAndWaitFlag) STOP = true; // if the alarm interrupts
         if (readRet < 0) {
@@ -171,9 +155,9 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
         }
     } else if (isSU(state) && (isRR(buf[CTRL_IDX])|| isREJ(buf[CTRL_IDX]))) {   // Received ack / nack  -> this is the transmitter instance
         int r = getR(buf[CTRL_IDX]);
-        //printf("Received r: %d, nextS: %d\n", r, nextS%2);
+        //printf("Received r: %d, nextS: %d\n", r, getNextSequenceNumber());
 
-        if (r != (nextS%2)) { // Repeated control -> R needs to be always equal to the S of the next information msg
+        if (r != (getNextSequenceNumber())) { // Repeated control -> R needs to be always equal to the S of the next information msg
             // RR (ignore)
             return RR;
         } else { // if it isREJ or RR && new control (r == nextS)
@@ -187,14 +171,14 @@ enum readFromSPRet readFromSP(char * buf, enum stateMachine *state, ssize_t * st
 }
 
 int closeSP() {
-    if (fcntl(fd, F_GETFD) != 0 && errno == EBADF) return -1; // verifies if fd is valid
+    if (fcntl(getFD(), F_GETFD) != 0 && errno == EBADF) return -1; // verifies if fd is valid
     sleep(1);
-    if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
+    if (tcsetattr(getFD(), TCSANOW, getOldTIO()) == -1) {
       perror("Error on tcsetattr");
       return -1;
     }
 
-    if(close(fd) != 0){
+    if(close(getFD()) != 0){
         perror("Error on close");
         return -1;
     }
@@ -218,25 +202,24 @@ void constructInformationMessage(char* ret ,char* data, size_t * dataSize) {//re
 
     ret[BEGIN_FLAG_IDX] = MSG_FLAG;
     ret[ADDR_IDX] = ADDR_SENT_EM;
-    ret[CTRL_IDX] = CTRL_S(nextS);
+    ret[CTRL_IDX] = CTRL_S(getNextSequenceNumber());
     ret[BCC1_IDX] = BCC(ret[2], ret[1]);
 
     for (size_t i = 0; i < *dataSize; i++) {  // calculates the data bcc (between all data bytes)
         bcc = BCC(bcc, data[i]);
         ret[BCC1_IDX+1+i] = data[i];
     }
-
     ret[BCC1_IDX+*dataSize+1] = bcc;
     ret[BCC1_IDX+*dataSize+2] = MSG_FLAG;
 
     *dataSize += 6;
-    nextS++;
+    incrementNextSequenceNumber();
 
     byteStuffing(ret, dataSize); // dataSize is updated in the byteStuffing function
 }
 
 void byteStuffing(char * ret, size_t * retSize){
-    char * buf = myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
+    char * buf = myMalloc(getMaxFrameBufferSize()*sizeof(char));
     buf[0] = MSG_FLAG;
     unsigned bufferIdx = 1;
 

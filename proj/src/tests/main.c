@@ -3,11 +3,9 @@
 #define RECEIVER 0
 #define TRANSMITTER 1
 
-extern int MAX_DATA_PACKET_SIZE;
-
 
 int testReceiver(int fd) {
-    char *buffer = (char*)myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));//mudar isto
+    char *buffer = (char*)myMalloc(getMaxDataPacketSize()*sizeof(char));//mudar isto
     //while(true) {
         int n;
         if ((n = llread(fd, buffer)) == -1) {

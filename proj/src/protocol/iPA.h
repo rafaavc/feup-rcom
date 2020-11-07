@@ -1,7 +1,7 @@
 /* INTERFACE PROTOCOL-APPLICATION */
+#include "linkLayer.h"
 
 /**
- * 
  * @param porta - serial port
  * @param role -TRANSMITTER / RECEIVER
  * @return data link identifier, negative value in case of error

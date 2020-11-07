@@ -1,11 +1,7 @@
 #include "transmitterFuncs.h"
 
 extern unsigned stopAndWaitFlag;
-extern int fd;
-extern int nextS;
-extern enum stateMachine state;
-extern int MAX_FRAME_BUFFER_SIZE;
-bool rejFlag = false;
+static bool rejFlag = false;
 
 bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t  *res) {
     unsigned counter = 0;
@@ -23,12 +19,12 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
     msgToWrite[CTRL_IDX] = 0x40;
     msgToWrite[BCC1_IDX] = msgToWrite[ADDR_IDX] ^ 0x40;*/
 
-    while(counter < NO_RETRIES) { // sends the message NO_TRIES times
+    while(counter < getNumTransmissions()) { // sends the message NO_TRIES times
         if(stopAndWaitFlag) {
             stopAndWaitFlag = false;
             counter++;
 
-            alarm(TIME_OUT);
+            alarm(getTimeout());
             //printf("sending message with s = %d and size = %d\n", nextS, msgSize);
 
             #ifdef DEBUG
@@ -52,7 +48,7 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
         }
     }
 
-    printError("Error sending message (retried %d times with no/invalid response)\n", NO_RETRIES);
+    printError("Error sending message (retried %d times with no/invalid response)\n", getNumTransmissions());
     printCharArray(msgToWrite, msgSize);
     alarm(0);
 
@@ -61,7 +57,7 @@ bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrit
 
 bool logicConnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     ssize_t size; 
-    char *ret = (char*)myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
+    char *ret = (char*)myMalloc(getMaxFrameBufferSize()*sizeof(char));
 
     *res = writeToSP(msg, SUPERVISION_MSG_SIZE);
     if (*res == -1) {
@@ -96,7 +92,7 @@ bool transmitterConnect() {
 
 bool disconnectionFunction(char * msg, size_t msgSize, size_t *res ) {
     ssize_t size; 
-    char *ret = (char*)myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
+    char *ret = (char*)myMalloc(getMaxFrameBufferSize()*sizeof(char));
 
     //writes to serial port, trying to connect
 
@@ -141,7 +137,7 @@ bool transmitterDisconnect() {
 
 bool sendDataFunction(char* msg, size_t msgSize, size_t *res ){
     ssize_t size; 
-    char *ret = (char*)myMalloc(MAX_FRAME_BUFFER_SIZE*sizeof(char));
+    char *ret = (char*)myMalloc(getMaxFrameBufferSize()*sizeof(char));
     
     *res = writeToSP(msg, msgSize);
     if (*res == -1) {

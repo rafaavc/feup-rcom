@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <termios.h>
+#include "../protocol/linkLayer.h"
 #define DELAY               1
 #define PROBABILITY_HEAD    30
 #define PROBABILITY_DATA    40

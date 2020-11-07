@@ -1,14 +1,11 @@
 #include "transmitter.h"
 #include "../tests/efficiency.h"
 
-extern unsigned stopAndWaitFlag;
-extern int MAX_DATA_PACKET_SIZE;
-extern int MAX_DATA_PACKET_DATA_SIZE;
-extern int fd;
+extern unsigned MAX_DATA_PACKET_DATA_SIZE;
 
 void transmitter(int serialPort, char * fileToSend, char * destFile){
 
-    fd = llopen(serialPort, TRANSMITTER_STRING); // Establish communication with receiver
+    int fd = llopen(serialPort, TRANSMITTER_STRING); // Establish communication with receiver
 
     if (fd == -1) {
         printError("Wasn't able to establish logic connection!\n");
@@ -32,8 +29,8 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     stat(filename, &st);
     size_t fileSize = st.st_size;
 
-    char *buffer = (char*)myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));
-    char *ret = (char*)myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char)); 
+    char *buffer = (char*)myMalloc(getMaxDataPacketSize()*sizeof(char));
+    char *ret = (char*)myMalloc(getMaxDataPacketSize()*sizeof(char)); 
 
     if(feof(file)){
         printError("The file is empty, nothing to send.\n");
@@ -54,7 +51,7 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     printf("Starting to send file '%s' (destination: '%s') with %ld bytes.\n", filename, destFilename, fileSize);
 
     int msgNr = 0;
-    char *dataPacket = (char*) myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));
+    char *dataPacket = (char*) myMalloc(getMaxDataPacketSize()*sizeof(char));
     size_t amountTransfered = 0;
 
     #ifdef EFFICIENCY_TEST
@@ -133,8 +130,8 @@ int constructControlPacket(char * ret, char ctrl, char* fileName, size_t fileSiz
     size_t fileNameSize = strlen(fileName)+1;
     int fileSizeLength = sizeof(size_t);
 
-    if(((fileSizeLength + fileNameSize + 5) * sizeof(char)) > MAX_DATA_PACKET_SIZE*sizeof(char)) {
-        printError("File name size too large for the defined MAX_DATA_PACKET_SIZE!\n");
+    if(((fileSizeLength + fileNameSize + 5) * sizeof(char)) > getMaxDataPacketSize()*sizeof(char)) {
+        printError("File name size too large for the defined getMaxDataPacketSize()!\n");
         return -1;
     }
 

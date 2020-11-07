@@ -1,12 +1,8 @@
-#include "iPA.h"
 #include "receiverFuncs.h"
+#include "iPA.h"
 
-extern speed_t BAUDRATE;
-extern int FRAME_SIZE;
-extern int MAX_DATA_PACKET_SIZE;
-extern int MAX_FRAME_BUFFER_SIZE;
-
-char role;
+static char role;
+static bool usedLLSet = false;
 
 int llopen(int porta, char * r){
     if (strcmp(r, "RECEIVER") == 0) role = RECEIVER;
@@ -16,7 +12,7 @@ int llopen(int porta, char * r){
         return -1;
     }
 
-    setConstants();
+    if (!usedLLSet) createLinkLayer();
 
     char portString[12];
 
@@ -42,8 +38,8 @@ int llopen(int porta, char * r){
 }
 
 int llwrite(int fd, char * buffer, int length){
-    char * msg = myMalloc(MAX_FRAME_BUFFER_SIZE);
-    bzero(msg, MAX_FRAME_BUFFER_SIZE);
+    char * msg = myMalloc(getMaxFrameBufferSize());
+    bzero(msg, getMaxFrameBufferSize());
     size_t s = length;
     
     constructInformationMessage(msg, buffer, &s);
@@ -80,7 +76,10 @@ int llclose(int fd){
 }
 
 void llset(int baudrateArg, int frameSizeArg) {
+    usedLLSet = true;
+    createLinkLayer();
     if (baudrateArg != -1) {
+        speed_t BAUDRATE;
         switch(baudrateArg) {
             case 4800:
                 BAUDRATE = B4800;
@@ -107,11 +106,10 @@ void llset(int baudrateArg, int frameSizeArg) {
                 printError("The specified baudrate isn't valid. Using default. Available:\n4800\n9600\n19200\n38400\n57600\n115200\n230400\n");
                 break;
         }
+        setBaudrate(BAUDRATE);
     }
 
     if (frameSizeArg != -1) {
-        FRAME_SIZE = frameSizeArg;
+        setFrameSize(frameSizeArg);
     }
-
-    setConstants();
 }

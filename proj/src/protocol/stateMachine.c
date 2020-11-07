@@ -1,8 +1,6 @@
 #include "stateMachine.h"
 
-extern int MAX_DATA_PACKET_SIZE;
-
-char prevByte;
+static char prevByte;
 
 bool isAcceptanceState(enum stateMachine *state) {
     return *state == DONE_I || *state == DONE_S_U;
@@ -180,7 +178,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     case DATA:
         if(!receivedMessageFlag(byte, destuffing)){
             dataCount++;
-            if (dataCount >= MAX_DATA_PACKET_SIZE) { *state = DATA_OK;} 
+            if (dataCount >= getMaxDataPacketSize()) { *state = DATA_OK;} 
             // if it doesn't receive a flag, then it only looks for the bcc when the max data packet length has been used
             break;
         } else {  // receives a flag; the bcc is the previous byte

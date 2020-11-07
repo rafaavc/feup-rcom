@@ -1,7 +1,6 @@
 #ifndef _DEFINES_H_
 #define _DEFINES_H_
 
-typedef unsigned char charByte;
 
 #define TRANSMITTER     0
 #define RECEIVER        1
@@ -23,10 +22,9 @@ typedef unsigned char charByte;
 #define CTRL_SET        0x03 /*Set up control flag*/
 #define CTRL_UA         0x07 /*Unnumbered acknowledgment control flag*/
 #define CTRL_DISC       0x0B /*Disconnect control flag*/
-#define CTRL_S(s)       ((s%2)<<6) /*0S000000 S = N(s)*/
+#define CTRL_S(s)       (s<<6) /*0S000000 S = N(s)*/
 #define CTRL_RR(r)      ((r%2)<<7) | BIT(2) | BIT(0) /*Receiver ready / positive ACK control flag*/
 #define CTRL_REJ(r)      ((r%2)<<7) | BIT(0) /*Reject / negative ACK control flag */
-
 
 
 /* Indexes */
@@ -41,7 +39,6 @@ typedef unsigned char charByte;
 /* Fixed Constants */
 #define SUPERVISION_MSG_SIZE 5
 #define ANY_VALUE       -1
-#define MODEMDEVICE "/dev/ttyS1"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 
 #define printError(args...) fprintf(stderr, ##args)
@@ -49,8 +46,8 @@ typedef unsigned char charByte;
 /* Changeable Constants */
 //#define MAX_I_MSG_SIZE (MAX_DATA_PACKET_LENGTH + SUPERVISION_MSG_SIZE + 1) // the 1 is from the data bcc
 //#define MAX_I_BUFFER_SIZE MAX_I_MSG_SIZE*2 // needs to be this value due to the stuffing operation (worst case scenario)
-#define TIME_OUT    3   // time between tries
-#define NO_RETRIES    5   // tries to send message 3 times
+//#define TIME_OUT    3   // time between tries
+//#define NO_RETRIES    5   // tries to send message 3 times
 
 enum stateMachine { START, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
 enum destuffingState { DESTUFF_OK, DESTUFF_WAITING, DESTUFF_VIEWING };

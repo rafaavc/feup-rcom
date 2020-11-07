@@ -1,8 +1,5 @@
 #include "receiver.h"
 
-extern int fd;
-extern int MAX_DATA_PACKET_SIZE;
-
 
 void recAlarmHandler(int signo) {
     if (signo == SIGALRM) {
@@ -18,14 +15,14 @@ void receiver(int serialPort){
             exit(EXIT_FAILURE);
     }
     alarm(INACTIVITY_TIME);
-
+    int fd;
     if ((fd = llopen(serialPort, RECEIVER_STRING)) == -1) {// Establishes communication with transmitter
         printError("Wasn't able to establish logic connection!\n");
         exit(EXIT_FAILURE); 
     }
 
     
-    char *buffer = (char*) myMalloc(MAX_DATA_PACKET_SIZE*sizeof(char));//mudar isto
+    char *buffer = (char*) myMalloc(getMaxDataPacketSize()*sizeof(char));//mudar isto
     char* fileName = NULL;
     size_t fileSize;
     bool receivedStart = false;
@@ -104,7 +101,7 @@ void receiver(int serialPort){
                 
                 exit(EXIT_FAILURE);
             }
-            bzero(buffer, MAX_DATA_PACKET_SIZE);
+            bzero(buffer, getMaxDataPacketSize());
         }
 
     }

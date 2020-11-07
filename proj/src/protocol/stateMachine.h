@@ -6,9 +6,9 @@
 #include <stdint.h>
 #include <signal.h>
 #include <stdbool.h>
-#include "defines.h"
 #include "../utilities/utilities.h"
 #include "../tests/efficiency.h"
+#include "defines.h"
 
 /**
  * @param state the state variable
