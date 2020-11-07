@@ -8,6 +8,8 @@
 #include "../utilities/ui.h"
 
 
+enum checkReceptionState{CTRL, T, L, V, RECEIVING_DATA, DATA_N, DATA_L1, DATA_L2, DATA_FINISHED, END_RECEIVED, START_RECEIVED, ERROR};
+
 /**
  * Checks the state of valid data the currently read packet gets
  * @param buffer buffer where the received packet is stored

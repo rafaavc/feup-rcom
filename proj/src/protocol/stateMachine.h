@@ -10,6 +10,15 @@
 #include "../tests/efficiency.h"
 #include "defines.h"
 
+enum stateMachine { START, FLAG_RCV, A_RCV, C_RCV, BCC_HEAD_OK, DATA, DATA_OK, BCC_DATA_OK, DONE_S_U, DONE_I };
+enum destuffingState { DESTUFF_OK, DESTUFF_WAITING, DESTUFF_VIEWING };
+enum checkStateRET { 
+    StateOK, 
+    IGNORE_CHAR,
+    HEAD_INVALID,
+    DATA_INVALID
+};
+
 /**
  * @param state the state variable
  * @return true if is acceptance state

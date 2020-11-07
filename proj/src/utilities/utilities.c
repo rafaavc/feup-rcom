@@ -48,6 +48,7 @@ void startTimer(struct myTimer * timer) {
 
 double stopTimer(struct myTimer * timer, bool verbose) {
     if (!timer->started) return -1;
+    timer->started = false;
 
     struct timespec endTime;
     clock_gettime(CLOCK_REALTIME, &endTime);

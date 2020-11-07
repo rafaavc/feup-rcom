@@ -1,6 +1,6 @@
 #include "stateMachine.h"
 
-int sequenceNumber = 0;
+static int sequenceNumber = 0;
 
 enum checkReceptionState checkStateReception(char * buffer, int bufferSize, size_t * fileSize, char ** fileName, int * dataAmount){
     int totalAmountOfChars = -1;

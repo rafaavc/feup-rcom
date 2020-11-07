@@ -6,7 +6,6 @@
  */
 void alarmHandler(int signo);
 
-
 /**
  * Sets the constants
  */
@@ -25,6 +24,9 @@ int openConfigureSP(char* port);
  * @param messageSize  Size of the message 
  */
 size_t writeToSP( char * message, size_t messageSize);
+
+
+enum readFromSPRet { RR, REJ, SAVE, READ_ERROR, STOPPED_OR_SU };
 
 /**
  * Reads from the serial port using the state machine implementation

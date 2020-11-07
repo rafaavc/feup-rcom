@@ -10,7 +10,7 @@ void recAlarmHandler(int signo) {
 
 void receiver(int serialPort){  
         
-    if (signal(SIGALRM, recAlarmHandler) < 0) {  // Instals the handler for the alarm interruption
+    if (signal(SIGALRM, recAlarmHandler) < 0) {  // Installs the handler for the alarm interruption
             perror("Alarm handler wasn't installed"); 
             exit(EXIT_FAILURE);
     }
@@ -23,7 +23,7 @@ void receiver(int serialPort){
     }
 
     
-    char *buffer = (char*) myMalloc(getMaxDataPacketSize()*sizeof(char));//mudar isto
+    char *buffer = (char*) myMalloc(getMaxDataPacketSize()*sizeof(char));
     char* fileName = NULL;
     size_t fileSize;
     bool receivedStart = false;
@@ -93,13 +93,13 @@ void receiver(int serialPort){
                     break;
                 } else {    
                     printError("Specified file size (%ld) and received number of bytes (%d) do not match.\n", fileSize, bytesReceived);
+                    break;
                 }
             } else if (receptionRet == ERROR){
                 printError("\nThere was an error in the reception, received invalid data. Terminating connection.\n");
                 exit(EXIT_FAILURE);
             } else {
                 printError("Received invalid data package! State: %d\n", receptionRet);
-                
                 exit(EXIT_FAILURE);
             }
             bzero(buffer, getMaxDataPacketSize());

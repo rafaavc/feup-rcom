@@ -6,7 +6,7 @@ static double averageSum = 0;
 
 void rateValuesUpdate(size_t packetSize, double time){
     n_Packets++;
-    averageSum += (packetSize * sizeof(char)) / time;
+    averageSum += (packetSize / time);
 }
 
 double getAverageRate(){
@@ -14,7 +14,7 @@ double getAverageRate(){
 }
 
 double calculateEfficiency(){
-    return getAverageRate()/(double) getBaudrate();
+    return getAverageRate()/38400.;
 }
 
 void delayGenerator(){
