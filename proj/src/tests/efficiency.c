@@ -21,25 +21,25 @@ double getAverageRate(){
 void calculateEfficiency(){
     unsigned baudrateNum = 0;
     switch(getBaudrate()) {
-        case 4800:
+        case B4800:
             baudrateNum = 4800;
             break;
-        case 9600:
+        case B9600:
             baudrateNum = 9600;
             break;
-        case 19200:
+        case B19200:
             baudrateNum = 19200;
             break;
-        case 38400:
+        case B38400:
             baudrateNum = 38400;
             break;
-        case 57600:
+        case B57600:
             baudrateNum = 57600;
             break;
-        case 115200:
+        case B115200:
             baudrateNum = 115200;
             break;
-        case 230400:
+        case B230400:
             baudrateNum = 230400;
             break;
         default:
