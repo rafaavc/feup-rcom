@@ -4,10 +4,11 @@
 #include <time.h>
 #include <termios.h>
 #include "../protocol/linkLayer.h"
+#include "../protocol/defines.h"
 
-#define DELAY               1
-#define PROBABILITY_HEAD    30
-#define PROBABILITY_DATA    40
+#define DELAY               0
+#define PROBABILITY_HEAD    0
+#define PROBABILITY_DATA    0
 
 /**
  * Introduces a delay in the frame processing of each frame received, variating Tprop
@@ -26,7 +27,7 @@ void generateDataError(char *frame, size_t frameSize);
 void generateHeadError(char *buffer);
 /**
  * Update the variable needed for the efficiency calculations
- * @param packeteSize - size of the packet
+ * @param packeteSize - size of the packet in bytes
  * @param time - time taken to send the packet
  */
 void rateValuesUpdate(size_t packetSize, double time);

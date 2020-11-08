@@ -1,6 +1,7 @@
 #include "stateMachine.h"
 
 static char prevByte;
+extern char role;
 
 bool isAcceptanceState(enum stateMachine *state) {
     return *state == DONE_I || *state == DONE_S_U;
@@ -32,7 +33,7 @@ int getR(unsigned char ctrl) {
 
 bool checkDestuffedBCC(char* buf, char bcc, size_t dataCount){
     #ifdef EFFICIENCY_TEST
-    generateDataError(buf,dataCount);
+    if(role ==  RECEIVER) generateDataError(buf,dataCount);
     #endif
 
     
@@ -152,7 +153,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     case C_RCV:
         // Only advances if BCC is correct
         #ifdef EFFICIENCY_TEST
-            generateHeadError(bcc);
+            if(role == RECEIVER && (prevByte == 0x00 || prevByte == 0x40)) generateHeadError(bcc);
         #endif
         if (*byte == BCC(bcc[0], bcc[1]) && !receivedMessageFlag(byte, destuffing)) {
             *state = BCC_HEAD_OK;
@@ -213,7 +214,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             dataCount--;  // removes the bcc from the dataCount
             if (dataBCC){
                 #ifdef EFFICIENCY_TEST
-                    delayGenerator();
+                    if (role == RECEIVER) delayGenerator();
                 #endif
                 *state = DONE_I;
             }

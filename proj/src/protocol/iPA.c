@@ -1,7 +1,7 @@
 #include "receiverFuncs.h"
 #include "iPA.h"
 
-static char role;
+char role;
 static bool usedLLSet = false;
 
 int llopen(int porta, char * r){
