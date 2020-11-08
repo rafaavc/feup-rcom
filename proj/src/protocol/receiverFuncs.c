@@ -22,6 +22,10 @@ size_t receiverRead(char * buffer) {
         // otherwise an error occurred
         if (isI(&state) || res == RR || res == REJ) { 
             //printf("Received I\n");
+            #ifdef EFFICIENCY_TEST
+            delayGenerator();
+            #endif
+            
             if (!receivedDataFlag) receivedDataFlag = true;
             int s = getS(ret[CTRL_IDX]);
             if(res == REJ) {

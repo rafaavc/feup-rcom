@@ -1,4 +1,5 @@
 #include "receiver.h"
+#include "../tests/efficiency.h"
 
 
 void recAlarmHandler(int signo) {
@@ -109,6 +110,10 @@ void receiver(int serialPort){
 
     free(buffer);
     free(fileName);
+
+    #ifdef EFFICIENCY_TEST
+    errorsGenerated();
+    #endif
 
     /* After receiving and end control packet, it has received the full file so it's going to disconnect from the transmitter*/
     if (llclose(fd) != 0) {

@@ -15,6 +15,10 @@
  */
 void delayGenerator();
 /**
+ * Displays the amount of errors generated
+ */
+void errorsGenerated();
+/**
  * Introduces an error on the data field of the frame with a predefined probability, acting like a real error
  * @param frame - current frame
  * @param frameSize - size of the frame

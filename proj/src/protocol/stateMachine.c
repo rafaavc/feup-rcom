@@ -213,9 +213,6 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
             dataBCC = checkDestuffedBCC(buf, prevByte, dataCount);    
             dataCount--;  // removes the bcc from the dataCount
             if (dataBCC){
-                #ifdef EFFICIENCY_TEST
-                    if (role == RECEIVER) delayGenerator();
-                #endif
                 *state = DONE_I;
             }
             else {  // BCC is wrong

@@ -46,8 +46,8 @@ void calculateEfficiency(){
             printError("The specified baudrate isn't valid. Available:\n4800\n9600\n19200\n38400\n57600\n115200\n230400\n");
             return;
     }
-    printf("\n\n# Error generation\nGenerated %u head errors.\nGenerated %u data errors\n\n", headErrorCount, dataErrorCount);
-    printf("T_prop: %u\nProbability head error: %u%%\nProbability data error: %u%%\n", DELAY, PROBABILITY_HEAD, PROBABILITY_DATA);
+    printf("Probability head error: %u%%\nProbability data error: %u%%\n\n\n# Error generation\nGenerated %u head errors.\nGenerated %u data errors.\n\n",  PROBABILITY_HEAD, PROBABILITY_DATA, headErrorCount, dataErrorCount);
+    printf("T_prop: %u\n", DELAY);
     printf("Baudrate: B%u\n", baudrateNum);
     printf("Frame size: %u\n\n", getFrameSize());
     printf("Total time of transfer: %f\n", totalTime);
@@ -55,6 +55,10 @@ void calculateEfficiency(){
     printf("Average rate: %lf bits/s\n", getAverageRate());
     double efficiency = getAverageRate()/(double)baudrateNum;
     printf("-- Efficiency: %lf\n", efficiency);
+}
+
+void errorsGenerated() {
+    printf("Probability head error: %u%%\nProbability data error: %u%%\n\n\n# Error generation\nGenerated %u head errors.\nGenerated %u data errors.\n\n",  PROBABILITY_HEAD, PROBABILITY_DATA, headErrorCount, dataErrorCount);
 }
 
 void delayGenerator(){
