@@ -1,6 +1,8 @@
 #include "defines.h"  // incluidos aqui de forma à aplicação não ter acesso aos defines do protocolo (porque o linkLayer é incluído pelo iPA.h)
 #include "linkLayer.h"
 
+static bool createdLayer = false;
+
 struct linkLayer { // put here so other files don't know anything about this struct
     speed_t BAUDRATE;
     unsigned FRAME_SIZE, 
@@ -55,27 +57,29 @@ void setFD(int fd) {
 
 void setTimeout(unsigned timeout) {
     llayer.TIMEOUT = timeout;
-    //printf("Set timeout = %u\n", timeout);
+    printf("Set timeout = %u\n", timeout);
 }
 
 void setNumTransmissions(unsigned numTransmissions) {
     llayer.NUM_TRANSMISSIONS = numTransmissions;
-    //printf("Set num transmissions = %u\n", numTransmissions);
+    printf("Set num transmissions = %u\n", numTransmissions);
 }
 
 void setBaudrate(speed_t baudrate) {
     llayer.BAUDRATE = baudrate;
-    //printf("Set baudrate = %u\n", baudrate);
+    printf("Set baudrate = %u\n", baudrate);
 }
 
 void setFrameSize(unsigned frameSize) {
-    llayer.FRAME_SIZE = 500;
+    llayer.FRAME_SIZE = frameSize;
     llayer.MAX_DATA_PACKET_SIZE = llayer.FRAME_SIZE - SUPERVISION_MSG_SIZE - 1;
     llayer.MAX_FRAME_BUFFER_SIZE = llayer.FRAME_SIZE * 2;
-    //printf("Set frame size = %u\n", frameSize);
+    printf("Set frame size = %u\n", frameSize);
 }
 
 void createLinkLayer() {
+    if (createdLayer) return;
+    createdLayer = true;
     setFrameSize(500);
     setBaudrate(B38400);
     setNumTransmissions(5);
