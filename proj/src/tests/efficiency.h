@@ -37,4 +37,4 @@ void rateValuesUpdate(size_t packetSize, double time);
 double getAverageRate();
 
 
-double calculateEfficiency();
+void calculateEfficiency();
