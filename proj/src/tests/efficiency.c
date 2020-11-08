@@ -62,7 +62,7 @@ void errorsGenerated() {
 }
 
 void delayGenerator(){
-    usleep(DELAY*1e3);  // DELAY in miliseconds
+    if (DELAY != 0) usleep(DELAY*1e3);  // DELAY in miliseconds
 }
 
 
