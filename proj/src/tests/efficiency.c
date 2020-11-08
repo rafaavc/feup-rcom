@@ -15,7 +15,7 @@ void rateValuesUpdate(size_t packetSize, double time){
 }
 
 double getAverageRate(){
-    return totalSize / totalTime;
+    return (totalSize*8) / totalTime;
 }
 
 void calculateEfficiency(){
