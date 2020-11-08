@@ -2,6 +2,8 @@
 
 static double n_Packets = 0;
 static double averageSum = 0;
+static double totalTime = 0;
+static size_t totalSize = 0;
 
 static unsigned dataErrorCount = 0;
 static unsigned headErrorCount = 0;
@@ -9,11 +11,12 @@ static unsigned headErrorCount = 0;
 
 void rateValuesUpdate(size_t packetSize, double time){
     n_Packets++;
-    averageSum += ((packetSize*8) / time);
+    totalTime += time;
+    totalSize += packetSize;
 }
 
 double getAverageRate(){
-    return averageSum / n_Packets;
+    return totalSize / totalTime;
 }
 
 double calculateEfficiency(){
@@ -45,7 +48,14 @@ double calculateEfficiency(){
             return -1;
     }
     printf("\n\n# Error generation\nGenerated %u head errors.\nGenerated %u data errors\n\n", headErrorCount, dataErrorCount);
-    return getAverageRate()/(double)baudrateNum;
+    printf("T_prop: %u\nProbability head error: %u%%\nProbability data error: %u%%\n", DELAY);
+    printf("Baudrate: B%u\n", baudrateNum);
+    printf("Frame size: %u\n\n", getFrameSize());
+    printf("Total time of transfer: %u\n", totalTime);
+    printf("Total size of transfer: %u\n", totalSize);
+    printf("Average rate: %lf bits/s\n", getAverageRate());
+    double efficiency = getAverageRate()/(double)baudrateNum;
+    printf("-- Efficiency: %lf\n", efficiency);
 }
 
 void delayGenerator(){

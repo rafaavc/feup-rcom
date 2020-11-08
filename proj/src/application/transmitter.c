@@ -90,8 +90,7 @@ void transmitter(int serialPort, char * fileToSend, char * destFile){
     }
 
     #ifdef EFFICIENCY_TEST
-    printf("Average rate: %lf\n", getAverageRate());
-    printf("Efficiency: %lf\n", calculateEfficiency());
+    calculateEfficiency();
     #endif
 
     if (amountTransfered == fileSize) {
