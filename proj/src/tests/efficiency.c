@@ -67,7 +67,6 @@ void delayGenerator(){
 
 
 void generateDataError(char *frame, size_t frameSize){
-    srand(time(NULL));
     int probability = (rand() % 100) + 1;
     
     if(probability <= PROBABILITY_DATA){
@@ -84,7 +83,6 @@ void generateDataError(char *frame, size_t frameSize){
 }
 
 void generateHeadError(char *buffer){
-    srand(time(NULL));
     int probability = (rand() % 100) + 1;
 
     if(probability <= PROBABILITY_HEAD){

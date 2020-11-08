@@ -11,6 +11,8 @@ int llopen(int porta, char * r){
         printError("Invalid role given to llopen\n");
         return -1;
     }
+    
+    srand(time(NULL));
 
     if (!usedLLSet) createLinkLayer();
 

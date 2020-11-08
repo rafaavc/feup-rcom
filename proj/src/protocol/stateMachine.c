@@ -153,7 +153,7 @@ enum checkStateRET checkState(enum stateMachine *state, char * bcc, char * byte,
     case C_RCV:
         // Only advances if BCC is correct
         #ifdef EFFICIENCY_TEST
-            if(role == RECEIVER && (prevByte == 0x00 || prevByte == 0x40)) generateHeadError(bcc);
+            if(role == RECEIVER && (prevByte == 0x00 || prevByte == 0x40)) generateHeadError(bcc);  // if it's the receiver and is receiving an I message
         #endif
         if (*byte == BCC(bcc[0], bcc[1]) && !receivedMessageFlag(byte, destuffing)) {
             *state = BCC_HEAD_OK;

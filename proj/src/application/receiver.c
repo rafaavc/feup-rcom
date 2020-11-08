@@ -10,7 +10,6 @@ void recAlarmHandler(int signo) {
 }
 
 void receiver(int serialPort){  
-        
     if (signal(SIGALRM, recAlarmHandler) < 0) {  // Installs the handler for the alarm interruption
             perror("Alarm handler wasn't installed"); 
             exit(EXIT_FAILURE);
