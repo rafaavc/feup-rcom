@@ -1,6 +1,12 @@
 #include "protocol.h"
 
 /**
+ * Handler for signo signal
+ * @param signo  signal to be handled 
+ */
+void alarmHandler(int signo);
+
+/**
  * 
  * @param functionToExec function pointer to the function that will be timed out (the function returns true when everything goes right, false when it doesn't get a response or an error occurs)
  * @param msgToWrite buffer with the message (that will be sent to the functionToExec)

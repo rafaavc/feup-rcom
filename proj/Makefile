@@ -1,17 +1,11 @@
 CC=gcc
-_DEPS = protocol/protocol.h protocol/stateMachine.h tests/efficiency.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/linkLayer.h protocol/transmitterFuncs.h application/transmitter.h application/receiver.h application/application.h application/defines.h application/stateMachine.h utilities/globalDefines.h utilities/ui.h tests/tests.h
+_DEPS = protocol/protocol.h protocol/stateMachine.h tests/efficiency.h utilities/utilities.h protocol/defines.h protocol/iPA.h protocol/receiverFuncs.h protocol/linkLayer.h protocol/transmitterFuncs.h application/transmitter.h application/receiver.h application/application.h application/defines.h application/stateMachine.h utilities/globalDefines.h utilities/ui.h
 _mainOBJ = main.o application/application.o tests/efficiency.o application/transmitter.o application/receiver.o application/stateMachine.o protocol/linkLayer.o protocol/iPA.o protocol/protocol.o protocol/stateMachine.o protocol/transmitterFuncs.o protocol/receiverFuncs.o utilities/utilities.o utilities/ui.o
-#_EmitterOBJ = emitter.o protocol.o emitterFuncs.o receiverFuncs.o utilities.o iPA.o
-#_ReceiverOBJ = receiver.o protocol.o receiverFuncs.o emitterFuncs.o utilities.o iPA.o
 OBJDIR = obj
 SRCDIR = src
 MainName = app
-#EmitterName = emitter
-#ReceiverName = receiver
-CFLAGS = -Wall -lm#-pthread -lrt -lm
+CFLAGS = -Wall -lm
 
-#EmitterOBJ = $(patsubst %,$(OBJDIR)/%,$(_EmitterOBJ))
-#ReceiverOBJ = $(patsubst %,$(OBJDIR)/%,$(_ReceiverOBJ))
 mainOBJ = $(patsubst %,$(OBJDIR)/%,$(_mainOBJ))
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
@@ -36,11 +30,6 @@ $(MainName): $(mainOBJ)
 clean: 
 	@rm -f -r $(OBJDIR) $(MainName) $(ReceiverName)
 	@rm -f tests
-
-.PHONY: tests
-tests: $(DEPS)
-	gcc -o test src/tests/main.c src/tests/tests.c src/protocol/iPA.c src/protocol/protocol.c src/protocol/receiverFuncs.c src/protocol/transmitterFuncs.c src/application/application.c src/application/receiver.c src/application/stateMachine.c src/protocol/stateMachine.c src/application/transmitter.c src/utilities/ui.c src/utilities/utilities.c -lm
-
 
 .PHONY: cable
 cable:

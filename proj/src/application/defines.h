@@ -22,7 +22,7 @@
 /* Data Packet */
 #define DATA_CTRL       0x01
 
-#define INACTIVITY_TIME 15
+#define INACTIVITY_TIME 60
     
 #define CTRL_PACKET_SIZE    7
 #define APP_SEQ_NUM_SIZE    256

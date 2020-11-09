@@ -1,12 +1,6 @@
 #include "stateMachine.h"
 
 /**
- * Handler for signo signal
- * @param signo  signal to be handled 
- */
-void alarmHandler(int signo);
-
-/**
  * Sets the constants
  */
 void setConstants();

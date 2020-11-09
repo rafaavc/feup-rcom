@@ -8,13 +8,6 @@ static char * stateNames[] = { "Start", "FLAG_RCV", "A_RCV", "C_RCV", "BCC_HEAD_
 
 volatile bool stopAndWaitFlag = false;
 
-void alarmHandler(int signo) {
-    if (signo == SIGALRM) {
-        stopAndWaitFlag = true;
-        debugMessage("[SIG HANDLER] SIGALRM");
-    }
-}
-
 int openConfigureSP(char* port) {
     /*
     Open serial port device for reading and writing and not as controlling tty

@@ -1,7 +1,14 @@
 #include "transmitterFuncs.h"
 
-extern unsigned stopAndWaitFlag;
+extern bool stopAndWaitFlag;
 static bool rejFlag = false;
+
+void alarmHandler(int signo) {
+    if (signo == SIGALRM) {
+        stopAndWaitFlag = true;
+        debugMessage("[SIG HANDLER] SIGALRM");
+    }
+}
 
 bool stopAndWait(bool (*functionToExec)(char*,size_t, size_t*), char * msgToWrite, size_t msgSize, size_t  *res) {
     unsigned counter = 0;

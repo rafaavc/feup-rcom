@@ -46,7 +46,7 @@ void calculateEfficiency(){
             printError("The specified baudrate isn't valid. Available:\n4800\n9600\n19200\n38400\n57600\n115200\n230400\n");
             return;
     }
-    printf("Probability head error: %u%%\nProbability data error: %u%%\n\n\n# Error generation\nGenerated %u head errors.\nGenerated %u data errors.\n\n",  PROBABILITY_HEAD, PROBABILITY_DATA, headErrorCount, dataErrorCount);
+    printf("\nProbability head error: %u%%\nProbability data error: %u%%\n\n# Error generation\nGenerated %u head errors.\nGenerated %u data errors.\n\n",  PROBABILITY_HEAD, PROBABILITY_DATA, headErrorCount, dataErrorCount);
     printf("T_prop: %u\n", DELAY);
     printf("Baudrate: B%u\n", baudrateNum);
     printf("Frame size: %u\n\n", getFrameSize());

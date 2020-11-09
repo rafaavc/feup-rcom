@@ -40,5 +40,7 @@ void rateValuesUpdate(size_t packetSize, double time);
  */
 double getAverageRate();
 
-
+/**
+ * Calculates efficiency and prints important efficiency data
+ */
 void calculateEfficiency();
