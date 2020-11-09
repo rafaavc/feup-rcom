@@ -28,8 +28,7 @@ $(MainName): $(mainOBJ)
 
 .PHONY: clean
 clean: 
-	@rm -f -r $(OBJDIR) $(MainName) $(ReceiverName)
-	@rm -f tests
+	@rm -rf $(OBJDIR) $(MainName) $(ReceiverName) cable
 
 .PHONY: cable
 cable:
