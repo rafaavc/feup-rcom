@@ -7,7 +7,7 @@ size_t receiverRead(char * buffer) {
     enum stateMachine state;
     enum readFromSPRet res;
 
-    while (true) { // acho que este while pode ser removido
+    while (true) {
         char * ret = myMalloc(getMaxFrameBufferSize());
 
 
