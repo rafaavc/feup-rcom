@@ -1,0 +1,37 @@
+1. updateimage para formatar (no pc 3 e no 4)
+2. clean switch configuration (comandos escritos num papel na workstation)
+
+
+#1 Ligar S0 do PC 3 a (RS -> Cisco) e o (Cisco -> Rs) ao console gnu-sw.
+
+#2 Configurar endereços ip dos computadores 3 e 4
+	No PC3:
+	ifconfig eth0 172.16.60.1/24
+	No PC4:
+	ifconfig eth0 172.16.60.254/24
+	
+(registar ip and mac addresses)
+
+#3 Testar ping
+	No PC3:
+	ping 172.16.60.254
+	No PC4:
+	ping 172.16.60.1
+
+#4 route -n e arp -a
+
+#5 delete arp entries in tux3
+
+#6 Start wireshark (eth0)
+
+#7 Ping tux 4
+
+(a arp é repopulada com o endereço ip do pc 4)
+
+#8 stop
+
+#9 save logs
+
+DNS nome -> ip
+ARP ip -> mac
+
