@@ -16,3 +16,4 @@ char *getIP(char * hostName);
 int loginHost(int fdSocket, char *user, char *password);
 
 
+/* Todas as funçoes de construçao de comandos e parser do input*/

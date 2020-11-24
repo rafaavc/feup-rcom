@@ -8,12 +8,7 @@
 #include <arpa/inet.h>
 
 
-int sendCommand(int socket, char* cmd);
 
-
-int readReply();
-
-/*Envio e leitura de comandos*/
-
+int fileTransfer();
 
 
