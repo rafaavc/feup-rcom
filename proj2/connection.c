@@ -63,14 +63,50 @@ int parseURL(char *url, char **user, char **password, char **host, char **urlPat
 }
 
 
+/*
+int loginHost(int fdSocket, char *user, char *password){
+    //check if there is a user
 
-/*int loginHost(int fdSocket, char *user, char *password){
 
+    //user command
     char *userCommand = malloc(sizeof(char)* (strlen(user)+5));
+    userCommand[0] = '\0';
+    strcat(userCommand, "user ");
+    strcat(userCommand,user);
 
-    sprintf(userCommand, "user %s", user);
-    
+    //password command
     char *passwordCommand = malloc(sizeof(char)*(strlen(password)+9));
-    sprintf(passwordCommand , "password %s", password);
+    passwordCommand[0] = '\0';
+    strcat(passwordCommand, "password ");
+    strcat(passwordCommand, password);
     
+
+    //send user command -- check if sent correctly
+    printf("User command: %s\n", userCommand);
+    free(userCommand);
+    //read command answer -- check if read correctly
+
+    //send password command -- check if sent correctly
+    printf("Password command: %s \n", passwordCommand);
+    free(passwordCommand);
+    //read command answer -- check if read correctly
+
+
+    return 0;
+}
+
+
+
+int passiveMode(int socket){
+    char *pasvCommand = malloc(sizeof(char)* (strlen("pasv")+2));
+    sprintf(pasvCommand, "pasv \n");
+    
+
+    //send pasv command -- check if sent correctly
+
+    //read response < 227 Entering Passive Mode (193,136,28,12,19,91)
+
+
+
+    return 0;
 }*/

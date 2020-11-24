@@ -16,6 +16,7 @@ int main(int argc, char*argv[]){
     char *password = NULL; 
     char *host = NULL; 
     char *urlPath = NULL;
+
     if (parseURL(argv[1], &user, &password, &host, &urlPath)){
         printUsage(argv);
         exit(EXIT_FAILURE);
@@ -23,10 +24,12 @@ int main(int argc, char*argv[]){
 
     //char* ip = getIP(host);
 
+    //enviar o ficheiro
+
     free(user);
     free(password);
-    //free(*host);
-    //free(*urlPath);
+    free(host);
+    free(urlPath);
 
 
     return 0;
