@@ -9,7 +9,11 @@
 
 int parseURL(char *url, char **user, char **password, char **host, char **urlPath);
 
+int strneedle(char * haystack, char needle);
 
-char * getIP(char * hostName);
+char *getIP(char * hostName);
+
+int loginHost(int fdSocket, char *user, char *password);
 
 
+/* Todas as funçoes de construçao de comandos e parser do input*/
