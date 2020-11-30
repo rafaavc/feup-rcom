@@ -1,8 +1,8 @@
-#include "connection.h"
+#include "fileManager.h"
 
 
 void printUsage(char ** argv) {
-    fprintf(stderr, "Usage: %s ftp://[<user>:<password>@]<host>/<url-path>", argv[0]);
+    fprintf(stderr, "Usage: %s ftp://[<user>:<password>@]<host>/<url-path>\n", argv[0]);
 }
 
         
@@ -21,8 +21,13 @@ int main(int argc, char*argv[]){
         printUsage(argv);
         exit(EXIT_FAILURE);
     }
+    char* ip = getIP(host);
+    int commandSocketFD = connectToIP(ip, FTP_COMMAND_PORT);
 
-    //char* ip = getIP(host);
+    char * reply = NULL;
+    readReply(commandSocketFD, &reply);
+
+    fileTransfer(commandSocketFD, user, password, host, urlPath);
 
     //enviar o ficheiro
 

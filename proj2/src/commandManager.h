@@ -6,12 +6,13 @@
 #include <sys/types.h>
 #include <netinet/in.h> 
 #include <arpa/inet.h>
+#include <unistd.h>
+#include "defines.h"
 
 
 int sendCommand(int socket, char* cmd);
 
-
-int readReply();
+int readReply(int socketFD, char ** reply);
 
 /*Envio e leitura de comandos*/
 
