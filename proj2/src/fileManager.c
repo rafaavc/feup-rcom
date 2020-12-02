@@ -7,8 +7,8 @@ int receiveFile(int dataSocketFD) {
     char * file = malloc(prevFileBufferSize);
     int n;
     printf("receiving file!\n");
-    while((n = read(dataSocketFD, file, REPLY_SIZE)) != 0) {
-        printf("hey\n");
+    while((n = read(dataSocketFD, file + prevFileBufferSize - (REPLY_SIZE*sizeof(char)), REPLY_SIZE)) != 0) {
+        printf("hey, read %d bytes\n", n);
         if (n == -1) {
             perror("receiveFile > read()");
             return 1;
@@ -19,7 +19,7 @@ int receiveFile(int dataSocketFD) {
 
     FILE * output = fopen("testfile", "w");
 
-    fwrite(file, sizeof(char), prevFileBufferSize, output);
+    fwrite(file, sizeof(char), prevFileBufferSize-REPLY_SIZE, output);
 
     fclose(output);
 
