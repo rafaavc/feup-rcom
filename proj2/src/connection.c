@@ -72,7 +72,7 @@ int parseURL(char *url, char **user, char **password, char **host, char **urlPat
         free(aux);
         
     }
-
+  
     int hostStart = atPosition != -1 ? atPosition +1 : strlen(urlBegin);
     int aux, forwardSlashPosition = (aux = strneedle(url + hostStart, '/'), aux != -1 ? aux+hostStart : -1);
 
@@ -81,7 +81,7 @@ int parseURL(char *url, char **user, char **password, char **host, char **urlPat
 
     *urlPath = malloc((strlen(url) - forwardSlashPosition-1)*sizeof(char));
     strncpy(*urlPath, url + forwardSlashPosition + 1, strlen(url) - forwardSlashPosition-1);
-
+ 
     return 0;
 }
 
@@ -101,6 +101,7 @@ int loginHost(int socketFD, char *user, char *password){
     if(hasUser) strcat(userCommand,user);
     else strcat(userCommand, "anonymous");
 
+
     char *passwordCommand = NULL;
     if(hasUser){
         //password command
@@ -110,9 +111,6 @@ int loginHost(int socketFD, char *user, char *password){
         strcat(passwordCommand, password);
         printf("%s\n", passwordCommand);
     }
-
-    //reply
-    char *reply = NULL;
 
     //send user command 
     if(sendCommand(socketFD, userCommand) != 0){
@@ -124,20 +122,24 @@ int loginHost(int socketFD, char *user, char *password){
     printf("User command: %s\n", userCommand);
     free(userCommand);
 
-    //read command answer 
-    if(readReply(socketFD, &reply) != 0){
+    //read reply 
+    char *reply = NULL;
+    readReply(socketFD, &reply);
+    if( (hasUser && *reply != USER_OK) || (!hasUser && *reply != SUCESSFULL_LOGIN)){
         fprintf(stderr,"Error reading user command reply\n");
         free(reply);
         return EXIT_FAILURE;
     }
 
-    if(!hasUser){
+    
+    if(!hasUser){ //if user is anonymous, login is over
         free(userCommand);
         free(reply);
         return 0;
     }
-    //send password command 
-    if(sendCommand(socketFD, passwordCommand) != 0){
+
+     
+    if(sendCommand(socketFD, passwordCommand) != 0){ //send password command
         fprintf(stderr,"Error sending password command: %s\n", passwordCommand);
         free(passwordCommand);  
         free(reply);      
@@ -148,8 +150,10 @@ int loginHost(int socketFD, char *user, char *password){
     free(passwordCommand);
 
     //read command answer
-    char*reply2 = NULL;
-    if(readReply(socketFD, &reply2) != 0){
+    char* reply2 = NULL;
+    readReply(socketFD, &reply2);
+
+    if( *reply2 != SUCESSFULL_LOGIN){ 
         fprintf(stderr,"Error reading password command reply\n");   
         free(reply2);
         return EXIT_FAILURE;
@@ -157,7 +161,7 @@ int loginHost(int socketFD, char *user, char *password){
 
     free(reply2);
     free(reply);
-    return 0;
+    return 0;   
 }
 
 
@@ -178,7 +182,9 @@ int passiveMode(int socketFD, char *ip, unsigned int *porta){
     char *reply = NULL;
 
     //read response < 227 Entering Passive Mode (193,136,28,12,19,91)
-    if(readReply(socketFD, &reply) != 0){
+    readReply(socketFD, &reply);
+
+    if(*reply != PASSIVE_MODE){
         fprintf(stderr,"Error reading pasv command reply\n");   
         free(reply);
         return EXIT_FAILURE;
@@ -233,3 +239,5 @@ int retrCommand(int socketFD, char*urlPath){
     free(reply);
     return 0;
 }
+
+

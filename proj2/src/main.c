@@ -16,11 +16,13 @@ int main(int argc, char*argv[]){
     char *password = NULL; 
     char *host = NULL; 
     char *urlPath = NULL;
-
+    
     if (parseURL(argv[1], &user, &password, &host, &urlPath)){
+        fprintf(stderr, "Error parsing the url!\n");
         printUsage(argv);
         exit(EXIT_FAILURE);
     }
+
     char* ip = getIP(host);
     int commandSocketFD = connectToIP(ip, FTP_COMMAND_PORT);
 
