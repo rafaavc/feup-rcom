@@ -43,30 +43,26 @@ int connectToIP(char * ip, uint16_t port) {
 
 int loginHost(int socketFD, char *user, char *password){
     //check if there is a user
-    int hasUser = 1;    
-    if(strncmp(user, "",1) == 0){ // no authentication
-        hasUser = 0;
-    }
+    int hasUser = user == NULL ? 0 : 1;
 
     //user command
-    char *userCommand = malloc(sizeof(char)* (strlen(user)+5));
+    unsigned userCommandSize = hasUser ? strlen(user)+5 : 12;
+    char *userCommand =  malloc(sizeof(char)*userCommandSize);
     userCommand[0] = '\0';
     strcat(userCommand, "user ");
-    if(hasUser) strcat(userCommand,user);
+
+    if(hasUser) strcat(userCommand, user);
     else strcat(userCommand, "anonymous");
 
-    char *passwordCommand = NULL;
-    if(hasUser){
-        //password command
-        passwordCommand = malloc(sizeof(char)*(strlen(password)+5));
-        passwordCommand[0] = '\0';
-        strcat(passwordCommand, "pass ");
-        strcat(passwordCommand, password);
-        printf("%s\n", passwordCommand);
-    }
 
-    //reply
-    char *reply = NULL;
+    unsigned passwordCommandSize = hasUser ? strlen(password)+5 : 11;
+    char * passwordCommand = malloc(sizeof(char)*passwordCommandSize);
+    passwordCommand[0] = '\0';
+    strcat(passwordCommand, "pass ");
+
+    if (hasUser) strcat(passwordCommand, password);
+    else strcat(passwordCommand, "random");
+
 
     //send user command 
     if(sendCommand(socketFD, userCommand) != 0){
@@ -78,23 +74,17 @@ int loginHost(int socketFD, char *user, char *password){
     printf("User command: %s\n", userCommand);
     free(userCommand);
 
-    //read command answer 
-    if(readReply(socketFD, &reply) != 0){
+    //read reply 
+    unsigned replyCode = 0;
+    readReply(socketFD, &replyCode, NULL);
+    if(replyCode != USER_OK){
         fprintf(stderr,"Error reading user command reply\n");
-        free(reply);
         return EXIT_FAILURE;
     }
-
-    if(!hasUser){
-        free(userCommand);
-        free(reply);
-        return 0;
-    }
-    //send password command 
-    if(sendCommand(socketFD, passwordCommand) != 0){
+     
+    if(sendCommand(socketFD, passwordCommand) != 0){ //send password command
         fprintf(stderr,"Error sending password command: %s\n", passwordCommand);
         free(passwordCommand);  
-        free(reply);      
         return EXIT_FAILURE;
     }
 
@@ -102,16 +92,15 @@ int loginHost(int socketFD, char *user, char *password){
     free(passwordCommand);
 
     //read command answer
-    char*reply2 = NULL;
-    if(readReply(socketFD, &reply2) != 0){
+    replyCode = 0;
+    readReply(socketFD, &replyCode, NULL);
+
+    if (replyCode != SUCESSFULL_LOGIN){ 
         fprintf(stderr,"Error reading password command reply\n");   
-        free(reply2);
         return EXIT_FAILURE;
     }
 
-    free(reply2);
-    free(reply);
-    return 0;
+    return 0;   
 }
 
 
@@ -124,17 +113,18 @@ int passiveMode(int socketFD, char *ip, unsigned int *porta){
 
     //send pasv command 
     if(sendCommand(socketFD,pasvCommand) != 0){
-        fprintf(stderr,"Error sendi  ng pasv command\n");
+        fprintf(stderr,"Error sending pasv command\n");
         free(pasvCommand);       
         return EXIT_FAILURE;
     }
 
-    char *reply = NULL;
-
+    unsigned replyCode = 0;
+    char * reply = malloc(REPLY_SIZE);
     //read response < 227 Entering Passive Mode (193,136,28,12,19,91)
-    if(readReply(socketFD, &reply) != 0){
+    readReply(socketFD, &replyCode, reply);
+
+    if(replyCode != PASSIVE_MODE){
         fprintf(stderr,"Error reading pasv command reply\n");   
-        free(reply);
         return EXIT_FAILURE;
     }
 
@@ -162,13 +152,12 @@ int retrCommand(int socketFD, char*urlPath){
 
     free(retrCommand);
 
-    char *reply = NULL;
-    if(readReply(socketFD, &reply) != 0){
-        fprintf(stderr,"Error reading retr command reply\n");   
-        free(reply);
+    unsigned replyCode = 0;
+    if(readReply(socketFD, &replyCode, NULL) != 0){
+        fprintf(stderr,"Error reading retr command reply\n");  
         return EXIT_FAILURE;
     }
-
-    free(reply);
     return 0;
 }
+
+

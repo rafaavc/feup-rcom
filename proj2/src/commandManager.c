@@ -1,11 +1,11 @@
 #include "commandManager.h"
 
 int sendCommand(int socket, char* cmd){
-    size_t cmdLength = strlen(cmd)+1;
+    size_t cmdLength = strlen(cmd)+2;
     char * aux = calloc(cmdLength, sizeof(char));
     
     strcat(aux, cmd);
-    strcat(aux, "\n"); // to add the endline in the end of the command
+    strcat(aux, "\r\n"); // to add the endline in the end of the command
     if(write(socket,aux,cmdLength) != cmdLength){
         fprintf(stderr, "Error sending command %s\n", cmd);
         free(aux);
@@ -18,13 +18,28 @@ int sendCommand(int socket, char* cmd){
 }
 
 
-int readReply(int socketFD, char ** reply) {
-    *reply = malloc(REPLY_SIZE*sizeof(char));
-    printf("read reply 1\n");
-    if (read(socketFD, *reply, REPLY_SIZE) <= 0) {
-        perror("readReply > read()");
-        return 1;
+int readReply(int socketFD, unsigned * replyCode, char * reply) {
+    FILE* socket = fdopen(socketFD, "r");
+    
+    if (socket == NULL) {
+        return -1;
     }
-    printf("%s", *reply);
+
+
+    //*reply = malloc(REPLY_SIZE*sizeof(char));
+    size_t replySize = 0;
+    char* buf = NULL;
+    printf("# Reading reply...\n");
+
+    while(getline(&buf, &replySize, socket) > 0){
+        printf("%s", buf);
+
+        if(buf[3] == ' ') { // reply code has been read
+            if (reply != NULL) strcpy(reply, buf);
+            buf[3] = '\0';
+            sscanf(buf,"%u", replyCode);
+            break;
+        }
+    }
     return 0;
 }

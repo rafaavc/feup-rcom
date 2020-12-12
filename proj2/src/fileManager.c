@@ -5,9 +5,10 @@ int receiveFile(int dataSocketFD) {
     unsigned prevFileBufferSize = REPLY_SIZE*sizeof(char);
     char * file = malloc(prevFileBufferSize);
     int n;
-    printf("receiving file!\n");
+    
+    //printf("receiving file!\n");
     while((n = read(dataSocketFD, file + prevFileBufferSize - (REPLY_SIZE*sizeof(char)), REPLY_SIZE)) != 0) {
-        printf("hey, read %d bytes\n", n);
+        //printf("hey, read %d bytes\n", n);
         if (n == -1) {
             perror("receiveFile > read()");
             return 1;

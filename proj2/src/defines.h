@@ -4,3 +4,9 @@
 #define IP_SIZE 30
 
 
+#define SUCESSFULL_LOGIN 230
+#define USER_OK 331
+#define PASSIVE_MODE 227
+
+
+

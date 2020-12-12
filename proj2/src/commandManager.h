@@ -12,7 +12,7 @@
 
 int sendCommand(int socket, char* cmd);
 
-int readReply(int socketFD, char ** reply);
+int readReply(int socketFD, unsigned * replyCode, char * reply);
 
 /*Envio e leitura de comandos*/
 
