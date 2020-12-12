@@ -1,7 +1,6 @@
 #include "fileManager.h"
 
 
-
 int receiveFile(int dataSocketFD) {
     unsigned prevFileBufferSize = REPLY_SIZE*sizeof(char);
     char * file = malloc(prevFileBufferSize);

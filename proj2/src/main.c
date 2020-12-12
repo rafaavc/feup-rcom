@@ -21,13 +21,18 @@ int main(int argc, char*argv[]){
         printUsage(argv);
         exit(EXIT_FAILURE);
     }
-    char* ip = getIP(host);
+    if (user != NULL) {
+        printf("Retrieving '%s' from '%s', using username '%s' and password '%s'.\n", urlPath, host, user, password);
+    } else {
+        printf("Retrieving '%s' from '%s' anonymously.\n", urlPath, host);
+    }
+    /*char* ip = getIP(host);
     int commandSocketFD = connectToIP(ip, FTP_COMMAND_PORT);
 
     char * reply = NULL;
     readReply(commandSocketFD, &reply);
 
-    fileTransfer(commandSocketFD, user, password, host, urlPath);
+    fileTransfer(commandSocketFD, user, password, host, urlPath);*/
 
     //enviar o ficheiro
 

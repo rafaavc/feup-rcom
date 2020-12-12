@@ -1,6 +1,6 @@
 CC=gcc
-_DEPS = commandManager.h connection.h fileManager.h
-_mainOBJ = main.o commandManager.o fileManager.o connection.o
+_DEPS = commandManager.h connection.h fileManager.h parser.h
+_mainOBJ = main.o commandManager.o fileManager.o connection.o parser.o
 OBJDIR = obj
 SRCDIR = src
 MainName = download

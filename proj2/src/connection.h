@@ -1,12 +1,5 @@
-#include "commandManager.h"
+#include "parser.h"
 
-/* Todas as funçoes de construçao de comandos e parser do input*/
-
-int parseURL(char *url, char **user, char **password, char **host, char **urlPath);
-
-int parsePsv(char *psvReply, char *ip, unsigned int *porta);
-
-int strneedle(char * haystack, char needle);
 
 char *getIP(char * hostName);
 
