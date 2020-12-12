@@ -1,0 +1,273 @@
+root@gnu62:~# ping 172.16.60.1
+PING 172.16.60.1 (172.16.60.1) 56(84) bytes of data.
+From 172.16.61.254: icmp_seq=1 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=1 ttl=63 time=1.13 ms
+From 172.16.61.254: icmp_seq=2 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=2 ttl=63 time=1.07 ms
+From 172.16.61.254: icmp_seq=3 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=3 ttl=63 time=1.13 ms
+From 172.16.61.254: icmp_seq=4 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=4 ttl=63 time=1.07 ms
+From 172.16.61.254: icmp_seq=5 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=5 ttl=63 time=1.13 ms
+From 172.16.61.254: icmp_seq=6 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=6 ttl=63 time=1.09 ms
+From 172.16.61.254: icmp_seq=7 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=7 ttl=63 time=1.06 ms
+From 172.16.61.254: icmp_seq=8 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=8 ttl=63 time=1.05 ms
+From 172.16.61.254: icmp_seq=9 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=9 ttl=63 time=1.05 ms
+From 172.16.61.254: icmp_seq=10 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=10 ttl=63 time=1.13 ms
+From 172.16.61.254: icmp_seq=11 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=11 ttl=63 time=1.06 ms
+From 172.16.61.254: icmp_seq=12 Redirect Host(New nexthop: 172.16.61.253)
+64 bytes from 172.16.60.1: icmp_seq=12 ttl=63 time=1.07 ms
+^C
+--- 172.16.60.1 ping statistics ---
+12 packets transmitted, 12 received, 0% packet loss, time 24ms
+rtt min/avg/max/mdev = 1.051/1.086/1.130/0.051 ms
+root@gnu62:~# traceroute 172.16.60.1
+traceroute to 172.16.60.1 (172.16.60.1), 30 hops max, 60 byte packets
+ 1  172.16.61.254 (172.16.61.254)  1.034 ms  1.280 ms  1.544 ms
+ 2  172.16.61.253 (172.16.61.253)  2.176 ms  0.355 ms  0.352 ms
+ 3  172.16.60.1 (172.16.60.1)  0.545 ms  0.536 ms  0.524 ms
+
+
+root@gnu62:~# route add -net 172.16.60.0/24 gw 172.16.61.253
+root@gnu62:~# traceroute 172.16.60.1
+traceroute to 172.16.60.1 (172.16.60.1), 30 hops max, 60 byte packets
+ 1  172.16.61.253 (172.16.61.253)  0.185 ms  0.158 ms  0.138 ms
+ 2  172.16.60.1 (172.16.60.1)  0.329 ms  0.302 ms  0.283 ms
+
+
+root@gnu62:~# echo 1 > /proc/sys/net/ipv4/conf/eth0/accept_redirects
+root@gnu62:~# echo 1 > /proc/sys/net/ipv4/conf/all/accept_redirects
+root@gnu62:~# traceroute 172.16.60.1
+traceroute to 172.16.60.1 (172.16.60.1), 30 hops max, 60 byte packets
+ 1  172.16.61.253 (172.16.61.253)  0.227 ms  0.173 ms  0.149 ms
+ 2  172.16.60.1 (172.16.60.1)  0.375 ms  0.358 ms  0.339 ms
+
+root@gnu62:~# route del -net 172.16.60.0/24 gw 172.16.61.253
+root@gnu62:~# traceroute 172.16.60.1
+traceroute to 172.16.60.1 (172.16.60.1), 30 hops max, 60 byte packets
+ 1  172.16.61.254 (172.16.61.254)  1.032 ms  1.272 ms  1.535 ms
+ 2  172.16.61.253 (172.16.61.253)  2.169 ms  0.345 ms  0.341 ms
+ 3  172.16.60.1 (172.16.60.1)  0.534 ms  0.519 ms  0.451 ms
+
+
+
+## EXP 5
+
+root@gnu62:~# nano /etc/resolv.conf
+root@gnu62:~# ping google.com
+PING google.com (216.58.201.174) 56(84) bytes of data.
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=1 ttl=113 time=16.10 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=2 ttl=113 time=15.9 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=3 ttl=113 time=15.9 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=4 ttl=113 time=15.9 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=5 ttl=113 time=16.0 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=6 ttl=113 time=16.0 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=7 ttl=113 time=15.10 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=8 ttl=113 time=15.10 ms
+64 bytes from arn02s06-in-f174.1e100.net (216.58.201.174): icmp_seq=9 ttl=113 time=15.9 ms
+^C
+--- google.com ping statistics ---
+9 packets transmitted, 9 received, 0% packet loss, time 19ms
+rtt min/avg/max/mdev = 15.885/16.061/16.976/0.353 ms
+root@gnu62:~# history
+    1  lsgpu
+    2  lscpu
+    3  dmesg
+    4  dmesg | grep vga
+    5  dmesg | grep nvidia
+    6  xrandr -s 1024x768
+    7  apt-get install gconf-editor && gconf-editor
+    8  gsettings set org.gnome.desktop.background show-desktop-icons true
+    9  dconf-editor
+   10  apt install dconf
+   11  apt install dconf-editor
+   12  dconf-editor
+   13  dconf-editor
+   14  apt install gtkterm
+   15  apt install geany
+   16  apt install conky
+   17  gcc
+   18  apt install gcc
+   19  ls
+   20  ifc
+   21  ifconfig
+   22  apt install ifconfig
+   23  apt install net-tools
+   24  gcc
+   25  g++
+   26  ls
+   27  nano .bashrc
+   28  reset
+   29  ls
+   30  ls
+   31  ifconfig 
+   32  dmesg | grep -i eth
+   33  nano /etc/default/grub
+   34  reboot
+   35  xrandr
+   36  xrandr -s 1024x768
+   37  ifconfig 
+   38  nano /etc/default/grub
+   39  update-grub
+   40  reboot
+   41  xrandr -s 1024x768
+   42  ifconfig 
+   43  nano /etc/lightdm/lightdm.conf 
+   44  apt install arandr
+   45  arandr
+   46  sudo nano /etc/lightdm/lightdm.conf 
+   47  ifconfig 
+   48  nano /etc/default/grub
+   49  update-grub
+   50  reboot
+   51  xrandr -s 1024x768
+   52  ifconfig 
+   53  nano /etc/resolv.conf 
+   54  reboot
+   55  xrandr -s 1024x768
+   56  reboot
+   57  ifconfig 
+   58  nano /etc/default/grub
+   59  update-grub
+   60  conky
+   61  ssh root@172.16.1.34
+   62  route -n
+   63  reboot
+   64  biosdevnames
+   65  biosdevname
+   66  apt install biosdevname
+   67  ifconfig 
+   68  dmesg | grep eth
+   69  exit
+   70  ls
+   71  nano ./conkyrc
+   72  conky &
+   73  killall conkyrc 
+   74  killall conky
+   75  mv conkyrc .conkyrc
+   76  conky &
+   77  killall conky
+   78  conky &
+   79  killall conky
+   80  reboot
+   81  ssh 172.16.1.33
+   82  route add default gw 172.16.1.254
+   83  ls
+   84  ./.conkystartup
+   85  conky
+   86  rm -rf ./.conkystartup 
+   87  apt purge arandr
+   88  ps aux
+   89  ps aux | grep conky
+   90  whereis conky
+   91  reboot
+   92  nano /etc/hosts
+   93  exit
+   94  dpkg --get-selections | grep network-manager
+   95  update-
+   96  updateimage
+   97  updateimage
+   98  chmod +x updateimage
+   99  chmod +x /usr/bin/updateimage 
+  100  updateimage
+  101  systemctl stop NetworkManager.service
+  102  systemctl disable NetworkManager.service
+  103  reboot
+  104  ifconfig 
+  105  ifconfig eth1 up
+  106  ifconfig eth1 192.168.109.139
+  107  ifconfig eth1 192.168.109.139/24
+  108  route add default gw 192.168.109.254
+  109  ping 192.168.109.254
+  110  ping 1.1.1.1
+  111  reboot 
+  112  ifconfig eth1 up
+  113  ifconfig eth1 192.168.109.139/24
+  114  route add default gw 192.168.109.254
+  115  ping 1.1.1.1
+  116  cat /etc/resolv.conf 
+  117  cd /usr/share/applications
+  118  ls
+  119  nano caja.desktop 
+  120  caja.desktop
+  121  nano /etc/network
+  122  nano /etc/network/interfaces
+  123  reboot
+  124  apt install wireshark
+  125  ifconfig eth1 up
+  126  ifconfig eth1 192.168.109.139/24
+  127  route add default gw 192.168.109.254
+  128  ping 1.1.1.1
+  129  apt install wireshark
+  130  exit
+  131  apt install sali
+  132  cd Desktop/
+  133  ls
+  134  chmod +x sali_prepare 
+  135  ./sali_prepare 
+  136  ./sali_prepare etcsdf
+  137  init 0
+  138  nano /usr/bin/updateimage 
+  139  ifconfig 
+  140  ping 1.1.1.1
+  141  updateimage 
+  142  nano /usr/bin/updateimage 
+  143  updateimage 
+  144  nano /usr/bin/updateimage 
+  145  ifconfig 
+  146  ping 1.1.1.1
+  147  updateimage 
+  148  updateimage 
+  149  nano /usr/bin/updateimage 
+  150  nano /usr/bin/updateimage 
+  151  updateimage 
+  152  nano /usr/bin/updateimage 
+  153  updateimage
+  154  updateimage
+  155  ifconfig eth0 172.16.61.1/24
+  156  ifconfig
+  157  route add -net 172.16.60.0/24 gw 172.16.61.253
+  158  route -n
+  159  ping 172.16.61.253
+  160  route add default gw 172.16.61.254
+  161  echo 0 > proc/sys/net/ipv5/conf/eth0/accept_redirects
+  162  echo 0 > proc/sys/net/ipv4/conf/eth0/accept_redirects
+  163  echo 0 > /proc/sys/net/ipv4/conf/eth0/accept_redirects
+  164  echo 0 > /proc/sys/net/ipv4/conf/all/accept_redirects
+  165  route -n
+  166  route -d 172.16..60.0
+  167  route -d 172.16.60.0
+  168  route del -net 172.16.60.0 gw 172.16.61.253
+  169  route -n
+  170  route del -net 172.16.60.0/24 gw 172.16.61.253
+  171  ping 172.16.60.1
+  172  arp -d
+  173  arp -d 172.16.60.1
+  174  arp
+  175  arp -a
+  176  ping 172.16.60.1
+  177  traceroute 172.16.60.1
+  178  route add -net 172.16.60.0/24 gw 172.16.61.253
+  179  traceroute 172.16.60.1
+  180  echo 1 > proc/sys/net/ipv4/conf/eth0/accept_redirects
+  181  echo 1 > /proc/sys/net/ipv4/conf/eth0/accept_redirects
+  182  echo 1 > /proc/sys/net/ipv4/conf/all/accept_redirects
+  183  traceroute 172.16.60.1
+  184  route del -net 172.16.60.0/24 gw 172.16.61.253
+  185  traceroute 172.16.60.1
+  186  ping 172.16.2.254
+  187  ping 8.8.8.8
+  188  nano /etc/resolv.conf
+  189  ping google.com
+  190  history
+
+
+
+
