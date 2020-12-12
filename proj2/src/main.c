@@ -26,13 +26,13 @@ int main(int argc, char*argv[]){
     } else {
         printf("Retrieving '%s' from '%s' anonymously.\n", urlPath, host);
     }
-    /*char* ip = getIP(host);
+    char* ip = getIP(host);
     int commandSocketFD = connectToIP(ip, FTP_COMMAND_PORT);
 
     char * reply = NULL;
     readReply(commandSocketFD, &reply);
 
-    fileTransfer(commandSocketFD, user, password, host, urlPath);*/
+    fileTransfer(commandSocketFD, user, password, host, urlPath);
 
     //enviar o ficheiro
 

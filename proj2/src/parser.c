@@ -89,3 +89,19 @@ int parseURL(char *url, char **user, char **password, char **host, char **urlPat
     return -1;
 }
 
+
+
+int parsePsv(char *psvReply, char *ip, unsigned int *porta){
+    // 227 Entering Passive Mode (193,136,28,12,19,91)
+    unsigned int ip1, ip2, ip3, ip4, p1, p2;
+
+    if(sscanf(psvReply, "227 Entering Passive Mode (%u, %u, %u, %u, %u, %u)",&ip1, &ip2, &ip3, &ip4, &p1, &p2) != 6){
+        fprintf(stderr, "Error in parsing pasv\n");
+        return -1;
+    }
+    sprintf(ip, "%u.%u.%u.%u", ip1, ip2, ip3, ip4);
+    *porta = p1*256 + p2;
+    
+    return 0;
+}
+

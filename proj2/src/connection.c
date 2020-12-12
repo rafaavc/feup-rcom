@@ -146,21 +146,6 @@ int passiveMode(int socketFD, char *ip, unsigned int *porta){
 }
 
 
-int parsePsv(char *psvReply, char *ip, unsigned int *porta){
-    // 227 Entering Passive Mode (193,136,28,12,19,91)
-    unsigned int ip1, ip2, ip3, ip4, p1, p2;
-
-    if(sscanf(psvReply, "227 Entering Passive Mode (%u, %u, %u, %u, %u, %u)",&ip1, &ip2, &ip3, &ip4, &p1, &p2) != 6){
-        fprintf(stderr, "Error in parsing pasv\n");
-        return -1;
-    }
-    sprintf(ip, "%u.%u.%u.%u", ip1, ip2, ip3, ip4);
-    *porta = p1*256 + p2;
-    
-    return 0;
-}
-
-
 int retrCommand(int socketFD, char*urlPath){
     char *retrCommand = malloc(sizeof(char)*(5+strlen(urlPath)));
     retrCommand[0] = '\0';
