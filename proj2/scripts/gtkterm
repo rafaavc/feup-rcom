@@ -1,0 +1,60 @@
+enable
+8nortel
+
+configure terminal
+vlan 60
+vlan 61
+end
+
+# pc 2 eth0
+configure terminal 
+interface fastethernet 0/1
+switchport mode access 
+switchport access vlan 61
+
+# pc 3 eth0
+interface fastEthernet 0/9
+switchport mode access 
+switchport access vlan 60
+
+# pc 4 eth0
+interface fastEthernet 0/5
+switchport mode access 
+switchport access vlan 60
+
+# pc 4 eth1
+interface fastEthernet 0/17
+switchport mode access 
+switchport access vlan 61
+end
+
+# exp 4
+
+# Adicionar cabo entre fe0/0 a uma porta qualquer e adicionar essa porta a vlan 61
+configure terminal
+interface fastethernet 0/23
+switchport mode access
+switchport access vlan 61
+end
+# adicionar o cabo fe0/1 a internet P6.1
+
+
+conf t
+interface fastethernet 0/0
+ip address 172.16.61.254 255.255.255.0
+no shutdown
+ip nat inside
+exit
+interface gigabitethernet 0/1
+ip address 172.16.2.69 255.255.255.0
+no shutdown
+ip nat outside
+exit
+ip nat pool ovrld 172.16.2.69 172.16.2.69 prefix 24
+ip nat inside source list 1 pool ovrld overload
+access-list 1 permit 172.16.60.0 0.0.0.7
+access-list 1 permit 172.16.61.0 0.0.0.7
+ip route 0.0.0.0 0.0.0.0 172.16.1.254
+ip route 172.16.60.0 255.255.255.0 172.16.61.253
+end
+
