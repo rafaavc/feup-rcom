@@ -45,7 +45,7 @@ ip address 172.16.61.254 255.255.255.0
 no shutdown
 ip nat inside
 exit
-interface gigabitethernet 0/1
+interface fastethernet 0/1
 ip address 172.16.2.69 255.255.255.0
 no shutdown
 ip nat outside
