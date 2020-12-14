@@ -27,7 +27,7 @@ int readReply(int socketFD, unsigned * replyCode, char * reply) {
 
     size_t replySize = 0;
     char* buf = NULL;
-    printf("\n# Reading reply... \n");
+    //printf("\n# Reading reply... \n");
 
     while(getline(&buf, &replySize, socket) > 0){
         printf("%s", buf);

@@ -180,13 +180,11 @@ int retrCommand(int socketFD, char*urlPath){
     printf("RetrCommand: %s\n", retrCommand);
     free(retrCommand);
 
+    // Reads the 150 response
     unsigned replyCode = 0;
-
-    while(replyCode != TRANSFER_COMPLETE){
-        if(readReply(socketFD, &replyCode, NULL) != 0){
-            fprintf(stderr,"Error reading retr command reply\n");  
-            return EXIT_FAILURE;
-        }
+    if(readReply(socketFD, &replyCode, NULL) != 0){
+        fprintf(stderr,"Error reading retr command reply\n");  
+        return EXIT_FAILURE;
     }
 
     return 0;
@@ -200,6 +198,13 @@ int disconnect(int socketFD) {
     quitCommand[0] = '\0';
     sprintf(quitCommand, "quit \n");
 
+    // reads retr success
+    unsigned replyCode = 0;
+    if(readReply(socketFD, &replyCode, NULL) != 0){
+        fprintf(stderr,"Error reading retr command reply\n");  
+        return EXIT_FAILURE;
+    }
+
     if(sendCommand(socketFD, quitCommand) != 0){
         fprintf(stderr,"Error sending quit command: %s\n", quitCommand);
         free(quitCommand);      
@@ -208,7 +213,7 @@ int disconnect(int socketFD) {
     printf("QuitCommand: %s\n", quitCommand);
     free(quitCommand);
 
-    unsigned replyCode = 0;
+    replyCode = 0;
     if(readReply(socketFD, &replyCode, NULL) != 0){
         fprintf(stderr,"Error reading quit command reply\n");  
         return EXIT_FAILURE;

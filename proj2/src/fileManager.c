@@ -36,11 +36,11 @@ int fileTransfer(int socketFD, char * user, char * password, char * host, char *
     passiveMode(socketFD, ip, &port);
 
     int dataSocketFD = connectToIP(ip, port);
-    //binaryMode(socketFD, ip, &port);
+    binaryMode(socketFD, ip, &port);
     retrCommand(socketFD, urlPath);
     receiveFile(dataSocketFD);
 
-    //disconnect(socketFD);
+    disconnect(socketFD);
 
     return 0;
 }
