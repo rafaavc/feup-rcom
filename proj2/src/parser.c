@@ -70,12 +70,13 @@ int parseURL(char *url, char **user, char **password, char **host, char **urlPat
                     strcpy(tempUrlPath, *urlPath);
                     char * tok = strtok(tempUrlPath, "/");
                     while (tok != NULL) {
+                        free(*filename);
+                        *filename = malloc(strlen(tok)*sizeof(char));
+                        strcpy(*filename, tok);
+
                         tok = strtok(NULL, "/");
-                        if (tok != NULL) {
-                            *filename = malloc(strlen(tok)*sizeof(char));
-                            strcpy(*filename, tok);
-                        }
                     }
+                    free(tempUrlPath);
                     free(buffer);
                     return 0;
                 }
