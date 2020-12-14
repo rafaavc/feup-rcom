@@ -11,3 +11,6 @@ int passiveMode(int socketFD, char *ip, unsigned int *porta);
 
 int retrCommand(int socketFD, char*urlPath);
 
+int disconnect(int socketFD);
+
+int binaryMode(int socketFD, char *ip, unsigned int *porta);

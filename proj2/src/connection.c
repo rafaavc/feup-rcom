@@ -135,6 +135,35 @@ int passiveMode(int socketFD, char *ip, unsigned int *porta){
     return 0;
 }
 
+int binaryMode(int socketFD, char *ip, unsigned int *porta){
+    char *bynaryCommand = malloc(sizeof(char)* (strlen("pasv")+2));
+    bynaryCommand[0] = '\0';
+    sprintf(bynaryCommand, "type I\n");
+    
+
+    //send pasv command 
+    if(sendCommand(socketFD,bynaryCommand) != 0){
+        fprintf(stderr,"Error sending binary mode command\n");
+        free(bynaryCommand);       
+        return EXIT_FAILURE;
+    }
+    printf("Binary command: %s \n", bynaryCommand);
+    free(bynaryCommand);
+
+
+    unsigned replyCode = 0;
+    char * reply = malloc(REPLY_SIZE);
+    readReply(socketFD, &replyCode, reply);
+
+    if(replyCode != BINARY_MODE){
+        fprintf(stderr,"Error reading binary command reply\n");   
+        return EXIT_FAILURE;
+    }
+
+
+
+    return 0;
+}
 
 int retrCommand(int socketFD, char*urlPath){
     char *retrCommand = malloc(sizeof(char)*(5+strlen(urlPath)));
@@ -142,22 +171,54 @@ int retrCommand(int socketFD, char*urlPath){
     strcat(retrCommand, "retr ");
     strcat(retrCommand,urlPath);
 
-    printf("RetrCommand: %s\n", retrCommand);
-
     if(sendCommand(socketFD, retrCommand) != 0){
         fprintf(stderr,"Error sending retr command: %s\n", retrCommand);
         free(retrCommand);      
         return EXIT_FAILURE;
     }
 
+    printf("RetrCommand: %s\n", retrCommand);
     free(retrCommand);
 
     unsigned replyCode = 0;
-    if(readReply(socketFD, &replyCode, NULL) != 0){
-        fprintf(stderr,"Error reading retr command reply\n");  
-        return EXIT_FAILURE;
+
+    while(replyCode != TRANSFER_COMPLETE){
+        if(readReply(socketFD, &replyCode, NULL) != 0){
+            fprintf(stderr,"Error reading retr command reply\n");  
+            return EXIT_FAILURE;
+        }
     }
+
     return 0;
 }
 
 
+
+
+int disconnect(int socketFD) {
+    char *quitCommand = malloc(sizeof(char)* (strlen("quit")+2));
+    quitCommand[0] = '\0';
+    sprintf(quitCommand, "quit \n");
+
+    if(sendCommand(socketFD, quitCommand) != 0){
+        fprintf(stderr,"Error sending quit command: %s\n", quitCommand);
+        free(quitCommand);      
+        return EXIT_FAILURE;
+    }
+    printf("QuitCommand: %s\n", quitCommand);
+    free(quitCommand);
+
+    unsigned replyCode = 0;
+    if(readReply(socketFD, &replyCode, NULL) != 0){
+        fprintf(stderr,"Error reading quit command reply\n");  
+        return EXIT_FAILURE;
+    }
+
+    if(replyCode != QUIT_SUCESS){
+        printf("%d\n", replyCode);
+        fprintf(stderr,"Error reading quit command reply\n");   
+        return EXIT_FAILURE;
+    }
+
+   return 0;
+}

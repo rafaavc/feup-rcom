@@ -1,14 +1,11 @@
 #include "fileManager.h"
 
-
 int receiveFile(int dataSocketFD) {
     unsigned prevFileBufferSize = REPLY_SIZE*sizeof(char);
     char * file = malloc(prevFileBufferSize);
     int n;
     
-    //printf("receiving file!\n");
     while((n = read(dataSocketFD, file + prevFileBufferSize - (REPLY_SIZE*sizeof(char)), REPLY_SIZE)) != 0) {
-        //printf("hey, read %d bytes\n", n);
         if (n == -1) {
             perror("receiveFile > read()");
             return 1;
@@ -31,22 +28,20 @@ int receiveFile(int dataSocketFD) {
 
 
 int fileTransfer(int socketFD, char * user, char * password, char * host, char * urlPath){
-    /*
-        aqui vao ser chamadas todas as funçoes onde se executam os comandos 
-
-    */
 
     loginHost(socketFD, user, password);
 
     unsigned int port;
     char * ip = malloc(IP_SIZE*sizeof(char));
     passiveMode(socketFD, ip, &port);
+
     int dataSocketFD = connectToIP(ip, port);
+    //binaryMode(socketFD, ip, &port);
     retrCommand(socketFD, urlPath);
     receiveFile(dataSocketFD);
+
+    //disconnect(socketFD);
 
     return 0;
 }
 
-
-//se calhar mais a funçao de dowload do ficheiro

@@ -1,12 +1,5 @@
 #include "parser.h"
 
-int strneedle(char * haystack, char needle) {
-    for (int i = 0; i < strlen(haystack); i++) {
-        if (haystack[i] == needle) return i;
-    }
-    return -1;
-}
-
 void copyBufferToVar(char * buffer, size_t bufferSize, char ** out) {
     *out = malloc((strlen(buffer)+1)*sizeof(char));
     memcpy(*out, buffer, (strlen(buffer)+1)*sizeof(char));
@@ -91,14 +84,14 @@ int parseURL(char *url, char **user, char **password, char **host, char **urlPat
 
 
 
-int parsePsv(char *psvReply, char *ip, unsigned int *porta){
-    // 227 Entering Passive Mode (193,136,28,12,19,91)
+int parsePsv(char *psvReply, char *ip, unsigned int *porta){ // 227 Entering Passive Mode (193,136,28,12,19,91)
     unsigned int ip1, ip2, ip3, ip4, p1, p2;
 
     if(sscanf(psvReply, "227 Entering Passive Mode (%u, %u, %u, %u, %u, %u)",&ip1, &ip2, &ip3, &ip4, &p1, &p2) != 6){
         fprintf(stderr, "Error in parsing pasv\n");
         return -1;
     }
+    
     sprintf(ip, "%u.%u.%u.%u", ip1, ip2, ip3, ip4);
     *porta = p1*256 + p2;
     

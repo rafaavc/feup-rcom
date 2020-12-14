@@ -7,6 +7,7 @@
 #define SUCESSFULL_LOGIN 230
 #define USER_OK 331
 #define PASSIVE_MODE 227
-
-
+#define QUIT_SUCESS 221 
+#define BINARY_MODE 200
+#define TRANSFER_COMPLETE 226
 

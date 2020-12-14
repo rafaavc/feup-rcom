@@ -9,12 +9,19 @@
 #include <unistd.h>
 #include "defines.h"
 
+/**
+ * Sending and reading commands
+*/
 
+
+/**
+ * Sends the command
+*/
 int sendCommand(int socket, char* cmd);
-
+/**
+ * Reads the server reply
+*/
 int readReply(int socketFD, unsigned * replyCode, char * reply);
-
-/*Envio e leitura de comandos*/
 
 
 

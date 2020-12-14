@@ -25,11 +25,9 @@ int readReply(int socketFD, unsigned * replyCode, char * reply) {
         return -1;
     }
 
-
-    //*reply = malloc(REPLY_SIZE*sizeof(char));
     size_t replySize = 0;
     char* buf = NULL;
-    printf("# Reading reply...\n");
+    printf("\n# Reading reply... \n");
 
     while(getline(&buf, &replySize, socket) > 0){
         printf("%s", buf);

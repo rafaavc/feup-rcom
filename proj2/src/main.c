@@ -32,12 +32,10 @@ int main(int argc, char*argv[]){
     char* ip = getIP(host);
     int commandSocketFD = connectToIP(ip, FTP_COMMAND_PORT);
 
-    char * reply = NULL;
+    unsigned reply = 0;
     readReply(commandSocketFD, &reply, NULL);
 
-    fileTransfer(commandSocketFD, user, password, host, urlPath);
-
-    //enviar o ficheiro
+    fileTransfer(commandSocketFD, user, password, host, urlPath); //download of the file 
 
     free(user);
     free(password);
