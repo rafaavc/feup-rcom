@@ -14,7 +14,7 @@ enum urlParsingState {
 /**
  * Parses the received url into the necessary variables
 */
-int parseURL(char *url, char **user, char **password, char **host, char **urlPath);
+int parseURL(char *url, char **user, char **password, char **host, char **urlPath, char **filename);
 /**
  * Parses the response from the server and calculates the port in which the server is waiting for connection
 */

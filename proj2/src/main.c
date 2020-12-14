@@ -16,8 +16,8 @@ int main(int argc, char*argv[]){
     char *password = NULL; 
     char *host = NULL; 
     char *urlPath = NULL;
-    
-    if (parseURL(argv[1], &user, &password, &host, &urlPath)){
+    char *filename = NULL;
+    if (parseURL(argv[1], &user, &password, &host, &urlPath, &filename)){
         fprintf(stderr, "Error parsing the url!\n");
         printUsage(argv);
         exit(EXIT_FAILURE);
@@ -35,7 +35,7 @@ int main(int argc, char*argv[]){
     unsigned reply = 0;
     readReply(commandSocketFD, &reply, NULL);
 
-    fileTransfer(commandSocketFD, user, password, host, urlPath); //download of the file 
+    fileTransfer(commandSocketFD, user, password, host, urlPath, filename); //download of the file 
 
     free(user);
     free(password);

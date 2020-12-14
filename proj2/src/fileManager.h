@@ -3,11 +3,11 @@
 /**
  *   Function that takes care of the download of the file
 */
-int receiveFile(int dataSocketFD);
+int receiveFile(int dataSocketFD, char * filename);
 
 /**
 * Function that calls all functions where the commands are executed
 */
-int fileTransfer(int socketFD, char * user, char * password, char * host, char * urlPath);
+int fileTransfer(int socketFD, char * user, char * password, char * host, char * urlPath, char * filename);
 
 

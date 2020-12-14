@@ -6,7 +6,7 @@ void copyBufferToVar(char * buffer, size_t bufferSize, char ** out) {
     memset(buffer, 0, bufferSize);
 }
 
-int parseURL(char *url, char **user, char **password, char **host, char **urlPath) {
+int parseURL(char *url, char **user, char **password, char **host, char **urlPath, char **filename) {
     if (strncmp(URL_PROTOCOL, url, 6) != 0) {
         fprintf(stderr, "The protocol isn't valid. Should be '%s'.\n", URL_PROTOCOL);
         return 1;
@@ -66,6 +66,16 @@ int parseURL(char *url, char **user, char **password, char **host, char **urlPat
             case HOST_OK:
                 if (i == (unsigned) strlen(url)) {
                     copyBufferToVar(buffer, bufferSize, urlPath);
+                    char * tempUrlPath = malloc(strlen(*urlPath)*sizeof(char));
+                    strcpy(tempUrlPath, *urlPath);
+                    char * tok = strtok(tempUrlPath, "/");
+                    while (tok != NULL) {
+                        tok = strtok(NULL, "/");
+                        if (tok != NULL) {
+                            *filename = malloc(strlen(tok)*sizeof(char));
+                            strcpy(*filename, tok);
+                        }
+                    }
                     free(buffer);
                     return 0;
                 }

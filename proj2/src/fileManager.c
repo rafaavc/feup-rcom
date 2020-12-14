@@ -1,6 +1,6 @@
 #include "fileManager.h"
 
-int receiveFile(int dataSocketFD) {
+int receiveFile(int dataSocketFD, char * filename) {
     unsigned prevFileBufferSize = REPLY_SIZE*sizeof(char);
     char * file = malloc(prevFileBufferSize);
     int n;
@@ -14,7 +14,7 @@ int receiveFile(int dataSocketFD) {
         prevFileBufferSize += n*sizeof(char);
     }
 
-    FILE * output = fopen("testfile", "w");
+    FILE * output = fopen(filename, "w");
 
     fwrite(file, sizeof(char), prevFileBufferSize-REPLY_SIZE, output);
 
@@ -27,7 +27,7 @@ int receiveFile(int dataSocketFD) {
 
 
 
-int fileTransfer(int socketFD, char * user, char * password, char * host, char * urlPath){
+int fileTransfer(int socketFD, char * user, char * password, char * host, char * urlPath, char * filename){
 
     loginHost(socketFD, user, password);
 
@@ -38,7 +38,7 @@ int fileTransfer(int socketFD, char * user, char * password, char * host, char *
     int dataSocketFD = connectToIP(ip, port);
     binaryMode(socketFD, ip, &port);
     retrCommand(socketFD, urlPath);
-    receiveFile(dataSocketFD);
+    receiveFile(dataSocketFD, filename);
 
     disconnect(socketFD);
 

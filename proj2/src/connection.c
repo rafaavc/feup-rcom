@@ -191,8 +191,6 @@ int retrCommand(int socketFD, char*urlPath){
 }
 
 
-
-
 int disconnect(int socketFD) {
     char *quitCommand = malloc(sizeof(char)* (strlen("quit")+2));
     quitCommand[0] = '\0';
