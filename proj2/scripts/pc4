@@ -14,4 +14,4 @@ echo 0 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcast
 route add default gw 172.16.61.254
 
 # exp 5
-echo 'search netlab.fe.up.pt\nnameserver 172.16.2.1' > test.txt
+echo 'search netlab.fe.up.pt\nnameserver 172.16.2.1' > /etc/resolv.conf
