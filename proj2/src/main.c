@@ -30,12 +30,13 @@ int main(int argc, char*argv[]){
     }
 
     char* ip = getIP(host);
+    if (ip == NULL) exit(EXIT_FAILURE);
     int commandSocketFD = connectToIP(ip, FTP_COMMAND_PORT);
 
     unsigned reply = 0;
-    readReply(commandSocketFD, &reply, NULL);
+    if (readReply(commandSocketFD, &reply, NULL)) return EXIT_FAILURE;
 
-    fileTransfer(commandSocketFD, user, password, host, urlPath, filename); //download of the file 
+    if (fileTransfer(commandSocketFD, user, password, host, urlPath, filename)) return EXIT_FAILURE; //download of the file 
 
     free(user);
     free(password);

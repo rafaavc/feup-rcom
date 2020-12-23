@@ -77,29 +77,29 @@ int loginHost(int socketFD, char *user, char *password){
     //read reply 
     unsigned replyCode = 0;
     readReply(socketFD, &replyCode, NULL);
-    if(replyCode != USER_OK){
+    if(replyCode != USER_OK && replyCode != SUCESSFULL_LOGIN){
         fprintf(stderr,"Error reading user command reply\n");
         return EXIT_FAILURE;
     }
-     
-    if(sendCommand(socketFD, passwordCommand) != 0){ //send password command
-        fprintf(stderr,"Error sending password command: %s\n", passwordCommand);
-        free(passwordCommand);  
-        return EXIT_FAILURE;
+    if (replyCode != SUCESSFULL_LOGIN) {
+        if(sendCommand(socketFD, passwordCommand) != 0){ //send password command
+            fprintf(stderr,"Error sending password command: %s\n", passwordCommand);
+            free(passwordCommand);  
+            return EXIT_FAILURE;
+        }
+
+        printf("Password command: %s \n", passwordCommand);
+        free(passwordCommand);
+
+        //read command answer
+        replyCode = 0;
+        readReply(socketFD, &replyCode, NULL);
+
+        if (replyCode != SUCESSFULL_LOGIN){ 
+            fprintf(stderr,"Error reading password command reply\n");   
+            return EXIT_FAILURE;
+        }
     }
-
-    printf("Password command: %s \n", passwordCommand);
-    free(passwordCommand);
-
-    //read command answer
-    replyCode = 0;
-    readReply(socketFD, &replyCode, NULL);
-
-    if (replyCode != SUCESSFULL_LOGIN){ 
-        fprintf(stderr,"Error reading password command reply\n");   
-        return EXIT_FAILURE;
-    }
-
     return 0;   
 }
 
@@ -184,6 +184,9 @@ int retrCommand(int socketFD, char*urlPath){
     unsigned replyCode = 0;
     if(readReply(socketFD, &replyCode, NULL) != 0){
         fprintf(stderr,"Error reading retr command reply\n");  
+        return EXIT_FAILURE;
+    } else if (replyCode == FAILED_OPEN_FILE) {
+        fprintf(stderr, "The url path you inserted is not valid\n");
         return EXIT_FAILURE;
     }
 
