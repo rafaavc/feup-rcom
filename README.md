@@ -7,4 +7,4 @@ Development of a data connection protocol, capable of transfering data between t
 
 ### proj2
 
-
+Development of an FTP download application and configuration of a computer network.
